@@ -72,12 +72,17 @@ The token can be generated inside your account at https://kagi.com/settings?p=ap
             (string-join curl-flags " ")
             kagi-api-fastgpt-url)))
 
+(defun kagi--format-output (output)
+  ;; Replace Bold tags
+  (replace-regexp-in-string "</b>" "\e[0m"
+			    (replace-regexp-in-string "<b>" "\e[1m" output)))
+
 (defun kagi--format-references (references)
   (string-join (seq-map-indexed (lambda (ref i)
                                   (let ((title (gethash "title" ref))
                                         (snippet (gethash "snippet" ref))
                                         (url (gethash "url" ref)))
-                                    (format "[%d] %s\n%s\n%s" (1+ i) title snippet url)))
+                                    (format "\e[1m[%d]\e[0m %s\n%s\n%s" (1+ i) title (kagi--format-output snippet) url)))
                                 references)
                "\n\n"))
 
@@ -91,7 +96,7 @@ The token can be generated inside your account at https://kagi.com/settings?p=ap
          (data (gethash "data" parsed-response))
          (output (gethash "output" data))
          (references (gethash "references" data)))
-    (format "%s\n\n%s" output (kagi--format-references references))))
+    (format "%s\n\n%s" (kagi--format-output output) (kagi--format-references references))))
 
 (defvar kagi-fastgpt--config
   (make-shell-maker-config
