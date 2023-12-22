@@ -47,13 +47,16 @@
 (defcustom kagi-api-token nil
   "The Kagi API token.
 
-The token can be generated inside your account at https://kagi.com/settings?p=api")
+The token can be generated inside your account at https://kagi.com/settings?p=api"
+  :type '(choice string function))
 
-(defvar kagi-api-fastgpt-url " https://kagi.com/api/v0/fastgpt"
-  "The Kagi FastGPT API entry point.")
+(defcustom kagi-api-fastgpt-url "https://kagi.com/api/v0/fastgpt"
+  "The Kagi FastGPT API entry point."
+  :type '(choice string function))
 
 (defcustom kagi-debug nil
-  "Enable debugging statements.")
+  "Enable debugging statements."
+  :type 'boolean)
 
 (defun kagi--build-curl-command (prompt)
   (let* ((input-obj `((query . ,prompt)))
