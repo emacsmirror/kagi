@@ -52,8 +52,8 @@ The token can be generated inside your account at https://kagi.com/settings?p=ap
 (defvar kagi-api-fastgpt-url " https://kagi.com/api/v0/fastgpt"
   "The Kagi FastGPT API entry point.")
 
-(defcustom kagi-debug t
-  "Enable debugging statements.")  ;; TODO nil
+(defcustom kagi-debug nil
+  "Enable debugging statements.")
 
 (defun kagi--build-curl-command (prompt)
   (let* ((input-obj `((query . ,prompt)))
