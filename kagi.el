@@ -8,7 +8,7 @@
 ;; Package-Version: 0.1
 ;; Package-Requires: ((emacs "28.2") "shell-maker") ; TODO
 ;; Keywords: convenience
-;; URL: TODO
+;; URL: https://codeberg.org/bram85/kagi.el
 
 ;; This file is not part of GNU Emacs.
 
