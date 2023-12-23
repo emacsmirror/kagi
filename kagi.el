@@ -87,8 +87,9 @@ FastGPT with the following prompt:
   (with-temp-buffer
     (insert string)
     (goto-char (point-min))
-    (while (re-search-forward "<b>\\([^<]*\\)</b>" nil t)
-      (replace-match (propertize (match-string 1) 'font-lock-face 'bold) t nil))
+    (let ((bold-match (rx (seq "<b>" (group (* (not "<"))) "</b>"))))
+      (while (re-search-forward bold-match nil t)
+        (replace-match (propertize (match-string 1) 'font-lock-face 'bold) t nil)))
     (buffer-string)))
 
 (defun kagi--format-output (output)
