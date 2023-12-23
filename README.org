@@ -1,0 +1,40 @@
+#+title: kagi.el README
+#+author: Bram Schoenmakers
+
+* Introduction
+
+This package provides a shell to submit prompts to FastGPT, inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
+
+Kagi is a relatively new ad-free search engine, offering additional services such as the [[https://kagi.com/summarizer][Universal Summarizer]] or more notably [[https://kagi.com/fastgpt][FastGPT]], their open source LLM offering. Some functionality is provided through an API.
+
+* Usage
+
+1. Make a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
+2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
+3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~.
+4. You're good to go: run the command ~kagi-fastgpt-shell~ and start prompting.
+
+* Installation and configuration
+
+kagi.el is not on MELPA (yet?), so for now only Git access is possible.
+
+Clone with:
+
+: git clone https://codeberg.org/bram85/kagi.el.git /path/to/kagi.el
+
+Note that kagi.el has a dependency on the [[https://melpa.org/#/shell-maker][shell-maker package]], which is available on MELPA.
+
+You way want to load and configure the package with ~use-package~, for example put the following in your Emacs init file:
+
+#+begin_src elisp
+  (use-package kagi
+    :commands kagi-fastgpt-shell
+    :ensure nil
+    :load-path "/path/to/kagi.el"
+    :custom
+    (kagi-api-token "ABCDEF")
+    ;; or use a function, e.g. with the password-store package:
+    (kagi-api-token (lambda () (password-store-get "Kagi/API"))))
+#+end_src
+
+The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. [[https://passwordstore.org/][pass(1)]]).

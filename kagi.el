@@ -36,8 +36,20 @@
 
 ;;; Commentary:
 
-;; TODO
-
+;; This package provides a shell to submit prompts to FastGPT, inspired by
+;; [xenodium's chatgpt-shell].
+;;
+;; Kagi is a relatively new ad-free search engine, offering additional
+;; services such as the [Universal Summarizer] or more notably [FastGPT],
+;; their open source LLM offering. Some functionality is provided through
+;; an API.
+;;
+;; [xenodium's chatgpt-shell] <https://github.com/xenodium/chatgpt-shell>
+;;
+;; [Universal Summarizer] <https://kagi.com/summarizer>
+;;
+;; [FastGPT] <https://kagi.com/fastgpt>
+;;
 ;; API documentation: https://help.kagi.com/kagi/api/fastgpt.html
 
 ;;; Code:
