@@ -89,7 +89,7 @@ PROMPT is used to fill in the POST part of the request."
                        ,(format "--data '%s'" data))))
     (format "curl %s %s"
             (string-join curl-flags " ")
-            kagi-api-fastgpt-url))")
+            kagi-api-fastgpt-url)))
 
 (defun kagi--html-bold-to-face (string)
   "Convert HTML tags inside STRING to faces.
