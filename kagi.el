@@ -6,7 +6,7 @@
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Created: 16 Dec 2023
 ;; Package-Version: 0.1
-;; Package-Requires: ((emacs "28.2") "shell-maker") ; TODO
+;; Package-Requires: ((emacs "28.2") (shell-maker "0.44.1"))
 ;; Keywords: convenience
 ;; URL: https://codeberg.org/bram85/kagi.el
 
