@@ -1,4 +1,4 @@
-;;; kagi.el --- Kagi API integration with Emacs -*- lexical-binding: t; -*-
+;;; kagi.el --- Kagi API integration -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Bram Schoenmakers
 
