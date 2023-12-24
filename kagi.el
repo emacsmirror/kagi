@@ -191,7 +191,7 @@ https://kagi.com/settings?p=api"
         (error "Call to Summarizer API returned with status %s" return)))))
 
 (defun kagi--get-text-summary (text)
-  (let* ((response (kagi--call-text-summary text))
+  (let* ((response (kagi--call-summarizer text))
          (parsed-response (json-parse-string response))
          (data (gethash "data" parsed-response))
          (output (gethash "output" data)))
