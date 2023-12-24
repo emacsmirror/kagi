@@ -233,30 +233,19 @@ https://kagi.com/settings?p=api"
 
 ;;; Summarizer
 
-(defun kagi-summarize-buffer (buffer)
-  "Summarize buffer content."
-  (interactive "b")
-  (with-current-buffer buffer
-    (let ((summary-buffer-name (format "*%s (summary)*" (buffer-name))))
-      (kagi--display-text-summary (buffer-string) summary-buffer-name))))
-
-(defun kagi-summarize-region (begin end)
-  (interactive "r"))
-
-(defun kagi-summarize-url (url)
-  (interactive "sURL: "))
-
-;;; Summarizer
+(defun kagi--summary-buffer-name ()
+  "Generate an alternative name for the summary based on the given BUFFER-NAME."
+  (format "%s (summary)" (buffer-name)))
 
 (defun kagi-summarize-buffer (buffer)
   "Summarize buffer content."
   (interactive "b")
   (with-current-buffer buffer
-    (let ((summary-buffer-name (format "*%s (summary)*" (buffer-name))))
-      (kagi--display-text-summary (buffer-string) summary-buffer-name))))
+    (kagi--display-text-summary (buffer-string) (kagi--summary-buffer-name))))
 
 (defun kagi-summarize-region (begin end)
-  (interactive "r"))
+  (interactive "r")
+  (kagi--display-text-summary (buffer-substring begin end) (kagi--summary-buffer-name)))
 
 (defun kagi-summarize-url (url)
   (interactive "sURL: "))
