@@ -78,16 +78,14 @@ https://kagi.com/settings?p=api"
   :group 'kagi)
 
 (defun kagi--curl-flags ()
-  "Collect flags for a `curl' command to call the Kagi FastGPT API."
+  "Collect flags for a `curl' command to call the Kagi API."
   (let ((token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
                      ((stringp kagi-api-token) kagi-api-token)
                      (t (error "No API token configured in variable kagi-api-token")))))
     `("--silent"
       "--header" ,(format "Authorization: Bot %s" token)
       "--header" "Content-Type: application/json"
-      "--data" "@-"
-      ,kagi-api-fastgpt-url
-      )))
+      "--data" "@-")))
 
 (defun kagi--html-bold-to-face (string)
   "Convert HTML tags inside STRING to faces.
@@ -150,7 +148,9 @@ https://kagi.com/settings?p=api"
       (insert (json-encode `((query . ,prompt))))
       (let* ((call-process-flags '(nil nil "curl" t t nil))
              (curl-flags (kagi--curl-flags))
-             (all-flags (append call-process-flags curl-flags))
+             (all-flags (append call-process-flags
+                                curl-flags
+                                (list kagi-api-fastgpt-url)))
              (return (apply #'call-process-region all-flags)))
         (if (eql return 0)
             (buffer-string)
