@@ -169,17 +169,14 @@ https://kagi.com/settings?p=api"
             (buffer-string)
           (error "Call to FastGPT API returned with status %s" return))))))
 
-(defun kagi--call-summarizer (text)
+(defun kagi--call-summarizer (obj)
   "Submit the given TEXT to the Summarizer API.
 
   Returns the JSON response as a string. See
   https://help.kagi.com/kagi/api/summarizer.html for the
   interpretation."
   (with-temp-buffer
-    (insert (json-encode `((text . ,text)
-                           (engine . ,kagi-api-summarizer-engine)
-                           (summary-type . "summary")  ;; TODO parameter
-                           (target-language . ,kagi-api-summarize-language))))
+    (insert (json-encode obj))
     (let* ((call-process-flags '(nil nil "curl" t t nil))
            (curl-flags (kagi--curl-flags))
            (all-flags (append call-process-flags
@@ -190,15 +187,27 @@ https://kagi.com/settings?p=api"
           (buffer-string)
         (error "Call to Summarizer API returned with status %s" return)))))
 
-(defun kagi--get-text-summary (text)
-  (let* ((response (kagi--call-summarizer text))
+(defun kagi--call-text-summarizer (text)
+  (kagi--call-summarizer `((text . ,text)
+                       (engine . ,kagi-api-summarizer-engine)
+                       (summary-type . "summary")  ;; TODO parameter
+                       (target-language . ,kagi-api-summarize-language))))
+
+(defun kagi--call-url-summarizer (url)
+  (kagi--call-summarizer `((url . ,url)
+                       (engine . ,kagi-api-summarizer-engine)
+                       (summary-type . "summary")  ;; TODO parameter
+                       (target-language . ,kagi-api-summarize-language))))
+
+(defun kagi--get-summary (f)
+  (let* ((response (funcall f))
          (parsed-response (json-parse-string response))
          (data (gethash "data" parsed-response))
          (output (gethash "output" data)))
     (kagi--format-output output)))
 
-(defun kagi--display-text-summary (text buffer-name)
-  (let ((summary (kagi--get-text-summary text)))
+(defun kagi--display-summary (f buffer-name)
+  (let ((summary (kagi--get-summary f)))
     (with-current-buffer (get-buffer-create buffer-name)
       (insert summary)
       (goto-char 0)
@@ -241,14 +250,21 @@ https://kagi.com/settings?p=api"
   "Summarize buffer content."
   (interactive "b")
   (with-current-buffer buffer
-    (kagi--display-text-summary (buffer-string) (kagi--summary-buffer-name))))
+    (kagi--display-summary
+     (lambda () (kagi--call-text-summarizer (buffer-string)))
+     (kagi--summary-buffer-name))))
 
 (defun kagi-summarize-region (begin end)
   (interactive "r")
-  (kagi--display-text-summary (buffer-substring begin end) (kagi--summary-buffer-name)))
+  (kagi--display-summary
+   (lambda () (kagi--call-text-summarizer (buffer-substring begin end)))
+   (kagi--summary-buffer-name)))
 
 (defun kagi-summarize-url (url)
-  (interactive "sURL: "))
+  (interactive "sURL: ")
+  (kagi--display-summary
+   (lambda () (kagi--call-url-summarizer url))
+   "*URL summary*"))
 
 (provide 'kagi)
 
