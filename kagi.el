@@ -77,6 +77,19 @@ https://kagi.com/settings?p=api"
   :type 'boolean
   :group 'kagi)
 
+(defcustom kagi-api-summarizer-url "https://kagi.com/api/v0/summarize"
+  "The Kagi Summarizer API entry point."
+  :type '(choice string function)
+  :group 'kagi)
+
+(defcustom kagi-api-summarizer-engine "cecil"  ;; TODO extend with agnes, daphne, muriel
+  "Which summary engine to use."
+  :group 'kagi)
+
+(defcustom kagi-api-summarize-language 'english
+  "Target language of the summary."
+  :group 'kagi)
+
 (defun kagi--curl-flags ()
   "Collect flags for a `curl' command to call the Kagi API."
   (let ((token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
@@ -156,6 +169,41 @@ https://kagi.com/settings?p=api"
             (buffer-string)
           (error "Call to FastGPT API returned with status %s" return))))))
 
+(defun kagi--call-summarizer (text)
+  "Submit the given TEXT to the Summarizer API.
+
+  Returns the JSON response as a string. See
+  https://help.kagi.com/kagi/api/summarizer.html for the
+  interpretation."
+  (with-temp-buffer
+    (insert (json-encode `((text . ,text)
+                           (engine . ,kagi-api-summarizer-engine)
+                           (summary-type . "summary")  ;; TODO parameter
+                           (target-language . ,kagi-api-summarize-language))))
+    (let* ((call-process-flags '(nil nil "curl" t t nil))
+           (curl-flags (kagi--curl-flags))
+           (all-flags (append call-process-flags
+                              curl-flags
+                              (list kagi-api-summarizer-url)))
+           (return (apply #'call-process-region all-flags)))
+      (if (eql return 0)
+          (buffer-string)
+        (error "Call to Summarizer API returned with status %s" return)))))
+
+(defun kagi--get-text-summary (text)
+  (let* ((response (kagi--call-text-summary text))
+         (parsed-response (json-parse-string response))
+         (data (gethash "data" parsed-response))
+         (output (gethash "output" data)))
+    (kagi--format-output output)))
+
+(defun kagi--display-text-summary (text buffer-name)
+  (let ((summary (kagi--get-text-summary text)))
+    (with-current-buffer (get-buffer-create buffer-name)
+      (insert summary)
+      (goto-char 0)
+      (display-buffer buffer-name))))
+
 (defun kagi--process-prompt (prompt)
   "Submit a PROMPT to FastGPT and process the API response.
 
@@ -175,10 +223,42 @@ https://kagi.com/settings?p=api"
                       (funcall callback (kagi--process-prompt command) nil)))
   "The FastGPT shell configuration for shell-maker.")
 
+;;; FastGPT shell
+
 (defun kagi-fastgpt-shell ()
   "Start an FastGPT shell."
   (interactive)
   (shell-maker-start kagi-fastgpt--config))
+
+;;; Summarizer
+
+(defun kagi-summarize-buffer (buffer)
+  "Summarize buffer content."
+  (interactive "b")
+  (with-current-buffer buffer
+    (let ((summary-buffer-name (format "*%s (summary)*" (buffer-name))))
+      (kagi--display-text-summary (buffer-string) summary-buffer-name))))
+
+(defun kagi-summarize-region (begin end)
+  (interactive "r"))
+
+(defun kagi-summarize-url (url)
+  (interactive "sURL: "))
+
+;;; Summarizer
+
+(defun kagi-summarize-buffer (buffer)
+  "Summarize buffer content."
+  (interactive "b")
+  (with-current-buffer buffer
+    (let ((summary-buffer-name (format "*%s (summary)*" (buffer-name))))
+      (kagi--display-text-summary (buffer-string) summary-buffer-name))))
+
+(defun kagi-summarize-region (begin end)
+  (interactive "r"))
+
+(defun kagi-summarize-url (url)
+  (interactive "sURL: "))
 
 (provide 'kagi)
 
