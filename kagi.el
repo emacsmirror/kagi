@@ -151,7 +151,12 @@ PROMPT is used to fill in the POST part of the request."
   (let ((command (kagi--build-curl-command prompt)))
     (if kagi-debug
         kagi--canned-response
-      (shell-command-to-string command))))
+
+      (with-temp-buffer
+        (let ((return (call-process-shell-command command nil t)))
+          (if (eql return 0)
+              (buffer-string)
+            (error "Call to FastGPT API returned with status %s" return)))))))
 
 (defun kagi--process-prompt (prompt)
   "Submit a PROMPT to FastGPT and process the API response.
