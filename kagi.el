@@ -77,22 +77,17 @@ https://kagi.com/settings?p=api"
   :type 'boolean
   :group 'kagi)
 
-(defun kagi--build-curl-command (prompt)
-  "Build a `curl' command to call the Kagi FastGPT API.
-
-PROMPT is used to fill in the POST part of the request."
-  (let* ((input-obj `((query . ,prompt)))
-         (data (json-encode input-obj))
-         (token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
-                      ((stringp kagi-api-token) kagi-api-token)
-                      (t (error "No API token configured in variable kagi-api-token"))))
-         (curl-flags `("--silent"
-                       ,(format "--header \"Authorization: Bot %s\"" token)
-                       "--header \"Content-Type: application/json\""
-                       ,(format "--data '%s'" data))))
-    (format "curl %s %s"
-            (string-join curl-flags " ")
-            kagi-api-fastgpt-url)))
+(defun kagi--curl-flags ()
+  "Collect flags for a `curl' command to call the Kagi FastGPT API."
+  (let ((token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
+                     ((stringp kagi-api-token) kagi-api-token)
+                     (t (error "No API token configured in variable kagi-api-token")))))
+    `("--silent"
+      "--header" ,(format "Authorization: Bot %s" token)
+      "--header" "Content-Type: application/json"
+      "--data" "@-"
+      ,kagi-api-fastgpt-url
+      )))
 
 (defun kagi--html-bold-to-face (string)
   "Convert HTML tags inside STRING to faces.
@@ -148,15 +143,18 @@ PROMPT is used to fill in the POST part of the request."
   `kagi--canned-response', no remote call will be made. This is useful
   for development purposes as API calls require a charge your API
   credit at Kagi."
-  (let ((command (kagi--build-curl-command prompt)))
-    (if kagi-debug
-        kagi--canned-response
+  (if kagi-debug
+      kagi--canned-response
 
-      (with-temp-buffer
-        (let ((return (call-process-shell-command command nil t)))
-          (if (eql return 0)
-              (buffer-string)
-            (error "Call to FastGPT API returned with status %s" return)))))))
+    (with-temp-buffer
+      (insert (json-encode `((query . ,prompt))))
+      (let* ((call-process-flags '(nil nil "curl" t t nil))
+             (curl-flags (kagi--curl-flags))
+             (all-flags (append call-process-flags curl-flags))
+             (return (apply #'call-process-region all-flags)))
+        (if (eql return 0)
+            (buffer-string)
+          (error "Call to FastGPT API returned with status %s" return))))))
 
 (defun kagi--process-prompt (prompt)
   "Submit a PROMPT to FastGPT and process the API response.
