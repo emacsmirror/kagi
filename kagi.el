@@ -202,6 +202,7 @@ https://kagi.com/settings?p=api"
     (with-current-buffer (get-buffer-create buffer-name)
       (insert summary)
       (goto-char 0)
+      (text-mode)
       (display-buffer buffer-name))))
 
 (defun kagi--process-prompt (prompt)
