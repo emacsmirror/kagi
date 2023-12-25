@@ -207,21 +207,32 @@ https://kagi.com/settings?p=api"
           (buffer-string)
         (error "Call to Summarizer API returned with status %s" return)))))
 
+(defun kagi--build-summarizer-request-object (items)
+  "Build a request object for a summary.
+
+Common request elements are returned based on the package's
+configuration. The given ITEMS are appended to it, which is a
+list of conses."
+  (append items
+          `(("engine" . ,kagi-api-summarizer-engine)
+            ("summary_type" . "summary"))
+
+          ;; prevent a nil in the result list, causing (json-encode)
+          ;; to generate a wrong request object.
+          (when kagi-api-summarize-default-language
+            `(("target_language" . kagi-api-summarize-default-language)))))
+
 (defun kagi--call-text-summarizer (text)
-  (kagi--call-summarizer (append
-                      `(("text" . ,text)
-                        ("engine" . ,kagi-api-summarizer-engine)
-                        ("summary_type" . "summary"))  ;; TODO parameter
-                      (when kagi-api-summarize-default-language
-                        `(("target_language" . kagi-api-summarize-default-language))))))
+  "Return a response object from the Summarizer with the TEXT summary."
+  (let ((request-obj (kagi--build-summarizer-request-object
+                      `(("text" . ,text)))))
+    (kagi--call-summarizer request-obj )))
 
 (defun kagi--call-url-summarizer (url)
-  (kagi--call-summarizer (append
-                      `(("url" . ,url)
-                        ("engine" . ,kagi-api-summarizer-engine)
-                        ("summary_type" . "summary"))  ;; TODO parameter
-                      (when kagi-api-summarize-default-language
-                        `(("target_language" . kagi-api-summarize-default-language))))))
+  "Return a response object from the Summarizer with the URL summary."
+  (let ((request-obj (kagi--build-summarizer-request-object
+                      `(("url" . ,url)))))
+    (kagi--call-summarizer request-obj)))
 
 (defun kagi--get-summary (f)
   (let* ((response (funcall f))
