@@ -261,6 +261,7 @@ list of conses."
 F is a function to call the summarizer API that returns a JSON response."
   (let ((summary (kagi--get-summary f)))
     (with-current-buffer (get-buffer-create buffer-name)
+      (erase-buffer)
       (insert summary)
       (goto-char 0)
       (text-mode)
