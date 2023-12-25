@@ -208,16 +208,20 @@ https://kagi.com/settings?p=api"
         (error "Call to Summarizer API returned with status %s" return)))))
 
 (defun kagi--call-text-summarizer (text)
-  (kagi--call-summarizer `((text . ,text)
-                       (engine . ,kagi-api-summarizer-engine)
-                       (summary-type . "summary")  ;; TODO parameter
-                       (target-language . ,kagi-api-summarize-default-language))))
+  (kagi--call-summarizer (append
+                      `(("text" . ,text)
+                        ("engine" . ,kagi-api-summarizer-engine)
+                        ("summary_type" . "summary"))  ;; TODO parameter
+                      (when kagi-api-summarize-default-language
+                        `(("target_language" . kagi-api-summarize-default-language))))))
 
 (defun kagi--call-url-summarizer (url)
-  (kagi--call-summarizer `((url . ,url)
-                       (engine . ,kagi-api-summarizer-engine)
-                       (summary-type . "summary")  ;; TODO parameter
-                       (target-language . ,kagi-api-summarize-default-language))))
+  (kagi--call-summarizer (append
+                      `(("url" . ,url)
+                        ("engine" . ,kagi-api-summarizer-engine)
+                        ("summary_type" . "summary"))  ;; TODO parameter
+                      (when kagi-api-summarize-default-language
+                        `(("target_language" . kagi-api-summarize-default-language))))))
 
 (defun kagi--get-summary (f)
   (let* ((response (funcall f))
