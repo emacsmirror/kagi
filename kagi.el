@@ -270,6 +270,7 @@ list of conses."
 
 ;;; FastGPT shell
 
+;;;###autoload
 (defun kagi-fastgpt-shell ()
   "Start an FastGPT shell."
   (interactive)
@@ -281,6 +282,7 @@ list of conses."
   "Generate an alternative name for the summary based on the given BUFFER-NAME."
   (format "%s (summary)" (buffer-name)))
 
+;;;###autoload
 (defun kagi-summarize-buffer (buffer)
   "Summarize the BUFFER's content."
   (interactive "b")
@@ -289,12 +291,14 @@ list of conses."
      (lambda () (kagi--call-text-summarizer (buffer-string)))
      (kagi--summary-buffer-name))))
 
+;;;###autoload
 (defun kagi-summarize-region (begin end)
   (interactive "r")
   (kagi--display-summary
    (lambda () (kagi--call-text-summarizer (buffer-substring begin end)))
    (kagi--summary-buffer-name)))
 
+;;;###autoload
 (defun kagi-summarize-url (url)
   (interactive "sURL: ")
   (kagi--display-summary
