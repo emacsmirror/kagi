@@ -281,8 +281,13 @@ Returns a formatted string to be displayed by the shell."
   (make-shell-maker-config
    :name "FastGPT"
    :prompt "fastgpt > "
-   :execute-command (lambda (command _history callback error-callback)
-                      (funcall callback (kagi--process-prompt command) nil)))
+   :execute-command
+   (lambda (command _history callback error-callback)
+     (condition-case err
+         (funcall callback (kagi--process-prompt command) nil)
+       (json-parse-error (funcall error-callback
+                                  (format "Could not parse the server response %s" (cdr err))))
+       (error (funcall error-callback (format "An error occurred during the request %s" (cdr err)))))))
   "The FastGPT shell configuration for shell-maker.")
 
 ;;; FastGPT shell
