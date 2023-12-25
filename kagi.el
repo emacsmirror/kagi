@@ -231,7 +231,7 @@ https://kagi.com/settings?p=api"
   (format "%s (summary)" (buffer-name)))
 
 (defun kagi-summarize-buffer (buffer)
-  "Summarize buffer content."
+  "Summarize the BUFFER's content."
   (interactive "b")
   (with-current-buffer buffer
     (kagi--display-summary
