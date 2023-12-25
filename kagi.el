@@ -78,8 +78,8 @@ https://kagi.com/settings?p=api"
   "Which summary engine to use."
   :group 'kagi)
 
-(defcustom kagi-api-summarize-language 'english
-  "Target language of the summary."
+(defcustom kagi-api-summarize-default-language 'english
+  "Default target language of the summary."
   :group 'kagi)
 
 (defun kagi--curl-flags ()
@@ -175,13 +175,13 @@ https://kagi.com/settings?p=api"
   (kagi--call-summarizer `((text . ,text)
                        (engine . ,kagi-api-summarizer-engine)
                        (summary-type . "summary")  ;; TODO parameter
-                       (target-language . ,kagi-api-summarize-language))))
+                       (target-language . ,kagi-api-summarize-default-language))))
 
 (defun kagi--call-url-summarizer (url)
   (kagi--call-summarizer `((url . ,url)
                        (engine . ,kagi-api-summarizer-engine)
                        (summary-type . "summary")  ;; TODO parameter
-                       (target-language . ,kagi-api-summarize-language))))
+                       (target-language . ,kagi-api-summarize-default-language))))
 
 (defun kagi--get-summary (f)
   (let* ((response (funcall f))
