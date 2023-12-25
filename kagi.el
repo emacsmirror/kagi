@@ -235,6 +235,9 @@ list of conses."
     (kagi--call-summarizer request-obj)))
 
 (defun kagi--get-summary (f)
+  "Return a summary text.
+
+ F is a function to call the summarizer API that returns a JSON response."
   (let* ((response (funcall f))
          (parsed-response (json-parse-string response))
          (data (gethash "data" parsed-response))
@@ -242,6 +245,9 @@ list of conses."
     (kagi--format-output output)))
 
 (defun kagi--display-summary (f buffer-name)
+  "Display the summary in a buffer called BUFFER-NAME.
+
+F is a function to call the summarizer API that returns a JSON response."
   (let ((summary (kagi--get-summary f)))
     (with-current-buffer (get-buffer-create buffer-name)
       (insert summary)
