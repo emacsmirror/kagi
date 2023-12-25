@@ -36,21 +36,20 @@
 
 ;;; Commentary:
 
-;; This package provides a shell to submit prompts to FastGPT, inspired by
-;; [xenodium's chatgpt-shell].
-;;
-;; Kagi is a relatively new ad-free search engine, offering additional
-;; services such as the [Universal Summarizer] or more notably [FastGPT],
-;; their open source LLM offering. Some functionality is provided through
-;; an API.
-;;
+;; This Emacs package provides the following functionalities from the
+;; Kagi search engine:
+
+;; FastGPT
+;;       Kagi's open source LLM offering, as a shell inspired by
+;;       [xenodium's chatgpt-shell].
+;; Universal Summarizer
+;;       Summarizes texts, webpages, videos and more.
+
+;; Both functions are accessed through an [API].
+
 ;; [xenodium's chatgpt-shell] <https://github.com/xenodium/chatgpt-shell>
-;;
-;; [Universal Summarizer] <https://kagi.com/summarizer>
-;;
-;; [FastGPT] <https://kagi.com/fastgpt>
-;;
-;; API documentation: https://help.kagi.com/kagi/api/fastgpt.html
+
+;; [API] <https://help.kagi.com/kagi/api/overview.html>
 
 ;;; Code:
 
