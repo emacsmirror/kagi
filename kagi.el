@@ -74,12 +74,48 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-api-summarizer-engine "cecil"  ;; TODO extend with agnes, daphne, muriel
+(defcustom kagi-api-summarizer-engine "cecil"
   "Which summary engine to use."
+  :type '(choice
+          (const "agnes")
+          (const "cecil")
+          (const "daphne")
+          (const "muriel"))
   :group 'kagi)
 
-(defcustom kagi-api-summarize-default-language 'english
+(defcustom kagi-api-summarize-default-language nil
   "Default target language of the summary."
+  :type '(choice
+          (const :tag "Document language" nil)
+          (const :tag "Bulgarian" "BG")
+          (const :tag "Czech" "CZ")
+          (const :tag "Danish" "DA")
+          (const :tag "German" "DE")
+          (const :tag "Greek" "EL")
+          (const :tag "English" "EN")
+          (const :tag "Spanish" "ES")
+          (const :tag "Estonian" "ET")
+          (const :tag "Finnish" "FI")
+          (const :tag "French" "FR")
+          (const :tag "Hungarian" "HU")
+          (const :tag "Indonesian" "ID")
+          (const :tag "Italian" "IT")
+          (const :tag "Japanese" "JA")
+          (const :tag "Korean" "KO")
+          (const :tag "Lithuanian" "LT")
+          (const :tag "Latvian" "LV")
+          (const :tag "Norwegian" "NB")
+          (const :tag "Dutch" "NL")
+          (const :tag "Polish" "PL")
+          (const :tag "Portuguese" "PT")
+          (const :tag "Romanian" "RO")
+          (const :tag "Russian" "RU")
+          (const :tag "Slovak" "SK")
+          (const :tag "Slovenian" "SL")
+          (const :tag "Swedish" "SV")
+          (const :tag "Turkish" "TR")
+          (const :tag "Ukrainian" "UK")
+          (const :tag "Chinese (simplified)" "ZH"))
   :group 'kagi)
 
 (defun kagi--curl-flags ()
