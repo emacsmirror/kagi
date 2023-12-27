@@ -153,13 +153,11 @@ FastGPT with the following prompt:
   (with-temp-buffer
     (insert string)
     (dolist (entry kagi--markup-to-face)
-      (goto-char (point-min))
-      (let ((start (nth 0 entry))
-            (end (nth 1 entry))
-            (face (nth 2 entry))
-            (regexp (rx (seq (literal start) (group (* any)) (literal end)))))
-        (while (re-search-forward regexp nil t)
-          (replace-match (propertize (match-string 1) 'font-lock-face face) t nil))))
+      (cl-destructuring-bind (start end face) entry
+        (goto-char (point-min))
+        (let ((regexp (rx (seq (literal start) (group (* any)) (literal end)))))
+          (while (re-search-forward regexp nil t)
+            (replace-match (propertize (match-string 1) 'font-lock-face face) t nil)))))
     (buffer-string)))
 
 (defun kagi--format-output (output)
