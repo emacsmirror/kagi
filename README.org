@@ -56,7 +56,11 @@ You way want to load and configure the package with ~use-package~, for example p
 
     ;; summarizer settings
     (kagi-api-summarizer-engine "cecil")
-    (kagi-api-summarize-default-language "EN"))
+    (kagi-api-summarize-default-language "EN")
+    :custom-face
+    ;; kagi-code defaults to fixed-pitch, but can be overridden as
+    ;; follows:
+    (kagi-code ((t (:inherit org-verbatim)))))
 #+end_src
 
 The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. [[https://passwordstore.org/][pass(1)]]).
