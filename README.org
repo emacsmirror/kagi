@@ -65,6 +65,30 @@ You way want to load and configure the package with ~use-package~, for example p
 
 The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the password-store package that comes with it).
 
+** Embark integration
+
+The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]], to easily summarize a buffer, region or an URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. Press /K s/ to trigger the summarize functionality.
+
+Add the following to your configuration to trigger summary functionality with key /K s/:
+
+#+begin_src elisp
+  (defmacro embark-kagi-map (name function)
+    "Macro for defining a keymap for accessing Kagi functionality through Embark."
+    `(defvar-keymap ,name
+       :doc "Keymap for accessing Kagi functionality with Embark."
+       :parent nil
+       "s" #',function))
+
+  (embark-kagi-map embark-kagi-buffer-map kagi-summarize-buffer)
+  (keymap-set embark-buffer-map "K" embark-kagi-buffer-map)
+
+  (embark-kagi-map embark-kagi-region-map kagi-summarize-region)
+  (keymap-set embark-region-map "K" embark-kagi-region-map)
+
+  (embark-kagi-map embark-kagi-url-map kagi-summarize-url)
+  (keymap-set embark-url-map "K" embark-kagi-url-map)
+#+end_src
+
 * References
 
 - [[https://help.kagi.com/kagi/api/fastgpt.html][Kagi FastGPT API]]
