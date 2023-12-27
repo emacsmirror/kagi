@@ -153,10 +153,23 @@ FastGPT with the following prompt:
         (replace-match (propertize (match-string 1) 'font-lock-face 'bold) t nil)))
     (buffer-string)))
 
+(defun kagi--code-to-face (string)
+  "Convert code inside STRING to faces.
+
+In the FastGPT output, code is surrounded by three backticks (```)."
+  (with-temp-buffer
+    (insert string)
+    (goto-char (point-min))
+    (let ((code-match (rx (seq "```" (group (* (not "`"))) "```"))))
+      (while (re-search-forward code-match nil t)
+        (replace-match (propertize (match-string 1) 'font-lock-face 'fixed-pitch) t nil)))
+    (buffer-string)))
+
 (defun kagi--format-output (output)
   "Format the OUTPUT by replacing markup elements to proper faces."
-  (kagi--html-bold-to-face output))
-
+  (thread-first output
+                kagi--html-bold-to-face
+                kagi--code-to-face))
 
 (defun kagi--format-reference-index (i)
   "Format the index of reference number I."
@@ -164,7 +177,6 @@ FastGPT with the following prompt:
 
 (defun kagi--format-references (references)
   "Format the REFRENCES as a string.
-
 
 The REFERENCES is a part of the JSON response, see
 https://help.kagi.com/kagi/api/fastgpt.html for more information."
