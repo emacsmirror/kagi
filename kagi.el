@@ -126,19 +126,17 @@ https://help.kagi.com/kagi/api/summarizer.html."
           (const :tag "Chinese (simplified)" "ZH"))
   :group 'kagi)
 
-(defun kagi--curl-flags ()
-  "Collect flags for a `curl' command to call the Kagi API."
-  (let ((token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
-                     ((stringp kagi-api-token) kagi-api-token)
-                     (t (error "No API token configured in variable kagi-api-token")))))
-    `("--silent"
-      "--header" ,(format "Authorization: Bot %s" token)
-      "--header" "Content-Type: application/json"
-      "--data" "@-")))
+(defface kagi-bold '((t :inherit bold))
+  "Face for bold parts in the Kagi output."
+  :group 'kagi)
+
+(defface kagi-code '((t :inherit fixed-pitch))
+  "Face for code parts in the Kagi output."
+  :group 'kagi)
 
 (defconst kagi--markup-to-face
-  '(("<b>" "</b>" 'bold)
-    ("```" "```" 'fixed-pitch))
+  '(("<b>" "</b>" 'kagi-bold)
+    ("```" "```" 'kagi-code))
   "Contains a mapping from markup elements to faces.")
 
 (defun kagi--convert-markup-to-faces (string)
@@ -184,6 +182,16 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
                                 (kagi--html-bold-to-face snippet) url)))
                     references)
    "\n\n"))
+
+(defun kagi--curl-flags ()
+  "Collect flags for a `curl' command to call the Kagi API."
+  (let ((token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
+                     ((stringp kagi-api-token) kagi-api-token)
+                     (t (error "No API token configured in variable kagi-api-token")))))
+    `("--silent"
+      "--header" ,(format "Authorization: Bot %s" token)
+      "--header" "Content-Type: application/json"
+      "--data" "@-")))
 
 (defun kagi--call-fastgpt (prompt)
   "Submit the given PROMPT to the FastGPT API.
