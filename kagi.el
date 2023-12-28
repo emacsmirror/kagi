@@ -179,7 +179,7 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
                         (format "%s %s\n%s\n%s"
                                 (kagi--format-reference-index (1+ i))
                                 title
-                                (kagi--html-bold-to-face snippet) url)))
+                                (kagi--convert-markup-to-faces snippet) url)))
                     references)
    "\n\n"))
 
