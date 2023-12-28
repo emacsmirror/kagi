@@ -268,17 +268,14 @@ list of conses."
          (output (gethash "output" data)))
     (kagi--format-output output)))
 
-(defun kagi--display-summary (request-function buffer-name)
-  "Display the summary in a buffer called BUFFER-NAME.
-
-F is a function to call the summarizer API that returns a JSON response."
-  (let ((summary (kagi--get-summary request-function)))
-    (with-current-buffer (get-buffer-create buffer-name)
-      (erase-buffer)
-      (insert summary)
-      (goto-char 0)
-      (text-mode)
-      (display-buffer buffer-name))))
+(defun kagi--display-summary (summary buffer-name)
+  "Display the SUMMARY in a buffer called BUFFER-NAME."
+  (with-current-buffer (get-buffer-create buffer-name)
+    (erase-buffer)
+    (insert summary)
+    (goto-char 0)
+    (text-mode)
+    (display-buffer buffer-name)))
 
 (defun kagi--process-prompt (prompt)
   "Submit a PROMPT to FastGPT and process the API response.
@@ -340,7 +337,7 @@ Returns a formatted string to be displayed by the shell."
   (interactive "b")
   (with-current-buffer buffer
     (kagi--display-summary
-     (lambda () (kagi--call-text-summarizer (buffer-string)))
+     (kagi--get-summary (lambda () (kagi--call-text-summarizer (buffer-string))))
      (kagi--summary-buffer-name (buffer-name)))))
 
 ;;;###autoload
@@ -350,7 +347,7 @@ Returns a formatted string to be displayed by the shell."
 Shows the summary in a new window."
   (interactive "r")
   (kagi--display-summary
-   (lambda () (kagi--call-text-summarizer (buffer-substring begin end)))
+   (kagi--get-summary (lambda () (kagi--call-text-summarizer (buffer-substring begin end))))
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
@@ -369,7 +366,7 @@ supported:
 - Scanned PDFs and images (OCR)"
   (interactive "sURL: ")
   (kagi--display-summary
-   (lambda () (kagi--call-url-summarizer url))
+   (kagi--get-summary (lambda () (kagi--call-url-summarizer url)))
    (kagi--summary-buffer-name (kagi--get-domain-name url))))
 
 (provide 'kagi)
