@@ -28,6 +28,8 @@ The FastGPT functionality has only one command: =kagi-fastgpt-shell=. This opens
 - =kagi-summarize-region= :: Similarly, the text inside the region is summarized and shown in a separate buffer.
 - =kagi-summarize-url= :: Prompts for a URL of which a summary is composed and displayed.
 
+Note that texts submitted to Kagi are subject to their [[https://kagi.com/privacy#Summarizer][Privacy Policy]].
+
 * Installation and configuration
 
 kagi.el is not on MELPA (yet?), so for now only Git access is possible.
