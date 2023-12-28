@@ -258,21 +258,21 @@ list of conses."
                       `(("url" . ,url)))))
     (kagi--call-summarizer request-obj)))
 
-(defun kagi--get-summary (f)
+(defun kagi--get-summary (request-function)
   "Return a summary text.
 
  F is a function to call the Summarizer API that returns a JSON response."
-  (let* ((response (funcall f))
+  (let* ((response (funcall request-function))
          (parsed-response (json-parse-string response))
          (data (gethash "data" parsed-response))
          (output (gethash "output" data)))
     (kagi--format-output output)))
 
-(defun kagi--display-summary (f buffer-name)
+(defun kagi--display-summary (request-function buffer-name)
   "Display the summary in a buffer called BUFFER-NAME.
 
 F is a function to call the summarizer API that returns a JSON response."
-  (let ((summary (kagi--get-summary f)))
+  (let ((summary (kagi--get-summary request-function)))
     (with-current-buffer (get-buffer-create buffer-name)
       (erase-buffer)
       (insert summary)
