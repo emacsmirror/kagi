@@ -260,16 +260,6 @@ list of conses."
                       `(("url" . ,url)))))
     (kagi--call-summarizer request-obj)))
 
-(defun kagi--get-summary (request-function)
-  "Return a summary text.
-
- F is a function to call the Summarizer API that returns a JSON response."
-  (let* ((response (funcall request-function))
-         (parsed-response (json-parse-string response))
-         (data (gethash "data" parsed-response))
-         (output (gethash "output" data)))
-    (kagi--format-output output)))
-
 (defun kagi--display-summary (summary buffer-name)
   "Display the SUMMARY in a buffer called BUFFER-NAME."
   (with-current-buffer (get-buffer-create buffer-name)
@@ -333,13 +323,28 @@ Returns a formatted string to be displayed by the shell."
   "Generate a name for the summary buffer, HINT will be part of the name."
   (format "%s (summary)" hint))
 
+(defun kagi--url-p (s)
+  "Non-nil if string S is a URL."
+  (string-match-p (rx (seq "http" (? "s") "://")) s))
+
+;;;###autoload
+(defun kagi-summarize (text-or-url)
+  "Return the summary of the given TEXT-OR-URL."
+  (let* ((response (if (kagi--url-p text-or-url)
+                       (kagi--call-url-summarizer text-or-url)
+                     (kagi--call-text-summarizer text-or-url)))
+         (parsed-response (json-parse-string response))
+         (data (gethash "data" parsed-response))
+         (output (gethash "output" data)))
+    (kagi--format-output output)))
+
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer)
   "Summarize the BUFFER's content and show it in a new window."
   (interactive "b")
   (with-current-buffer buffer
     (kagi--display-summary
-     (kagi--get-summary (lambda () (kagi--call-text-summarizer (buffer-string))))
+     (kagi-summarize (buffer-string))
      (kagi--summary-buffer-name (buffer-name)))))
 
 ;;;###autoload
@@ -349,7 +354,7 @@ Returns a formatted string to be displayed by the shell."
 Shows the summary in a new window."
   (interactive "r")
   (kagi--display-summary
-   (kagi--get-summary (lambda () (kagi--call-text-summarizer (buffer-substring begin end))))
+   (kagi-summarize (buffer-substring-no-properties begin end))
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
@@ -368,7 +373,7 @@ supported:
 - Scanned PDFs and images (OCR)"
   (interactive "sURL: ")
   (kagi--display-summary
-   (kagi--get-summary (lambda () (kagi--call-url-summarizer url)))
+   (kagi-summarize url)
    (kagi--summary-buffer-name (kagi--get-domain-name url))))
 
 (provide 'kagi)
