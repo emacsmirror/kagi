@@ -155,7 +155,9 @@ FastGPT with the following prompt:
         (goto-char (point-min))
         (let ((regexp (rx (seq (literal start) (group (* any)) (literal end)))))
           (while (re-search-forward regexp nil t)
-            (replace-match (propertize (match-string 1) 'font-lock-face face) t nil)))))
+            (let ((escaped-replacement (string-replace "\\" "\\\\" (match-string 1))))
+              (replace-match (propertize escaped-replacement 'font-lock-face face) t nil)
+              )))))
     (buffer-string)))
 
 (defun kagi--format-output (output)
