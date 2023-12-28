@@ -312,7 +312,7 @@ Returns a formatted string to be displayed by the shell."
                     "://"))
             (? "www.")
             ;; the domain name
-            (group (seq (+ (not ".")) "." (+ alpha)))))
+            (group (seq (+ (not "/"))))))
    url)
 
   (if-let ((domain-name (match-string 1 url)))
