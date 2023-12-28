@@ -314,9 +314,25 @@ Returns a formatted string to be displayed by the shell."
 
 ;;; Summarizer
 
-(defun kagi--summary-buffer-name ()
-  "Generate an alternative name for the summary based on the given BUFFER-NAME."
-  (format "%s (summary)" (buffer-name)))
+(defun kagi--get-domain-name (url)
+  "Return the domain name of the given URL."
+  (string-match
+   (rx (seq bos
+            (? (seq "http"
+                    (? "s")
+                    "://"))
+            (? "www.")
+            ;; the domain name
+            (group (seq (+ (not ".")) "." (+ alpha)))))
+   url)
+
+  (if-let ((domain-name (match-string 1 url)))
+      domain-name
+    "URL"))
+
+(defun kagi--summary-buffer-name (hint)
+  "Generate a name for the summary buffer, HINT will be part of the name."
+  (format "%s (summary)" hint))
 
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer)
@@ -325,7 +341,7 @@ Returns a formatted string to be displayed by the shell."
   (with-current-buffer buffer
     (kagi--display-summary
      (lambda () (kagi--call-text-summarizer (buffer-string)))
-     (kagi--summary-buffer-name))))
+     (kagi--summary-buffer-name (buffer-name)))))
 
 ;;;###autoload
 (defun kagi-summarize-region (begin end)
@@ -335,7 +351,7 @@ Shows the summary in a new window."
   (interactive "r")
   (kagi--display-summary
    (lambda () (kagi--call-text-summarizer (buffer-substring begin end)))
-   (kagi--summary-buffer-name)))
+   (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
 (defun kagi-summarize-url (url)
@@ -354,7 +370,7 @@ supported:
   (interactive "sURL: ")
   (kagi--display-summary
    (lambda () (kagi--call-url-summarizer url))
-   "*URL summary*"))
+   (kagi--summary-buffer-name (kagi--get-domain-name url))))
 
 (provide 'kagi)
 
