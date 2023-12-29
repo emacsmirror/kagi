@@ -126,6 +126,16 @@ https://help.kagi.com/kagi/api/summarizer.html."
           (const :tag "Chinese (simplified)" "ZH"))
   :group 'kagi)
 
+(defcustom kagi-api-summarizer-cache t
+  "Determines whether the Summarizer should cache results.
+
+Repetitive queries won't be charged if caching is enabled (the
+default). For sensitive texts, you may opt for disabling the
+cache by setting this item to nil (but subsequent queries on the
+same text will be charged.)"
+  :type 'boolean
+  :group 'kagi)
+
 (defface kagi-bold '((t :inherit bold))
   "Face for bold parts in the Kagi output."
   :group 'kagi)
@@ -241,7 +251,8 @@ configuration. The given ITEMS are appended to it, which is a
 list of conses."
   (append items
           `(("engine" . ,kagi-api-summarizer-engine)
-            ("summary_type" . "summary"))
+            ("summary_type" . "summary")
+            ("cache" . ,kagi-api-summarizer-cache))
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
