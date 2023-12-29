@@ -163,7 +163,9 @@ FastGPT with the following prompt:
     (dolist (entry kagi--markup-to-face)
       (cl-destructuring-bind (start end face) entry
         (goto-char (point-min))
-        (let ((regexp (rx (seq (literal start) (group (*? any)) (literal end)))))
+        (let ((regexp (rx (seq (literal start)
+                               (group (*? any))
+                               (literal end)))))
           (while (re-search-forward regexp nil t)
             (let ((escaped-replacement (string-replace "\\" "\\\\" (match-string 1))))
               (replace-match (propertize escaped-replacement 'font-lock-face face) t nil)
