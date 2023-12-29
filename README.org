@@ -3,7 +3,7 @@
 
 * Introduction
 
-This Emacs package provides the following functionalities from the Kagi search engine:
+This Emacs package provides the following functionalities from the [[https://www.kagi.com][Kagi search engine]]:
 
 - FastGPT :: Kagi's open source LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
 - Universal Summarizer :: Summarizes texts, webpages, videos and more.
@@ -14,7 +14,7 @@ Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview
 
 1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
 2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
-3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~.
+3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
 
 * Commands and functions
 
@@ -129,16 +129,14 @@ Add the following to your configuration to trigger summary functionality with ke
 
 The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
 
-** Define own functions
-
-The kagi.el package comes with a few variables
+** Examples of custom functions
 
 *** Language override
 
 By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. For instance, to obtain a Dutch summary of a video you may want to define the following function:
 
 #+begin_src elisp
-  (defun my/kagi-dutch-summary (text-or-url)
+  (defun my/kagi/dutch-summary (text-or-url)
     "Obtain a Dutch summary for the given TEXT-OR-URL."
     (let ((kagi-summarize-default-language "NL"))
       (kagi-summarize text-or-url)))
@@ -146,7 +144,7 @@ By overriding a variable with a =let= construct you can (temporarily) deviate fr
 
 *** Caching override
 
-The Summarizer API comes with the following note:
+The [[https://help.kagi.com/kagi/api/summarizer.html][Summarizer API]] comes with the following note:
 
 #+begin_quote
 For handling sensitive information and documents, we recommend setting the 'cache' API parameter to False. In this way, the document will "flow through" our infrastructure and will not be retained anywhere after processing.
