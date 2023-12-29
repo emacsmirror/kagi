@@ -73,7 +73,7 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-api-summarizer-engine "cecil"
+(defcustom kagi-summarizer-engine "cecil"
   "Which summary engine to use.
 
 - cicil :: Friendly, descriptive, fast summary.
@@ -91,7 +91,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
           (const "muriel"))
   :group 'kagi)
 
-(defcustom kagi-api-summarize-default-language nil
+(defcustom kagi-summarize-default-language nil
   "Default target language of the summary."
   :type '(choice
           (const :tag "Document language" nil)
@@ -126,7 +126,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
           (const :tag "Chinese (simplified)" "ZH"))
   :group 'kagi)
 
-(defcustom kagi-api-summarizer-cache t
+(defcustom kagi-summarizer-cache t
   "Determines whether the Summarizer should cache results.
 
 Repetitive queries won't be charged if caching is enabled (the
@@ -250,14 +250,14 @@ Common request elements are returned based on the package's
 configuration. The given ITEMS are appended to it, which is a
 list of conses."
   (append items
-          `(("engine" . ,kagi-api-summarizer-engine)
+          `(("engine" . ,kagi-summarizer-engine)
             ("summary_type" . "summary")
-            ("cache" . ,kagi-api-summarizer-cache))
+            ("cache" . ,kagi-summarizer-cache))
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
-          (when kagi-api-summarize-default-language
-            `(("target_language" . kagi-api-summarize-default-language)))))
+          (when kagi-summarize-default-language
+            `(("target_language" . kagi-summarize-default-language)))))
 
 (defun kagi--call-text-summarizer (text)
   "Return a response object from the Summarizer with the TEXT summary."

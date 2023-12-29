@@ -58,8 +58,9 @@ You way want to load and configure the package with ~use-package~, for example p
     (kagi-api-token (lambda () (password-store-get "Kagi/API")))
 
     ;; summarizer settings
-    (kagi-api-summarizer-engine "cecil")
-    (kagi-api-summarize-default-language "EN")
+    (kagi-summarizer-engine "cecil")
+    (kagi-summarize-default-language "EN")
+    (kagi-summarize-cache t)
     :custom-face
     ;; kagi-code defaults to fixed-pitch, but can be overridden as
     ;; follows:
