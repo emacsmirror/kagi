@@ -93,6 +93,74 @@ Add the following to your configuration to trigger summary functionality with ke
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
+** Configuration settings
+
+#+begin_src emacs-lisp :exports results :results table :colnames '("Custom variable" "Description")
+  (let ((rows))
+    (mapatoms
+     (lambda (symbol)
+       (when (and (string-match "\\_<kagi"
+                                (symbol-name symbol))
+                  (custom-variable-p symbol))
+         (push `(,symbol
+                 ,(car
+                   (split-string
+                    (or (get (indirect-variable symbol)
+                             'variable-documentation)
+                        (get symbol 'variable-documentation)
+                        "")
+                    "\n")))
+               rows))))
+    (sort rows (lambda (item1 item2)
+                 (string< (car item1) (car item2)))))
+#+end_src
+
+#+RESULTS:
+| Custom variable                     | Description                                                          |
+|-------------------------------------+----------------------------------------------------------------------|
+| kagi-api-enrichment-url             | The Kagi Enrichment API entry point.                                 |
+| kagi-api-fastgpt-url                | The Kagi FastGPT API entry point.                                    |
+| kagi-api-token                      | The Kagi API token.                                                  |
+| kagi-summarize-default-language     | Default target language of the summary.                              |
+| kagi-summarizer-cache               | Determines whether the Summarizer should cache results.              |
+| kagi-summarizer-engine              | Which summary engine to use.                                         |
+
+*** COMMENT Attribution :noexport:
+
+The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
+
+** Define own functions
+
+The kagi.el package comes with a few variables
+
+*** Language override
+
+By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. For instance, to obtain a Dutch summary of a video you may want to define the following function:
+
+#+begin_src elisp
+  (defun my/kagi-dutch-summary (text-or-url)
+    "Obtain a Dutch summary for the given TEXT-OR-URL."
+    (let ((kagi-summarize-default-language "NL"))
+      (kagi-summarize text-or-url)))
+#+end_src
+
+*** Caching override
+
+The Summarizer API comes with the following note:
+
+#+begin_quote
+For handling sensitive information and documents, we recommend setting the 'cache' API parameter to False. In this way, the document will "flow through" our infrastructure and will not be retained anywhere after processing.
+#+end_quote
+
+In a similar fashion as above, you could define a function that disables caching temporarily (while having it enabled by default).
+
+#+begin_src elisp
+  (defun my/kagi/sensitive-summary (text)
+    "Summarize the current TEXT with caching disabled.")
+  (let ((kagi-summarizer-cache nil))
+    (kagi-summarize text))
+#+end_src
+
 * References
 
 - [[https://help.kagi.com/kagi/api/fastgpt.html][Kagi FastGPT API]]
