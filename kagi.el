@@ -221,7 +221,7 @@ interpretation."
                               curl-flags
                               (list kagi-api-fastgpt-url)))
            (return (apply #'call-process-region all-flags)))
-      (if (eql return 0)
+      (if (zerop return)
           (buffer-string)
         (error "Call to FastGPT API returned with status %s" return)))))
 
@@ -241,7 +241,7 @@ interpretation."
                               curl-flags
                               (list kagi-api-summarizer-url)))
            (return (apply #'call-process-region all-flags)))
-      (if (eql return 0)
+      (if (zerop return)
           (buffer-string)
         (error "Call to Summarizer API returned with status %s" return)))))
 
