@@ -168,8 +168,7 @@ FastGPT with the following prompt:
                                (literal end)))))
           (while (re-search-forward regexp nil t)
             (let ((escaped-replacement (string-replace "\\" "\\\\" (match-string 1))))
-              (replace-match (propertize escaped-replacement 'font-lock-face face) t nil)
-              )))))
+              (replace-match (propertize escaped-replacement 'font-lock-face face) t nil))))))
     (buffer-string)))
 
 (defun kagi--format-output (output)
