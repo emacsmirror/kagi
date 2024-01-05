@@ -73,6 +73,14 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
+(defvar kagi--summarizer-engines '("agnes"
+                               "cecil"
+                               "daphne"
+                               "muriel")
+  "List of Kagi Summarizer engines.
+
+See `kagi-summarizer-engine' for a brief description per engine.")
+
 (defcustom kagi-summarizer-engine "cecil"
   "Which summary engine to use.
 
@@ -84,46 +92,48 @@ https://kagi.com/settings?p=api"
 Note that the muriel model is enterprise grade and has different
 pricing. Refer to the API documentation for more info at
 https://help.kagi.com/kagi/api/summarizer.html."
-  :type '(choice
-          (const "agnes")
-          (const "cecil")
-          (const "daphne")
-          (const "muriel"))
+  :type (append '(choice)
+                (mapcar (lambda (engine) `(const ,engine))
+                        kagi--summarizer-engines))
   :group 'kagi)
+
+(defvar kagi--summarizer-languages '(("Document language" . nil)
+                                 ("Bulgarian" . "BG")
+                                 ("Czech" . "CZ")
+                                 ("Danish" . "DA")
+                                 ("German" . "DE")
+                                 ("Greek" . "EL")
+                                 ("English" . "EN")
+                                 ("Spanish" . "ES")
+                                 ("Estonian" . "ET")
+                                 ("Finnish" . "FI")
+                                 ("French" . "FR")
+                                 ("Hungarian" . "HU")
+                                 ("Indonesian" . "ID")
+                                 ("Italian" . "IT")
+                                 ("Japanese" . "JA")
+                                 ("Korean" . "KA")
+                                 ("Lithuanian" . "LT")
+                                 ("Latvian" . "LV")
+                                 ("Norwegian" . "NB")
+                                 ("Dutch" . "NL")
+                                 ("Polish" . "PL")
+                                 ("Portuguese" . "PT")
+                                 ("Romanian" . "RO")
+                                 ("Russian" . "RU")
+                                 ("Slovak" . "SK")
+                                 ("Slovenian" . "SL")
+                                 ("Swedish" . "SV")
+                                 ("Turkish" . "TR")
+                                 ("Ukrainian" . "UK")
+                                 ("Chinese (simplified)" . "ZH"))
+  "Supported languages by the Kagi Universal Summarizer.")
 
 (defcustom kagi-summarize-default-language nil
   "Default target language of the summary."
-  :type '(choice
-          (const :tag "Document language" nil)
-          (const :tag "Bulgarian" "BG")
-          (const :tag "Czech" "CZ")
-          (const :tag "Danish" "DA")
-          (const :tag "German" "DE")
-          (const :tag "Greek" "EL")
-          (const :tag "English" "EN")
-          (const :tag "Spanish" "ES")
-          (const :tag "Estonian" "ET")
-          (const :tag "Finnish" "FI")
-          (const :tag "French" "FR")
-          (const :tag "Hungarian" "HU")
-          (const :tag "Indonesian" "ID")
-          (const :tag "Italian" "IT")
-          (const :tag "Japanese" "JA")
-          (const :tag "Korean" "KO")
-          (const :tag "Lithuanian" "LT")
-          (const :tag "Latvian" "LV")
-          (const :tag "Norwegian" "NB")
-          (const :tag "Dutch" "NL")
-          (const :tag "Polish" "PL")
-          (const :tag "Portuguese" "PT")
-          (const :tag "Romanian" "RO")
-          (const :tag "Russian" "RU")
-          (const :tag "Slovak" "SK")
-          (const :tag "Slovenian" "SL")
-          (const :tag "Swedish" "SV")
-          (const :tag "Turkish" "TR")
-          (const :tag "Ukrainian" "UK")
-          (const :tag "Chinese (simplified)" "ZH"))
+  :type (append '(choice)
+                (mapcar (lambda (lang) `(const :tag ,(car lang) ,(cdr lang)))
+                        kagi--summarizer-languages))
   :group 'kagi)
 
 (defcustom kagi-summarizer-cache t
