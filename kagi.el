@@ -393,7 +393,6 @@ types are supported:
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
   (interactive "sURL: \np")
-  (message "%"d)
   (let ((summary (kagi-summarize url)))
     (if (eql insert 4)
         (kagi--insert-summary summary)
