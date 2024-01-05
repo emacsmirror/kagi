@@ -76,7 +76,7 @@ https://kagi.com/settings?p=api"
 (defcustom kagi-summarizer-engine "cecil"
   "Which summary engine to use.
 
-- cicil :: Friendly, descriptive, fast summary.
+- cecil :: Friendly, descriptive, fast summary.
 - agnes :: Formal, technical, analytical summary.
 - daphne :: Informal, creative, friendly summary.
 - muriel :: Best-in-class summary using our enterprise-grade model.
