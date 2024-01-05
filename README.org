@@ -8,13 +8,7 @@ This Emacs package provides the following functionalities from the [[https://www
 - FastGPT :: Kagi's open source LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
 - Universal Summarizer :: Summarizes texts, webpages, videos and more.
 
-Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview.html][API]].
-
-* Setup
-
-1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
-2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
-3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
+Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview.html][API]]. Before a call can be made, some setup should be done on the Kagi website (see below).
 
 * Commands and functions
 
@@ -68,6 +62,12 @@ You way want to load and configure the package with ~use-package~, for example p
 #+end_src
 
 The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the password-store package that comes with it).
+
+** Kagi API setup
+
+1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
+2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
+3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
 
 ** Embark integration
 
