@@ -79,7 +79,7 @@ https://kagi.com/settings?p=api"
 - cecil :: Friendly, descriptive, fast summary.
 - agnes :: Formal, technical, analytical summary.
 - daphne :: Informal, creative, friendly summary.
-- muriel :: Best-in-class summary using our enterprise-grade model.
+- muriel :: Best-in-class summary using Kagi's enterprise-grade model.
 
 Note that the muriel model is enterprise grade and has different
 pricing. Refer to the API documentation for more info at
