@@ -385,7 +385,7 @@ Shows the summary in a new window."
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-url (url &optional prefix)
+(defun kagi-summarize-url (url &optional insert language engine)
   "Show the summary of the content behind the given URL.
 
 By default, the summary is shown in a new buffer. With a single
@@ -403,9 +403,20 @@ types are supported:
 - Audio files (mp3/wav)
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
-  (interactive "sURL: \nP")
+  (interactive
+   (list
+    (read-string (format-prompt "URL" ""))
+    (or (equal current-prefix-arg '(4))
+        (and (equal current-prefix-arg '(16)) (y-or-n-p "Insert summary at point?")))
+    (when (equal current-prefix-arg '(16))
+      (completing-read (format-prompt "Output language" "")
+                       kagi--summarizer-languages nil t))
+    (when (equal current-prefix-arg '(16))
+      (completing-read (format-prompt "Engine" "")
+                       kagi--summarizer-engines nil t kagi-summarizer-engine))))
+
   (let ((summary (kagi-summarize url)))
-    (if (and prefix (not buffer-read-only))
+    (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
       (kagi--display-summary
        summary
