@@ -375,12 +375,13 @@ Shows the summary in a new window."
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-url (url &optional insert)
+(defun kagi-summarize-url (url &optional prefix)
   "Show the summary of the content behind the given URL.
 
-By default, the summary is shown in a new buffer. With prefix
-argument INSERT, insert the summary at point in the current
-buffer.
+By default, the summary is shown in a new buffer. With a single
+PREFIX argument, insert the summary at point in the current
+buffer. In case the current buffer is read-only, the summary will
+be shown in a separate buffer anyway.
 
 According to the Kagi API documentation, the following media
 types are supported:
@@ -392,9 +393,9 @@ types are supported:
 - Audio files (mp3/wav)
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
-  (interactive "sURL: \np")
+  (interactive "sURL: \nP")
   (let ((summary (kagi-summarize url)))
-    (if (eql insert 4)
+    (if (and prefix (not buffer-read-only))
         (kagi--insert-summary summary)
       (kagi--display-summary
        summary
