@@ -129,7 +129,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
                                  ("Chinese (simplified)" . "ZH"))
   "Supported languages by the Kagi Universal Summarizer.")
 
-(defcustom kagi-summarize-default-language nil
+(defcustom kagi-summarizer-default-language nil
   "Default target language of the summary."
   :type (append '(choice)
                 (mapcar (lambda (lang) `(const :tag ,(car lang) ,(cdr lang)))
