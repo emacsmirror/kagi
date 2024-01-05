@@ -281,6 +281,11 @@ list of conses."
     (text-mode)
     (display-buffer buffer-name)))
 
+(defun kagi--insert-summary (summary)
+  "Insert the SUMMARY at point."
+  (save-excursion
+    (insert (substring-no-properties summary))))
+
 (defun kagi--process-prompt (prompt)
   "Submit a PROMPT to FastGPT and process the API response.
 
@@ -370,11 +375,15 @@ Shows the summary in a new window."
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-url (url)
+(defun kagi-summarize-url (url &optional insert)
   "Show the summary of the content behind the given URL.
 
-According to the API documentation, the following media types are
-supported:
+By default, the summary is shown in a new buffer. With prefix
+argument INSERT, insert the summary at point in the current
+buffer.
+
+According to the Kagi API documentation, the following media
+types are supported:
 
 - Text web pages, articles, and forum threads
 - PDF documents (.pdf)
@@ -383,10 +392,14 @@ supported:
 - Audio files (mp3/wav)
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
-  (interactive "sURL: ")
-  (kagi--display-summary
-   (kagi-summarize url)
-   (kagi--summary-buffer-name (kagi--get-domain-name url))))
+  (interactive "sURL: \np")
+  (message "%"d)
+  (let ((summary (kagi-summarize url)))
+    (if (eql insert 4)
+        (kagi--insert-summary summary)
+      (kagi--display-summary
+       summary
+       (kagi--summary-buffer-name (kagi--get-domain-name url))))))
 
 (provide 'kagi)
 
