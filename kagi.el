@@ -73,10 +73,11 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defvar kagi--summarizer-engines '("agnes"
-                               "cecil"
-                               "daphne"
-                               "muriel")
+(defvar kagi--summarizer-engines
+  '(("agnes" . "Friendly, descriptive, fast summary.")
+    ("cecil" . "Formal, technical, analytical summary.")
+    ("daphne" . "Informal, creative, friendly summary.")
+    ("muriel" . "Best-in-class summary using Kagi's enterprise-grade model (at different pricing)."))
   "List of Kagi Summarizer engines.
 
 See `kagi-summarizer-engine' for a brief description per engine.")
@@ -84,16 +85,11 @@ See `kagi-summarizer-engine' for a brief description per engine.")
 (defcustom kagi-summarizer-engine "cecil"
   "Which summary engine to use.
 
-- cicil :: Friendly, descriptive, fast summary.
-- agnes :: Formal, technical, analytical summary.
-- daphne :: Informal, creative, friendly summary.
-- muriel :: Best-in-class summary using our enterprise-grade model.
-
 Note that the muriel model is enterprise grade and has different
 pricing. Refer to the API documentation for more info at
 https://help.kagi.com/kagi/api/summarizer.html."
   :type (append '(choice)
-                (mapcar (lambda (engine) `(const ,engine))
+                (mapcar (lambda (engine) `(const :doc ,(cdr engine) ,(car engine)))
                         kagi--summarizer-engines))
   :group 'kagi)
 
