@@ -27,7 +27,7 @@ Note that texts submitted to Kagi are subject to their [[https://kagi.com/privac
 
 * Installation and configuration
 
-kagi.el is not on MELPA (yet?), so for now only Git access is possible.
+kagi.el is not on MELPA yet, so for now only Git access is possible.
 
 Clone with:
 
