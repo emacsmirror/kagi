@@ -1,6 +1,11 @@
 #+title: kagi.el README
 #+author: Bram Schoenmakers
 
+#+begin_export html
+<a href="https://melpa.org/#/kagi"><img alt="MELPA" src="https://melpa.org/packages/kagi-badge.svg"/></a>
+<a href="https://stable.melpa.org/#/kagi"><img alt="MELPA Stable" src="https://stable.melpa.org/packages/kagi-badge.svg"/></a>
+#+end_export
+
 * Introduction
 
 This Emacs package provides the following functionalities from the [[https://www.kagi.com][Kagi search engine]]:
@@ -27,9 +32,9 @@ Note that texts submitted to Kagi are subject to their [[https://kagi.com/privac
 
 * Installation and configuration
 
-kagi.el is not on MELPA yet, so for now only Git access is possible.
+kagi.el is available on [[https://melpa.org/#/kagi][MELPA]].
 
-Clone with:
+To install from Git, clone with:
 
 : git clone https://codeberg.org/bram85/kagi.el.git /path/to/kagi.el
 
@@ -44,8 +49,7 @@ You way want to load and configure the package with ~use-package~, for example p
     kagi-summarize-buffer
     kagi-summarize-region
     kagi-summarize-url
-    :ensure nil
-    :load-path "/path/to/kagi.el"
+    :ensure t
     :custom
     (kagi-api-token "ABCDEF")
     ;; or use a function, e.g. with the password-store package:
