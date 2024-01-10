@@ -1,6 +1,6 @@
 ;;; kagi.el --- Kagi API integration -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023 Bram Schoenmakers
+;; Copyright (C) 2023 - 2024 Bram Schoenmakers
 
 ;; Author: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
@@ -14,7 +14,7 @@
 
 ;; MIT License
 
-;; Copyright (c) 2023 Bram Schoenmakers
+;; Copyright (c) 2023 - 2024 Bram Schoenmakers
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
