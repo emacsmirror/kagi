@@ -167,20 +167,6 @@ Add the following to your configuration to trigger summary functionality with ke
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
-** Confirm close of a FastGPT buffer
-
-Christian Tietze wrote a [[https://christiantietze.de/posts/2024/01/chatgpt-shell-confirm-close-compose-buffer/][blog entry]] on preventing a ChatGPT buffer kill by mistake. Below is an adaptation for FastGPT:
-
-#+begin_src elisp
-  (defun confirm-before-killing-fastgpt ()
-    (let ((buf (current-buffer)))
-      (if (and (buffer-match-p "^\\*fastgpt\\*" buf))
-          (yes-or-no-p "FastGPT Buffer! Kill anyway? ")
-        t)))
-
-  (add-to-list 'kill-buffer-query-functions #'confirm-before-killing-fastgpt)
-#+end_src
-
 * Changelog
 
 ** 0.2pre
