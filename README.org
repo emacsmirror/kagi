@@ -1,5 +1,7 @@
 #+title: kagi.el README
 #+author: Bram Schoenmakers
+#+macro: issue [[https://codeberg.org/bram85/kagi.el/issues/$1][issue #$1]]
+#+macro: pr [[https://codeberg.org/bram85/kagi.el/pulls/$1][PR #$1]]
 
 #+begin_export html
 <a href="https://melpa.org/#/kagi"><img alt="MELPA" src="https://melpa.org/packages/kagi-badge.svg"/></a>
@@ -178,6 +180,28 @@ Christian Tietze wrote a [[https://christiantietze.de/posts/2024/01/chatgpt-shel
 
   (add-to-list 'kill-buffer-query-functions #'confirm-before-killing-fastgpt)
 #+end_src
+
+* Changelog
+
+** 0.2pre
+
+*** Breaking changes
+
+- Some variables were renamed for consistency. The impact is considered low given the infancy of the package, and API URLs are typically not modified anyway.
+
+  | Old name                        | New name                           |
+  |---------------------------------+------------------------------------|
+  | =kagi-api-fastgpt-url=            | =kagi-fastgpt-api-url=               |
+  | =kagi-api-summarizer-url=         | =kagi-summarizer-api-url=            |
+  | =kagi-summarize-default-language= | =kagi-summarizer-default-language= |
+
+*** Fixes
+
+- Fix bug when summarized text contains an URL ({{{issue(2)}}})
+
+** 0.1
+
+Initial release.
 
 * References
 
