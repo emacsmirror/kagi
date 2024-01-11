@@ -337,7 +337,7 @@ Returns a formatted string to be displayed by the shell."
 
 (defun kagi--url-p (s)
   "Non-nil if string S is a URL."
-  (string-match-p (rx (seq "http" (? "s") "://")) s))
+  (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 ;;;###autoload
 (defun kagi-summarize (text-or-url)
