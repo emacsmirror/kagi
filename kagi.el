@@ -257,8 +257,8 @@ list of conses."
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
-          (when kagi-summarize-default-language
-            `(("target_language" . ,kagi-summarize-default-language)))))
+          (when kagi-summarizer-default-language
+            `(("target_language" . ,kagi-summarizer-default-language)))))
 
 (defun kagi--call-text-summarizer (text)
   "Return a response object from the Summarizer with the TEXT summary."
