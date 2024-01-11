@@ -63,12 +63,12 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-api-fastgpt-url "https://kagi.com/api/v0/fastgpt"
+(defcustom kagi-fastgpt-api-url "https://kagi.com/api/v0/fastgpt"
   "The Kagi FastGPT API entry point."
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-api-summarizer-url "https://kagi.com/api/v0/summarize"
+(defcustom kagi-summarizer-api-url "https://kagi.com/api/v0/summarize"
   "The Kagi Summarizer API entry point."
   :type '(choice string function)
   :group 'kagi)
@@ -218,7 +218,7 @@ interpretation."
            (curl-flags (kagi--curl-flags))
            (all-flags (append call-process-flags
                               curl-flags
-                              (list kagi-api-fastgpt-url)))
+                              (list kagi-fastgpt-api-url)))
            (return (apply #'call-process-region all-flags)))
       (if (zerop return)
           (buffer-string)
@@ -238,7 +238,7 @@ interpretation."
            (curl-flags (kagi--curl-flags))
            (all-flags (append call-process-flags
                               curl-flags
-                              (list kagi-api-summarizer-url)))
+                              (list kagi-summarizer-api-url)))
            (return (apply #'call-process-region all-flags)))
       (if (zerop return)
           (buffer-string)
