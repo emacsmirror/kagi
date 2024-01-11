@@ -63,6 +63,14 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
+(defcustom kagi-stubbed-responses nil
+  "Whether the package should return a stubbed response.
+
+To be used for testing purposes, such that no credits are spent
+on dummy data."
+  :type 'boolean
+  :group 'kagi)
+
 (defcustom kagi-fastgpt-api-url "https://kagi.com/api/v0/fastgpt"
   "The Kagi FastGPT API entry point."
   :type '(choice string function)
@@ -206,6 +214,35 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--header" "Content-Type: application/json"
       "--data" "@-")))
 
+(defvar kagi--fastgpt-stubbed-response
+  "{\"data\":{\"output\":\"a<b>b</b>c\"}}"
+  "Stubbed response for the Kagi FastGPT endpoint.")
+
+(defvar kagi--summarizer-stubbed-response
+  "{\"data\":{\"output\":\"a```b```c\"}}"
+  "Stubbed response for the Kagi Summarizer endpoint.")
+
+(defun kagi--call-process-region (&rest args)
+  "`call-process-region' wrapper.
+
+Calls `call-process-region' with ARGS, unless
+`kagi-stubbed-responses' is non-nil.
+
+In that case, this function will not do an actual API call but
+return some dummy data."
+  (if (not kagi-stubbed-responses)
+      (apply #'call-process-region args)
+    (let* ((url (car (last args)))
+           (response (cond
+                      ((string= url kagi-fastgpt-api-url)
+                       kagi--fastgpt-stubbed-response)
+                      ((string= url kagi-summarizer-api-url)
+                       kagi--summarizer-stubbed-response)
+                      (t ""))))
+      (erase-buffer)
+      (insert response)
+      0)))
+
 (defun kagi--call-fastgpt (prompt)
   "Submit the given PROMPT to the FastGPT API.
 
@@ -219,7 +256,7 @@ interpretation."
            (all-flags (append call-process-flags
                               curl-flags
                               (list kagi-fastgpt-api-url)))
-           (return (apply #'call-process-region all-flags)))
+           (return (apply #'kagi--call-process-region all-flags)))
       (if (zerop return)
           (buffer-string)
         (error "Call to FastGPT API returned with status %s" return)))))
@@ -239,7 +276,7 @@ interpretation."
            (all-flags (append call-process-flags
                               curl-flags
                               (list kagi-summarizer-api-url)))
-           (return (apply #'call-process-region all-flags)))
+           (return (apply #'kagi--call-process-region all-flags)))
       (if (zerop return)
           (buffer-string)
         (error "Call to Summarizer API returned with status %s" return)))))
