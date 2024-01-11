@@ -73,30 +73,6 @@ The token can be supplied directly as a string, but you could write a lambda to 
 2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
 3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
 
-** Embark integration
-
-The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]], to easily summarize a buffer, region or an URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. Press /K s/ to trigger the summarize functionality.
-
-Add the following to your configuration to trigger summary functionality with key /K s/:
-
-#+begin_src elisp
-  (defmacro embark-kagi-map (name function)
-    "Macro for defining a keymap for accessing Kagi functionality through Embark."
-    `(defvar-keymap ,name
-       :doc "Keymap for accessing Kagi functionality with Embark."
-       :parent nil
-       "s" #',function))
-
-  (embark-kagi-map embark-kagi-buffer-map kagi-summarize-buffer)
-  (keymap-set embark-buffer-map "K" embark-kagi-buffer-map)
-
-  (embark-kagi-map embark-kagi-region-map kagi-summarize-region)
-  (keymap-set embark-region-map "K" embark-kagi-region-map)
-
-  (embark-kagi-map embark-kagi-url-map kagi-summarize-url)
-  (keymap-set embark-url-map "K" embark-kagi-url-map)
-#+end_src
-
 ** Configuration settings
 
 #+begin_src emacs-lisp :exports results :results table :colnames '("Custom variable" "Description")
@@ -135,9 +111,11 @@ The code to generate the table of configuration items was inspired by an idea of
 
 ** Examples of custom functions
 
+By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. A few examples are shown below:
+
 *** Language override
 
-By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. For instance, to obtain a Dutch summary of a video you may want to define the following function:
+To obtain a Dutch summary of a video you may want to define the following function:
 
 #+begin_src elisp
   (defun my/kagi/dutch-summary (text-or-url)
@@ -161,6 +139,44 @@ In a similar fashion as above, you could define a function that disables caching
     "Summarize the current TEXT with caching disabled.")
   (let ((kagi-summarizer-cache nil))
     (kagi-summarize text))
+#+end_src
+
+** Embark integration
+
+The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]], to easily summarize a buffer, region or an URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. Press /K s/ to trigger the summarize functionality.
+
+Add the following to your configuration to trigger summary functionality with key /K s/:
+
+#+begin_src elisp
+  (defmacro embark-kagi-map (name function)
+    "Macro for defining a keymap for accessing Kagi functionality through Embark."
+    `(defvar-keymap ,name
+       :doc "Keymap for accessing Kagi functionality with Embark."
+       :parent nil
+       "s" #',function))
+
+  (embark-kagi-map embark-kagi-buffer-map kagi-summarize-buffer)
+  (keymap-set embark-buffer-map "K" embark-kagi-buffer-map)
+
+  (embark-kagi-map embark-kagi-region-map kagi-summarize-region)
+  (keymap-set embark-region-map "K" embark-kagi-region-map)
+
+  (embark-kagi-map embark-kagi-url-map kagi-summarize-url)
+  (keymap-set embark-url-map "K" embark-kagi-url-map)
+#+end_src
+
+** Confirm close of a FastGPT buffer
+
+Christian Tietze wrote a [[https://christiantietze.de/posts/2024/01/chatgpt-shell-confirm-close-compose-buffer/][blog entry]] on preventing a ChatGPT buffer kill by mistake. Below is an adaptation for FastGPT:
+
+#+begin_src elisp
+  (defun confirm-before-killing-fastgpt ()
+    (let ((buf (current-buffer)))
+      (if (and (buffer-match-p "^\\*fastgpt\\*" buf))
+          (yes-or-no-p "FastGPT Buffer! Kill anyway? ")
+        t)))
+
+  (add-to-list 'kill-buffer-query-functions #'confirm-before-killing-fastgpt)
 #+end_src
 
 * References
