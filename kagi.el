@@ -91,7 +91,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
           (const "muriel"))
   :group 'kagi)
 
-(defcustom kagi-summarize-default-language nil
+(defcustom kagi-summarizer-default-language nil
   "Default target language of the summary."
   :type '(choice
           (const :tag "Document language" nil)

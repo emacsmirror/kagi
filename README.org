@@ -96,14 +96,14 @@ The token can be supplied directly as a string, but you could write a lambda to 
 #+end_src
 
 #+RESULTS:
-| Custom variable                 | Description                                             |
-|---------------------------------+---------------------------------------------------------|
-| kagi-api-token                  | The Kagi API token.                                     |
-| kagi-fastgpt-api-url            | The Kagi FastGPT API entry point.                       |
-| kagi-summarize-default-language | Default target language of the summary.                 |
-| kagi-summarizer-api-url         | The Kagi Summarizer API entry point.                    |
-| kagi-summarizer-cache           | Determines whether the Summarizer should cache results. |
-| kagi-summarizer-engine          | Which summary engine to use.                            |
+| Custom variable                  | Description                                             |
+|----------------------------------+---------------------------------------------------------|
+| kagi-api-token                   | The Kagi API token.                                     |
+| kagi-fastgpt-api-url             | The Kagi FastGPT API entry point.                       |
+| kagi-summarizer-api-url          | The Kagi Summarizer API entry point.                    |
+| kagi-summarizer-cache            | Determines whether the Summarizer should cache results. |
+| kagi-summarizer-default-language | Default target language of the summary.                 |
+| kagi-summarizer-engine           | Which summary engine to use.                            |
 
 *** COMMENT Attribution :noexport:
 
