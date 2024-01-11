@@ -215,11 +215,11 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--data" "@-")))
 
 (defvar kagi--fastgpt-stubbed-response
-  "{\"data\":{\"output\":\"a<b>b</b>c\"}}"
+  "{\"data\":{\"output\":\"<b>Test</b> response.\"}}"
   "Stubbed response for the Kagi FastGPT endpoint.")
 
 (defvar kagi--summarizer-stubbed-response
-  "{\"data\":{\"output\":\"a```b```c\"}}"
+  "{\"data\":{\"output\":\"```Test``` response.\"}}"
   "Stubbed response for the Kagi Summarizer endpoint.")
 
 (defun kagi--call-process-region (&rest args)
