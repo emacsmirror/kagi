@@ -168,6 +168,16 @@ Add the following to your configuration to trigger summary functionality with ke
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
+** Key bindings
+
+Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased.
+
+If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
+
+#+begin_src elisp
+  (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)
+#+end_src
+
 * Changelog
 
 ** 0.2pre
