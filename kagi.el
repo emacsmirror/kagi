@@ -307,11 +307,22 @@ list of conses."
           (when kagi-summarizer-default-language
             `(("target_language" . ,kagi-summarizer-default-language)))))
 
+
+(defconst kagi--summarizer-min-input-words 50
+  "The minimal amount of words that the text input should have.")
+
+(defun kagi--summarizer-input-valid-p (input)
+  "Return t if INPUT is valid for a summary."
+  (>= (length (split-string input)) kagi--summarizer-min-input-words))
+
 (defun kagi--call-text-summarizer (text)
   "Return a response object from the Summarizer with the TEXT summary."
-  (let ((request-obj (kagi--build-summarizer-request-object
-                      `(("text" . ,text)))))
-    (kagi--call-summarizer request-obj )))
+  (if (kagi--summarizer-input-valid-p text)
+      (let ((request-obj (kagi--build-summarizer-request-object
+                          `(("text" . ,text)))))
+        (kagi--call-summarizer request-obj))
+    (error "Input text is invalid, it may be too short (less than %d words)"
+           kagi--summarizer-min-input-words)))
 
 (defun kagi--call-url-summarizer (url)
   "Return a response object from the Summarizer with the URL summary."
