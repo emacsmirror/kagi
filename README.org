@@ -194,7 +194,9 @@ If you recognize this confusion, you may want to add the following line to your 
 
 *** Fixes
 
-- Fix bug when summarized text contains an URL ({{{issue(2)}}})
+- Better error handling for the summarizer
+- Fix bug when the summarizer input contains a URL ({{{issue(2)}}})
+- Check that the summarizer input is at least 50 words ({{{issue(2)}}})
 
 ** 0.1
 
