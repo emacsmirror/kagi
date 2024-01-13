@@ -17,6 +17,8 @@ This Emacs package provides the following functionalities from the [[https://www
 
 Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview.html][API]]. Before a call can be made, some setup should be done on the Kagi website (see below).
 
+[[file:img/fastgpt.png]]
+
 * Commands and functions
 
 ** FastGPT
