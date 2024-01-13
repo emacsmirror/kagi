@@ -1,5 +1,12 @@
 #+title: kagi.el README
 #+author: Bram Schoenmakers
+#+macro: issue [[https://codeberg.org/bram85/kagi.el/issues/$1][issue #$1]]
+#+macro: pr [[https://codeberg.org/bram85/kagi.el/pulls/$1][PR #$1]]
+
+#+begin_export html
+<a href="https://melpa.org/#/kagi"><img alt="MELPA" src="https://melpa.org/packages/kagi-badge.svg"/></a>
+<a href="https://stable.melpa.org/#/kagi"><img alt="MELPA Stable" src="https://stable.melpa.org/packages/kagi-badge.svg"/></a>
+#+end_export
 
 * Introduction
 
@@ -8,19 +15,13 @@ This Emacs package provides the following functionalities from the [[https://www
 - FastGPT :: Kagi's open source LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
 - Universal Summarizer :: Summarizes texts, webpages, videos and more.
 
-Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview.html][API]].
-
-* Setup
-
-1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
-2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
-3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
+Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview.html][API]]. Before a call can be made, some setup should be done on the Kagi website (see below).
 
 * Commands and functions
 
 ** FastGPT
 
-The FastGPT functionality has only one command: =kagi-fastgpt-shell=. This opens a shell buffer in a new window where prompts can be typed.
+The FastGPT functionality has only one command: =kagi-fastgpt-shell=. This opens a shell buffer in a new window where prompts can be typed. Kagi FastGPT typically returns output based on actual search results. When point is on one of the listed URLs, press =C-c RET= to open it.
 
 ** Universal Summarizer
 
@@ -33,9 +34,9 @@ Note that texts submitted to Kagi are subject to their [[https://kagi.com/privac
 
 * Installation and configuration
 
-kagi.el is not on MELPA (yet?), so for now only Git access is possible.
+kagi.el is available on [[https://melpa.org/#/kagi][MELPA]].
 
-Clone with:
+To install from Git, clone with:
 
 : git clone https://codeberg.org/bram85/kagi.el.git /path/to/kagi.el
 
@@ -50,8 +51,7 @@ You way want to load and configure the package with ~use-package~, for example p
     kagi-summarize-buffer
     kagi-summarize-region
     kagi-summarize-url
-    :ensure nil
-    :load-path "/path/to/kagi.el"
+    :ensure t
     :custom
     (kagi-api-token "ABCDEF")
     ;; or use a function, e.g. with the password-store package:
@@ -68,6 +68,81 @@ You way want to load and configure the package with ~use-package~, for example p
 #+end_src
 
 The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the password-store package that comes with it).
+
+** Kagi API setup
+
+1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
+2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
+3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
+
+** Configuration settings
+
+#+begin_src emacs-lisp :exports results :results table :colnames '("Custom variable" "Description")
+  (let ((rows))
+    (mapatoms
+     (lambda (symbol)
+       (when (and (string-match "\\_<kagi"
+                                (symbol-name symbol))
+                  (custom-variable-p symbol))
+         (push `(,symbol
+                 ,(car
+                   (split-string
+                    (or (get (indirect-variable symbol)
+                             'variable-documentation)
+                        (get symbol 'variable-documentation)
+                        "")
+                    "\n")))
+               rows))))
+    (sort rows (lambda (item1 item2)
+                 (string< (car item1) (car item2)))))
+#+end_src
+
+#+RESULTS:
+| Custom variable                  | Description                                             |
+|----------------------------------+---------------------------------------------------------|
+| kagi-api-token                   | The Kagi API token.                                     |
+| kagi-fastgpt-api-url             | The Kagi FastGPT API entry point.                       |
+| kagi-stubbed-responses           | Whether the package should return a stubbed response.   |
+| kagi-summarizer-api-url          | The Kagi Summarizer API entry point.                    |
+| kagi-summarizer-cache            | Determines whether the Summarizer should cache results. |
+| kagi-summarizer-default-language | Default target language of the summary.                 |
+| kagi-summarizer-engine           | Which summary engine to use.                            |
+
+*** COMMENT Attribution :noexport:
+
+The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
+
+** Examples of custom functions
+
+By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. A few examples are shown below:
+
+*** Language override
+
+To obtain a Dutch summary of a video you may want to define the following function:
+
+#+begin_src elisp
+  (defun my/kagi/dutch-summary (text-or-url)
+    "Obtain a Dutch summary for the given TEXT-OR-URL."
+    (let ((kagi-summarize-default-language "NL"))
+      (kagi-summarize text-or-url)))
+#+end_src
+
+*** Caching override
+
+The [[https://help.kagi.com/kagi/api/summarizer.html][Summarizer API]] comes with the following note:
+
+#+begin_quote
+For handling sensitive information and documents, we recommend setting the 'cache' API parameter to False. In this way, the document will "flow through" our infrastructure and will not be retained anywhere after processing.
+#+end_quote
+
+In a similar fashion as above, you could define a function that disables caching temporarily (while having it enabled by default).
+
+#+begin_src elisp
+  (defun my/kagi/sensitive-summary (text)
+    "Summarize the current TEXT with caching disabled.")
+  (let ((kagi-summarizer-cache nil))
+    (kagi-summarize text))
+#+end_src
 
 ** Embark integration
 
@@ -93,71 +168,39 @@ Add the following to your configuration to trigger summary functionality with ke
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
-** Configuration settings
+** Key bindings
 
-#+begin_src emacs-lisp :exports results :results table :colnames '("Custom variable" "Description")
-  (let ((rows))
-    (mapatoms
-     (lambda (symbol)
-       (when (and (string-match "\\_<kagi"
-                                (symbol-name symbol))
-                  (custom-variable-p symbol))
-         (push `(,symbol
-                 ,(car
-                   (split-string
-                    (or (get (indirect-variable symbol)
-                             'variable-documentation)
-                        (get symbol 'variable-documentation)
-                        "")
-                    "\n")))
-               rows))))
-    (sort rows (lambda (item1 item2)
-                 (string< (car item1) (car item2)))))
-#+end_src
+Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased.
 
-#+RESULTS:
-| Custom variable                     | Description                                                          |
-|-------------------------------------+----------------------------------------------------------------------|
-| kagi-api-enrichment-url             | The Kagi Enrichment API entry point.                                 |
-| kagi-api-fastgpt-url                | The Kagi FastGPT API entry point.                                    |
-| kagi-api-token                      | The Kagi API token.                                                  |
-| kagi-summarize-default-language     | Default target language of the summary.                              |
-| kagi-summarizer-cache               | Determines whether the Summarizer should cache results.              |
-| kagi-summarizer-engine              | Which summary engine to use.                                         |
-
-*** COMMENT Attribution :noexport:
-
-The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
-
-** Examples of custom functions
-
-*** Language override
-
-By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. For instance, to obtain a Dutch summary of a video you may want to define the following function:
+If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
 
 #+begin_src elisp
-  (defun my/kagi/dutch-summary (text-or-url)
-    "Obtain a Dutch summary for the given TEXT-OR-URL."
-    (let ((kagi-summarize-default-language "NL"))
-      (kagi-summarize text-or-url)))
+  (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)
 #+end_src
 
-*** Caching override
+* Changelog
 
-The [[https://help.kagi.com/kagi/api/summarizer.html][Summarizer API]] comes with the following note:
+** 0.2pre
 
-#+begin_quote
-For handling sensitive information and documents, we recommend setting the 'cache' API parameter to False. In this way, the document will "flow through" our infrastructure and will not be retained anywhere after processing.
-#+end_quote
+*** Breaking changes
 
-In a similar fashion as above, you could define a function that disables caching temporarily (while having it enabled by default).
+- Some variables were renamed for consistency. The impact is considered low given the infancy of the package, and API URLs are typically not modified anyway.
 
-#+begin_src elisp
-  (defun my/kagi/sensitive-summary (text)
-    "Summarize the current TEXT with caching disabled.")
-  (let ((kagi-summarizer-cache nil))
-    (kagi-summarize text))
-#+end_src
+  | Old name                        | New name                           |
+  |---------------------------------+------------------------------------|
+  | =kagi-api-fastgpt-url=            | =kagi-fastgpt-api-url=               |
+  | =kagi-api-summarizer-url=         | =kagi-summarizer-api-url=            |
+  | =kagi-summarize-default-language= | =kagi-summarizer-default-language= |
+
+*** Fixes
+
+- Better error handling for the summarizer
+- Fix bug when the summarizer input contains a URL ({{{issue(2)}}})
+- Check that the summarizer input is at least 50 words ({{{issue(2)}}})
+
+** 0.1
+
+Initial release.
 
 * References
 

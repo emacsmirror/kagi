@@ -1,12 +1,12 @@
 ;;; kagi.el --- Kagi API integration -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023 Bram Schoenmakers
+;; Copyright (C) 2023 - 2024 Bram Schoenmakers
 
 ;; Author: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Created: 16 Dec 2023
 ;; Package-Version: 0.1
-;; Package-Requires: ((emacs "29.1") (shell-maker "0.44.1"))
+;; Package-Requires: ((emacs "29.1") (shell-maker "0.46.1"))
 ;; Keywords: terminals wp
 ;; URL: https://codeberg.org/bram85/kagi.el
 
@@ -14,7 +14,7 @@
 
 ;; MIT License
 
-;; Copyright (c) 2023 Bram Schoenmakers
+;; Copyright (c) 2023 - 2024 Bram Schoenmakers
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -63,12 +63,20 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-api-fastgpt-url "https://kagi.com/api/v0/fastgpt"
+(defcustom kagi-stubbed-responses nil
+  "Whether the package should return a stubbed response.
+
+To be used for testing purposes, such that no credits are spent
+on dummy data."
+  :type 'boolean
+  :group 'kagi)
+
+(defcustom kagi-fastgpt-api-url "https://kagi.com/api/v0/fastgpt"
   "The Kagi FastGPT API entry point."
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-api-summarizer-url "https://kagi.com/api/v0/summarize"
+(defcustom kagi-summarizer-api-url "https://kagi.com/api/v0/summarize"
   "The Kagi Summarizer API entry point."
   :type '(choice string function)
   :group 'kagi)
@@ -150,6 +158,16 @@ same text will be charged.)"
   "Face for code parts in the Kagi output."
   :group 'kagi)
 
+(defun kagi--gethash (hash &rest keys)
+  "Get the value inside a (nested) HASH following the sequence of KEYS."
+  (let ((value hash))
+    (dolist (key keys)
+      (when (hash-table-p value)
+        (setq value (gethash key value))))
+    (if (eq value :null)
+        nil
+      value)))
+
 (defconst kagi--markup-to-face
   '(("<b>" "</b>" 'kagi-bold)
     ("```" "```" 'kagi-code))
@@ -212,6 +230,35 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--header" "Content-Type: application/json"
       "--data" "@-")))
 
+(defvar kagi--fastgpt-stubbed-response
+  "{\"data\":{\"output\":\"<b>Test</b> response.\"}}"
+  "Stubbed response for the Kagi FastGPT endpoint.")
+
+(defvar kagi--summarizer-stubbed-response
+  "{\"data\":{\"output\":\"```Test``` response.\"}}"
+  "Stubbed response for the Kagi Summarizer endpoint.")
+
+(defun kagi--call-process-region (&rest args)
+  "`call-process-region' wrapper.
+
+Calls `call-process-region' with ARGS, unless
+`kagi-stubbed-responses' is non-nil.
+
+In that case, this function will not do an actual API call but
+return some dummy data."
+  (if (not kagi-stubbed-responses)
+      (apply #'call-process-region args)
+    (let* ((url (car (last args)))
+           (response (cond
+                      ((string= url kagi-fastgpt-api-url)
+                       kagi--fastgpt-stubbed-response)
+                      ((string= url kagi-summarizer-api-url)
+                       kagi--summarizer-stubbed-response)
+                      (t ""))))
+      (erase-buffer)
+      (insert response)
+      0)))
+
 (defun kagi--call-fastgpt (prompt)
   "Submit the given PROMPT to the FastGPT API.
 
@@ -224,8 +271,8 @@ interpretation."
            (curl-flags (kagi--curl-flags))
            (all-flags (append call-process-flags
                               curl-flags
-                              (list kagi-api-fastgpt-url)))
-           (return (apply #'call-process-region all-flags)))
+                              (list kagi-fastgpt-api-url)))
+           (return (apply #'kagi--call-process-region all-flags)))
       (if (zerop return)
           (buffer-string)
         (error "Call to FastGPT API returned with status %s" return)))))
@@ -244,8 +291,8 @@ interpretation."
            (curl-flags (kagi--curl-flags))
            (all-flags (append call-process-flags
                               curl-flags
-                              (list kagi-api-summarizer-url)))
-           (return (apply #'call-process-region all-flags)))
+                              (list kagi-summarizer-api-url)))
+           (return (apply #'kagi--call-process-region all-flags)))
       (if (zerop return)
           (buffer-string)
         (error "Call to Summarizer API returned with status %s" return)))))
@@ -263,14 +310,25 @@ list of conses."
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
-          (when kagi-summarize-default-language
-            `(("target_language" . ,kagi-summarize-default-language)))))
+          (when kagi-summarizer-default-language
+            `(("target_language" . ,kagi-summarizer-default-language)))))
+
+
+(defconst kagi--summarizer-min-input-words 50
+  "The minimal amount of words that the text input should have.")
+
+(defun kagi--summarizer-input-valid-p (input)
+  "Return t if INPUT is valid for a summary."
+  (>= (length (split-string input)) kagi--summarizer-min-input-words))
 
 (defun kagi--call-text-summarizer (text)
   "Return a response object from the Summarizer with the TEXT summary."
-  (let ((request-obj (kagi--build-summarizer-request-object
-                      `(("text" . ,text)))))
-    (kagi--call-summarizer request-obj )))
+  (if (kagi--summarizer-input-valid-p text)
+      (let ((request-obj (kagi--build-summarizer-request-object
+                          `(("text" . ,text)))))
+        (kagi--call-summarizer request-obj))
+    (error "Input text is invalid, it may be too short (less than %d words)"
+           kagi--summarizer-min-input-words)))
 
 (defun kagi--call-url-summarizer (url)
   "Return a response object from the Summarizer with the URL summary."
@@ -298,9 +356,8 @@ list of conses."
 Returns a formatted string to be displayed by the shell."
   (let* ((response (kagi--call-fastgpt prompt))
          (parsed-response (json-parse-string response))
-         (data (gethash "data" parsed-response))
-         (output (gethash "output" data))
-         (references (gethash "references" data)))
+         (output (kagi--gethash parsed-response "data" "output"))
+         (references (kagi--gethash parsed-response "data" "references")))
     (format "%s\n\n%s" (kagi--format-output output) (kagi--format-references references))))
 
 (defvar kagi-fastgpt--config
@@ -348,18 +405,22 @@ Returns a formatted string to be displayed by the shell."
 
 (defun kagi--url-p (s)
   "Non-nil if string S is a URL."
-  (string-match-p (rx (seq "http" (? "s") "://")) s))
+  (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 ;;;###autoload
 (defun kagi-summarize (text-or-url)
   "Return the summary of the given TEXT-OR-URL."
-  (let* ((response (if (kagi--url-p text-or-url)
-                       (kagi--call-url-summarizer text-or-url)
-                     (kagi--call-text-summarizer text-or-url)))
-         (parsed-response (json-parse-string response))
-         (data (gethash "data" parsed-response))
-         (output (gethash "output" data)))
-    (kagi--format-output output)))
+  (if-let* ((response (if (kagi--url-p text-or-url)
+                          (kagi--call-url-summarizer text-or-url)
+                        (kagi--call-text-summarizer text-or-url)))
+            (parsed-response (json-parse-string response))
+            (output (kagi--gethash parsed-response "data" "output")))
+      (kagi--format-output output)
+    (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
+        (error (format "%s (%s)"
+                       (gethash "msg" firsterror)
+                       (gethash "code" firsterror)))
+      (error "An error occurred while requesting a summary"))))
 
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer)
