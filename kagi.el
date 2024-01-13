@@ -152,6 +152,16 @@ same text will be charged.)"
   "Face for code parts in the Kagi output."
   :group 'kagi)
 
+(defun kagi--gethash (hash &rest keys)
+  "Get the value inside a (nested) HASH following the sequence of KEYS."
+  (let ((value hash))
+    (dolist (key keys)
+      (when (hash-table-p value)
+        (setq value (gethash key value))))
+    (if (eq value :null)
+        nil
+      value)))
+
 (defconst kagi--markup-to-face
   '(("<b>" "</b>" 'kagi-bold)
     ("```" "```" 'kagi-code))
@@ -324,9 +334,8 @@ list of conses."
 Returns a formatted string to be displayed by the shell."
   (let* ((response (kagi--call-fastgpt prompt))
          (parsed-response (json-parse-string response))
-         (data (gethash "data" parsed-response))
-         (output (gethash "output" data))
-         (references (gethash "references" data)))
+         (output (kagi--gethash parsed-response "data" "output"))
+         (references (kagi--gethash parsed-response "data" "references")))
     (format "%s\n\n%s" (kagi--format-output output) (kagi--format-references references))))
 
 (defvar kagi-fastgpt--config
@@ -379,13 +388,17 @@ Returns a formatted string to be displayed by the shell."
 ;;;###autoload
 (defun kagi-summarize (text-or-url)
   "Return the summary of the given TEXT-OR-URL."
-  (let* ((response (if (kagi--url-p text-or-url)
-                       (kagi--call-url-summarizer text-or-url)
-                     (kagi--call-text-summarizer text-or-url)))
-         (parsed-response (json-parse-string response))
-         (data (gethash "data" parsed-response))
-         (output (gethash "output" data)))
-    (kagi--format-output output)))
+  (if-let* ((response (if (kagi--url-p text-or-url)
+                          (kagi--call-url-summarizer text-or-url)
+                        (kagi--call-text-summarizer text-or-url)))
+            (parsed-response (json-parse-string response))
+            (output (kagi--gethash parsed-response "data" "output")))
+      (kagi--format-output output)
+    (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
+        (error (format "%s (%s)"
+                       (gethash "msg" firsterror)
+                       (gethash "code" firsterror)))
+      (error "An error occurred while requesting a summary"))))
 
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer)
