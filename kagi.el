@@ -408,37 +408,63 @@ Returns a formatted string to be displayed by the shell."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 ;;;###autoload
-(defun kagi-summarize (text-or-url)
+(defun kagi-summarize (text-or-url &optional language engine)
   "Return the summary of the given TEXT-OR-URL."
-  (if-let* ((response (if (kagi--url-p text-or-url)
-                          (kagi--call-url-summarizer text-or-url)
-                        (kagi--call-text-summarizer text-or-url)))
-            (parsed-response (json-parse-string response))
-            (output (kagi--gethash parsed-response "data" "output")))
-      (kagi--format-output output)
-    (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
-        (error (format "%s (%s)"
-                       (gethash "msg" firsterror)
-                       (gethash "code" firsterror)))
-      (error "An error occurred while requesting a summary"))))
+
+  (let* ((kagi-summarizer-default-language
+          (or language kagi-summarizer-default-language))
+         (kagi-summarizer-engine
+          (or engine kagi-summarizer-engine)))
+    (if-let* ((response (if (kagi--url-p text-or-url)
+                            (kagi--call-url-summarizer text-or-url)
+                          (kagi--call-text-summarizer text-or-url)))
+              (parsed-response (json-parse-string response))
+              (output (kagi--gethash parsed-response "data" "output")))
+        (kagi--format-output output)
+      (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
+          (error (format "%s (%s)"
+                         (gethash "msg" firsterror)
+                         (gethash "code" firsterror)))
+        (error "An error occurred while requesting a summary")))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer)
+(defun kagi-summarize-buffer (buffer &optional insert language engine)
   "Summarize the BUFFER's content and show it in a new window."
-  (interactive "b")
-  (with-current-buffer buffer
-    (kagi--display-summary
-     (kagi-summarize (buffer-string))
-     (kagi--summary-buffer-name (buffer-name)))))
+  (interactive (list
+                (read-buffer (format-prompt "Buffer" "") nil t)
+                (and (equal current-prefix-arg '(4)) (y-or-n-p "Insert summary at point?"))
+                (when (equal current-prefix-arg '(4))
+                  (completing-read (format-prompt "Output language" "")
+                                   kagi--summarizer-languages nil t))
+                (when (equal current-prefix-arg '(4))
+                  (completing-read (format-prompt "Engine" "")
+                                   kagi--summarizer-engines nil t kagi-summarizer-engine))))
+  (let ((summary (with-current-buffer buffer
+                   (kagi-summarize (buffer-string) language engine)))
+        (summary-buffer-name (with-current-buffer buffer
+                               (kagi--summary-buffer-name (buffer-name)))))
+    (if (and insert (not buffer-read-only))
+        (kagi--insert-summary summary)
+      (kagi--display-summary summary summary-buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-region (begin end)
+(defun kagi-summarize-region (begin end &optional language engine)
   "Summarize the region's content marked by BEGIN and END positions.
 
 Shows the summary in a new window."
-  (interactive "r")
+  (interactive (list
+                (region-beginning)
+                (region-end)
+                (when (equal current-prefix-arg '(4))
+                  (completing-read (format-prompt "Output language" "")
+                                   kagi--summarizer-languages nil t))
+                (when (equal current-prefix-arg '(4))
+                  (completing-read (format-prompt "Engine" "")
+                                   kagi--summarizer-engines nil t kagi-summarizer-engine))))
   (kagi--display-summary
-   (kagi-summarize (buffer-substring-no-properties begin end))
+   (kagi-summarize (buffer-substring-no-properties begin end)
+                   language
+                   engine)
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
@@ -463,16 +489,15 @@ types are supported:
   (interactive
    (list
     (read-string (format-prompt "URL" ""))
-    (or (equal current-prefix-arg '(4))
-        (and (equal current-prefix-arg '(16)) (y-or-n-p "Insert summary at point?")))
-    (when (equal current-prefix-arg '(16))
+    (and (equal current-prefix-arg '(4)) (y-or-n-p "Insert summary at point?"))
+    (when (equal current-prefix-arg '(4))
       (completing-read (format-prompt "Output language" "")
                        kagi--summarizer-languages nil t))
-    (when (equal current-prefix-arg '(16))
+    (when (equal current-prefix-arg '(4))
       (completing-read (format-prompt "Engine" "")
                        kagi--summarizer-engines nil t kagi-summarizer-engine))))
 
-  (let ((summary (kagi-summarize url)))
+  (let ((summary (kagi-summarize url language engine)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
       (kagi--display-summary
