@@ -409,7 +409,14 @@ Returns a formatted string to be displayed by the shell."
 
 ;;;###autoload
 (defun kagi-summarize (text-or-url &optional language engine)
-  "Return the summary of the given TEXT-OR-URL."
+  "Return the summary of the given TEXT-OR-URL.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'."
 
   (let* ((kagi-summarizer-default-language
           (downcase (or language kagi-summarizer-default-language)))
@@ -434,8 +441,13 @@ Returns a formatted string to be displayed by the shell."
                 (read-buffer (format-prompt "Buffer" "") nil t)
                 (and (equal current-prefix-arg '(4)) (y-or-n-p "Insert summary at point?"))
                 (when (equal current-prefix-arg '(4))
-                  (completing-read (format-prompt "Output language" "")
-                                   kagi--summarizer-languages nil t))
+                  (alist-get
+                   (completing-read (format-prompt "Output language" "")
+                                    kagi--summarizer-languages nil t)
+                   kagi--summarizer-languages
+                   (or kagi-summarizer-default-language "EN")
+                   nil
+                   #'string=))
                 (when (equal current-prefix-arg '(4))
                   (completing-read (format-prompt "Engine" "")
                                    kagi--summarizer-engines nil t kagi-summarizer-engine))))
