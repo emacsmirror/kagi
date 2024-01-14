@@ -32,8 +32,8 @@ The FastGPT functionality has only one command: =kagi-fastgpt-shell=. This opens
 
 The summarize commands accept a single universal prefix, which allows you to:
 - insert the summary at point;
-- choose a (different) target language
-- choose which summary engine to use
+- choose a (different) target language;
+- choose which summary engine to use.
 
 Note that texts submitted to Kagi are subject to their [[https://kagi.com/privacy#Summarizer][Privacy Policy]].
 
@@ -195,9 +195,9 @@ If you recognize this confusion, you may want to add the following line to your 
 
 The summarizer commands =kagi-summarize-*= now accept a universal prefix. This allows you to:
 
-- insert the summary at point (instead of a separate buffer)
-- choose a different target language
-- choose a different summarizer engine
+- insert the summary at point (instead of a separate buffer);
+- choose a different target language;
+- choose a different summarizer engine.
 
 ** 0.2pre
 
