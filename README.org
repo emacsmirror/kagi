@@ -180,7 +180,7 @@ If you recognize this confusion, you may want to add the following line to your 
 
 * Changelog
 
-** 0.2pre
+** 0.2
 
 *** Breaking changes
 
@@ -197,6 +197,10 @@ If you recognize this confusion, you may want to add the following line to your 
 - Better error handling for the summarizer
 - Fix bug when the summarizer input contains a URL ({{{issue(2)}}})
 - Check that the summarizer input is at least 50 words ({{{issue(2)}}})
+
+*** Misc
+
+- Add boolean variable =kagi-stubbed-responses= to enable stubbed responses, to replace actual API calls. Since calls are metered, it's more economic to use stubbed responses for development / debugging purposes.
 
 ** 0.1
 
