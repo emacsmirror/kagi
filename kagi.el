@@ -412,9 +412,9 @@ Returns a formatted string to be displayed by the shell."
   "Return the summary of the given TEXT-OR-URL."
 
   (let* ((kagi-summarizer-default-language
-          (or language kagi-summarizer-default-language))
+          (downcase (or language kagi-summarizer-default-language)))
          (kagi-summarizer-engine
-          (or engine kagi-summarizer-engine)))
+          (downcase (or engine kagi-summarizer-engine))))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
