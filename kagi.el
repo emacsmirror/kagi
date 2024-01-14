@@ -434,23 +434,53 @@ defined in `kagi--summarizer-engines'."
                          (gethash "code" firsterror)))
         (error "An error occurred while requesting a summary")))))
 
+(defun kagi--get-summarizer-parameters (&optional prompt-insert-p)
+  "Return a list of interactively obtained summarizer parameters.
+
+Not all commands need to insert a summary, so only prompt for
+this when PROMPT-INSERT-P is non-nil."
+  (append
+   (list
+    (and prompt-insert-p
+         (equal current-prefix-arg '(4))
+         (y-or-n-p "Insert summary at point?")))
+   (list
+    (when (equal current-prefix-arg '(4))
+      (alist-get
+       (completing-read (format-prompt "Output language" "")
+                        kagi--summarizer-languages nil t)
+       kagi--summarizer-languages
+       (or kagi-summarizer-default-language "EN")
+       nil
+       #'string=)))
+   (list
+    (when (equal current-prefix-arg '(4))
+      (completing-read (format-prompt "Engine" "")
+                       kagi--summarizer-engines nil t kagi-summarizer-engine)))))
+
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer &optional insert language engine)
-  "Summarize the BUFFER's content and show it in a new window."
-  (interactive (list
+  "Summarize the BUFFER's content and show it in a new window.
+
+By default, the summary is shown in a new buffer.
+
+When INSERT is non-nil, the summary will be inserted at point. In
+case the current buffer is read-only, the summary will be shown
+in a separate buffer anyway.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'.
+
+With a single universal prefix argument (`C-u'), the user is
+prompted whether the summary has to be inserted at point, which
+target LANGUAGE to use and which summarizer ENGINE to use."
+  (interactive (cons
                 (read-buffer (format-prompt "Buffer" "") nil t)
-                (and (equal current-prefix-arg '(4)) (y-or-n-p "Insert summary at point?"))
-                (when (equal current-prefix-arg '(4))
-                  (alist-get
-                   (completing-read (format-prompt "Output language" "")
-                                    kagi--summarizer-languages nil t)
-                   kagi--summarizer-languages
-                   (or kagi-summarizer-default-language "EN")
-                   nil
-                   #'string=))
-                (when (equal current-prefix-arg '(4))
-                  (completing-read (format-prompt "Engine" "")
-                                   kagi--summarizer-engines nil t kagi-summarizer-engine))))
+                (kagi--get-summarizer-parameters t)))
   (let ((summary (with-current-buffer buffer
                    (kagi-summarize (buffer-string) language engine)))
         (summary-buffer-name (with-current-buffer buffer
@@ -463,16 +493,21 @@ defined in `kagi--summarizer-engines'."
 (defun kagi-summarize-region (begin end &optional language engine)
   "Summarize the region's content marked by BEGIN and END positions.
 
-Shows the summary in a new window."
-  (interactive (list
-                (region-beginning)
-                (region-end)
-                (when (equal current-prefix-arg '(4))
-                  (completing-read (format-prompt "Output language" "")
-                                   kagi--summarizer-languages nil t))
-                (when (equal current-prefix-arg '(4))
-                  (completing-read (format-prompt "Engine" "")
-                                   kagi--summarizer-engines nil t kagi-summarizer-engine))))
+The summary is always shown in a new buffer.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'.
+
+With a single universal prefix argument (`C-u'), the user is
+prompted for which target LANGUAGE to use and which summarizer
+ENGINE to use."
+  (interactive (append
+                (list (region-beginning) (region-end))
+                (kagi--get-summarizer-parameters)))
   (kagi--display-summary
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
@@ -483,10 +518,22 @@ Shows the summary in a new window."
 (defun kagi-summarize-url (url &optional insert language engine)
   "Show the summary of the content behind the given URL.
 
-By default, the summary is shown in a new buffer. With a single
-PREFIX argument, insert the summary at point in the current
-buffer. In case the current buffer is read-only, the summary will
-be shown in a separate buffer anyway.
+By default, the summary is shown in a new buffer.
+
+When INSERT is non-nil, the summary will be inserted at point. In
+case the current buffer is read-only, the summary will be shown
+in a separate buffer anyway.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'.
+
+With a single universal prefix argument (`C-u'), the user is
+prompted whether the summary has to be inserted at point, which
+target LANGUAGE to use and which summarizer ENGINE to use.
 
 According to the Kagi API documentation, the following media
 types are supported:
@@ -499,16 +546,9 @@ types are supported:
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
   (interactive
-   (list
+   (cons
     (read-string (format-prompt "URL" ""))
-    (and (equal current-prefix-arg '(4)) (y-or-n-p "Insert summary at point?"))
-    (when (equal current-prefix-arg '(4))
-      (completing-read (format-prompt "Output language" "")
-                       kagi--summarizer-languages nil t))
-    (when (equal current-prefix-arg '(4))
-      (completing-read (format-prompt "Engine" "")
-                       kagi--summarizer-engines nil t kagi-summarizer-engine))))
-
+    (kagi--get-summarizer-parameters t)))
   (let ((summary (kagi-summarize url language engine)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
