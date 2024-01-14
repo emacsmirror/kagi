@@ -313,7 +313,6 @@ list of conses."
           (when kagi-summarizer-default-language
             `(("target_language" . ,kagi-summarizer-default-language)))))
 
-
 (defconst kagi--summarizer-min-input-words 50
   "The minimal amount of words that the text input should have.")
 
