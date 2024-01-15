@@ -27,10 +27,15 @@ The FastGPT functionality has only one command: =kagi-fastgpt-shell=. This opens
 
 ** Universal Summarizer
 
-- =kagi-summarize-buffer= :: Summarizes the content of a buffer and displays it in a separate buffer.
-- =kagi-summarize-region= :: Similarly, the text inside the region is summarized and shown in a separate buffer.
+- =kagi-summarize-buffer= :: Summarizes the content of a buffer.
+- =kagi-summarize-region= :: Similarly, the text inside the region is summarized.
 - =kagi-summarize-url= :: Prompts for a URL of which a summary is composed and displayed.
 - =kagi-summarize= :: Function to retrieve a summary from a text or URL, to be used from Lisp code.
+
+The summarize commands accept a single universal prefix, which allows you to:
+- insert the summary at point;
+- choose a (different) target language;
+- choose which summary engine to use.
 
 Note that texts submitted to Kagi are subject to their [[https://kagi.com/privacy#Summarizer][Privacy Policy]].
 
@@ -116,6 +121,8 @@ The code to generate the table of configuration items was inspired by an idea of
 
 ** Examples of custom functions
 
+The =kagi-summarize= function allows you to summarize texts or URLs from Emacs Lisp.
+
 By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. A few examples are shown below:
 
 *** Language override
@@ -128,6 +135,8 @@ To obtain a Dutch summary of a video you may want to define the following functi
     (let ((kagi-summarize-default-language "NL"))
       (kagi-summarize text-or-url)))
 #+end_src
+
+Note that, when you invoke the summarizer functionality interactively, you can also temporarily choose a different target language with the universal prefix (=C-u=) on one of the =kagi-summarize-*= commands.
 
 *** Caching override
 
@@ -183,6 +192,16 @@ If you recognize this confusion, you may want to add the following line to your 
 #+end_src
 
 * Changelog
+
+** 0.3pre
+
+*** New
+
+The summarizer commands =kagi-summarize-*= now accept a universal prefix. This allows you to:
+
+- insert the summary at point (instead of a separate buffer);
+- choose a different target language;
+- choose a different summarizer engine.
 
 ** 0.2
 

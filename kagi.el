@@ -81,57 +81,63 @@ on dummy data."
   :type '(choice string function)
   :group 'kagi)
 
+(defvar kagi--summarizer-engines
+  '(("agnes" . "Friendly, descriptive, fast summary.")
+    ("cecil" . "Formal, technical, analytical summary.")
+    ("daphne" . "Informal, creative, friendly summary.")
+    ("muriel" . "Best-in-class summary using Kagi's enterprise-grade model (at different pricing)."))
+  "List of Kagi Summarizer engines.
+
+See `kagi-summarizer-engine' for a brief description per engine.")
+
 (defcustom kagi-summarizer-engine "cecil"
   "Which summary engine to use.
-
-- cecil :: Friendly, descriptive, fast summary.
-- agnes :: Formal, technical, analytical summary.
-- daphne :: Informal, creative, friendly summary.
-- muriel :: Best-in-class summary using Kagi's enterprise-grade model.
 
 Note that the muriel model is enterprise grade and has different
 pricing. Refer to the API documentation for more info at
 https://help.kagi.com/kagi/api/summarizer.html."
-  :type '(choice
-          (const "agnes")
-          (const "cecil")
-          (const "daphne")
-          (const "muriel"))
+  :type (append '(choice)
+                (mapcar (lambda (engine) `(const :doc ,(cdr engine) ,(car engine)))
+                        kagi--summarizer-engines))
   :group 'kagi)
+
+(defvar kagi--summarizer-languages '(("Document language" . nil)
+                                     ("Bulgarian [BG]" . "BG")
+                                     ("Czech [CZ]" . "CZ")
+                                     ("Danish [DA]" . "DA")
+                                     ("German [DE]" . "DE")
+                                     ("Greek [EL]" . "EL")
+                                     ("English [EN]" . "EN")
+                                     ("Spanish [ES]" . "ES")
+                                     ("Estonian [ET]" . "ET")
+                                     ("Finnish [FI]" . "FI")
+                                     ("French [FR]" . "FR")
+                                     ("Hungarian [HU]" . "HU")
+                                     ("Indonesian [ID]" . "ID")
+                                     ("Italian [IT]" . "IT")
+                                     ("Japanese [JA]" . "JA")
+                                     ("Korean [KO]" . "KA")
+                                     ("Lithuanian [LT]" . "LT")
+                                     ("Latvian [LV]" . "LV")
+                                     ("Norwegian [NB]" . "NB")
+                                     ("Dutch [NL]" . "NL")
+                                     ("Polish [PL]" . "PL")
+                                     ("Portuguese [PT]" . "PT")
+                                     ("Romanian [RO]" . "RO")
+                                     ("Russian [RU]" . "RU")
+                                     ("Slovak [SK]" . "SK")
+                                     ("Slovenian [SL]" . "SL")
+                                     ("Swedish [SV]" . "SV")
+                                     ("Turkish [TR]" . "TR")
+                                     ("Ukrainian [UK]" . "UK")
+                                     ("Chinese (simplified) [ZH]" . "ZH"))
+  "Supported languages by the Kagi Universal Summarizer.")
 
 (defcustom kagi-summarizer-default-language nil
   "Default target language of the summary."
-  :type '(choice
-          (const :tag "Document language" nil)
-          (const :tag "Bulgarian" "BG")
-          (const :tag "Czech" "CZ")
-          (const :tag "Danish" "DA")
-          (const :tag "German" "DE")
-          (const :tag "Greek" "EL")
-          (const :tag "English" "EN")
-          (const :tag "Spanish" "ES")
-          (const :tag "Estonian" "ET")
-          (const :tag "Finnish" "FI")
-          (const :tag "French" "FR")
-          (const :tag "Hungarian" "HU")
-          (const :tag "Indonesian" "ID")
-          (const :tag "Italian" "IT")
-          (const :tag "Japanese" "JA")
-          (const :tag "Korean" "KO")
-          (const :tag "Lithuanian" "LT")
-          (const :tag "Latvian" "LV")
-          (const :tag "Norwegian" "NB")
-          (const :tag "Dutch" "NL")
-          (const :tag "Polish" "PL")
-          (const :tag "Portuguese" "PT")
-          (const :tag "Romanian" "RO")
-          (const :tag "Russian" "RU")
-          (const :tag "Slovak" "SK")
-          (const :tag "Slovenian" "SL")
-          (const :tag "Swedish" "SV")
-          (const :tag "Turkish" "TR")
-          (const :tag "Ukrainian" "UK")
-          (const :tag "Chinese (simplified)" "ZH"))
+  :type (append '(choice)
+                (mapcar (lambda (lang) `(const :tag ,(car lang) ,(cdr lang)))
+                        kagi--summarizer-languages))
   :group 'kagi)
 
 (defcustom kagi-summarizer-cache t
@@ -307,7 +313,6 @@ list of conses."
           (when kagi-summarizer-default-language
             `(("target_language" . ,kagi-summarizer-default-language)))))
 
-
 (defconst kagi--summarizer-min-input-words 50
   "The minimal amount of words that the text input should have.")
 
@@ -338,6 +343,11 @@ list of conses."
     (goto-char 0)
     (text-mode)
     (display-buffer buffer-name)))
+
+(defun kagi--insert-summary (summary)
+  "Insert the SUMMARY at point."
+  (save-excursion
+    (insert (substring-no-properties summary))))
 
 (defun kagi--process-prompt (prompt)
   "Submit a PROMPT to FastGPT and process the API response.
@@ -397,45 +407,135 @@ Returns a formatted string to be displayed by the shell."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 ;;;###autoload
-(defun kagi-summarize (text-or-url)
-  "Return the summary of the given TEXT-OR-URL."
-  (if-let* ((response (if (kagi--url-p text-or-url)
-                          (kagi--call-url-summarizer text-or-url)
-                        (kagi--call-text-summarizer text-or-url)))
-            (parsed-response (json-parse-string response))
-            (output (kagi--gethash parsed-response "data" "output")))
-      (kagi--format-output output)
-    (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
-        (error (format "%s (%s)"
-                       (gethash "msg" firsterror)
-                       (gethash "code" firsterror)))
-      (error "An error occurred while requesting a summary"))))
+(defun kagi-summarize (text-or-url &optional language engine)
+  "Return the summary of the given TEXT-OR-URL.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'."
+
+  (let* ((kagi-summarizer-default-language
+          (upcase (or language kagi-summarizer-default-language)))
+         (kagi-summarizer-engine
+          (downcase (or engine kagi-summarizer-engine))))
+    (if-let* ((response (if (kagi--url-p text-or-url)
+                            (kagi--call-url-summarizer text-or-url)
+                          (kagi--call-text-summarizer text-or-url)))
+              (parsed-response (json-parse-string response))
+              (output (kagi--gethash parsed-response "data" "output")))
+        (kagi--format-output output)
+      (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
+          (error (format "%s (%s)"
+                         (gethash "msg" firsterror)
+                         (gethash "code" firsterror)))
+        (error "An error occurred while requesting a summary")))))
+
+(defun kagi--get-summarizer-parameters (&optional prompt-insert-p)
+  "Return a list of interactively obtained summarizer parameters.
+
+Not all commands need to insert a summary, so only prompt for
+this when PROMPT-INSERT-P is non-nil."
+  (append
+   (list
+    (and prompt-insert-p
+         (equal current-prefix-arg '(4))
+         (y-or-n-p "Insert summary at point?")))
+   (list
+    (when (equal current-prefix-arg '(4))
+      (alist-get
+       (completing-read (format-prompt "Output language" "")
+                        kagi--summarizer-languages nil t)
+       kagi--summarizer-languages
+       (or kagi-summarizer-default-language "EN")
+       nil
+       #'string=)))
+   (list
+    (when (equal current-prefix-arg '(4))
+      (completing-read (format-prompt "Engine" "")
+                       kagi--summarizer-engines nil t kagi-summarizer-engine)))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer)
-  "Summarize the BUFFER's content and show it in a new window."
-  (interactive "b")
-  (with-current-buffer buffer
-    (kagi--display-summary
-     (kagi-summarize (buffer-string))
-     (kagi--summary-buffer-name (buffer-name)))))
+(defun kagi-summarize-buffer (buffer &optional insert language engine)
+  "Summarize the BUFFER's content and show it in a new window.
+
+By default, the summary is shown in a new buffer.
+
+When INSERT is non-nil, the summary will be inserted at point. In
+case the current buffer is read-only, the summary will be shown
+in a separate buffer anyway.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'.
+
+With a single universal prefix argument (`C-u'), the user is
+prompted whether the summary has to be inserted at point, which
+target LANGUAGE to use and which summarizer ENGINE to use."
+  (interactive (cons
+                (read-buffer (format-prompt "Buffer" "") nil t)
+                (kagi--get-summarizer-parameters t)))
+  (let ((summary (with-current-buffer buffer
+                   (kagi-summarize (buffer-string) language engine)))
+        (summary-buffer-name (with-current-buffer buffer
+                               (kagi--summary-buffer-name (buffer-name)))))
+    (if (and insert (not buffer-read-only))
+        (kagi--insert-summary summary)
+      (kagi--display-summary summary summary-buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-region (begin end)
+(defun kagi-summarize-region (begin end &optional language engine)
   "Summarize the region's content marked by BEGIN and END positions.
 
-Shows the summary in a new window."
-  (interactive "r")
+The summary is always shown in a new buffer.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'.
+
+With a single universal prefix argument (`C-u'), the user is
+prompted for which target LANGUAGE to use and which summarizer
+ENGINE to use."
+  (interactive (append
+                (list (region-beginning) (region-end))
+                (kagi--get-summarizer-parameters)))
   (kagi--display-summary
-   (kagi-summarize (buffer-substring-no-properties begin end))
+   (kagi-summarize (buffer-substring-no-properties begin end)
+                   language
+                   engine)
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-url (url)
+(defun kagi-summarize-url (url &optional insert language engine)
   "Show the summary of the content behind the given URL.
 
-According to the API documentation, the following media types are
-supported:
+By default, the summary is shown in a new buffer.
+
+When INSERT is non-nil, the summary will be inserted at point. In
+case the current buffer is read-only, the summary will be shown
+in a separate buffer anyway.
+
+LANGUAGE is a supported two letter abbreviation of the language,
+as defined in `kagi--summarizer-languages'. When nil, the target
+is automatically determined.
+
+ENGINE is the name of a supported summarizer engine, as
+defined in `kagi--summarizer-engines'.
+
+With a single universal prefix argument (`C-u'), the user is
+prompted whether the summary has to be inserted at point, which
+target LANGUAGE to use and which summarizer ENGINE to use.
+
+According to the Kagi API documentation, the following media
+types are supported:
 
 - Text web pages, articles, and forum threads
 - PDF documents (.pdf)
@@ -444,10 +544,16 @@ supported:
 - Audio files (mp3/wav)
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
-  (interactive "sURL: ")
-  (kagi--display-summary
-   (kagi-summarize url)
-   (kagi--summary-buffer-name (kagi--get-domain-name url))))
+  (interactive
+   (cons
+    (read-string (format-prompt "URL" ""))
+    (kagi--get-summarizer-parameters t)))
+  (let ((summary (kagi-summarize url language engine)))
+    (if (and insert (not buffer-read-only))
+        (kagi--insert-summary summary)
+      (kagi--display-summary
+       summary
+       (kagi--summary-buffer-name (kagi--get-domain-name url))))))
 
 (provide 'kagi)
 
