@@ -188,8 +188,12 @@ One of those bindings is =C-c C-o=, which flushes the last output. However, this
 If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
 
 #+begin_src elisp
-  (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)
+  (add-hook 'fastgpt-shell-mode-hook
+            (lambda ()
+              (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)))
 #+end_src
+
+Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-shell= has been invoked, the keybinding is done in a mode hook.
 
 * Changelog
 
