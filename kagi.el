@@ -446,6 +446,7 @@ this when PROMPT-INSERT-P is non-nil."
    (list
     (and prompt-insert-p
          (equal current-prefix-arg '(4))
+         (not buffer-read-only)
          (y-or-n-p "Insert summary at point?")))
    (list
     (when (equal current-prefix-arg '(4))
