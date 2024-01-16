@@ -71,7 +71,10 @@ You way want to load and configure the package with ~use-package~, for example p
     :custom-face
     ;; kagi-code defaults to fixed-pitch, but can be overridden as
     ;; follows:
-    (kagi-code ((t (:inherit org-verbatim)))))
+    (kagi-code ((t (:inherit org-verbatim))))
+
+    ;; likewise for kagi-bold:
+    (kagi-bold ((t (:inherit modus-themes-bold)))))
 #+end_src
 
 The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the password-store package that comes with it).
