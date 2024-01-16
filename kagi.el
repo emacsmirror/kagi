@@ -418,9 +418,13 @@ ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'."
 
   (let* ((kagi-summarizer-default-language
-          (upcase (or language kagi-summarizer-default-language)))
+          (if (stringp language)
+              (upcase language)
+            kagi-summarizer-default-language))
          (kagi-summarizer-engine
-          (downcase (or engine kagi-summarizer-engine))))
+          (if (stringp engine)
+              (downcase engine)
+            kagi-summarizer-engine)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
