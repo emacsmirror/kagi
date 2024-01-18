@@ -116,7 +116,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
                                      ("Indonesian [ID]" . "ID")
                                      ("Italian [IT]" . "IT")
                                      ("Japanese [JA]" . "JA")
-                                     ("Korean [KO]" . "KA")
+                                     ("Korean [KO]" . "KO")
                                      ("Lithuanian [LT]" . "LT")
                                      ("Latvian [LV]" . "LV")
                                      ("Norwegian [NB]" . "NB")

@@ -210,6 +210,10 @@ The summarizer commands =kagi-summarize-*= now accept a universal prefix. This a
 - choose a different target language;
 - choose a different summarizer engine.
 
+*** Fixes
+
+- Fixed language code for Korean summaries.
+
 ** 0.2
 
 *** Breaking changes
