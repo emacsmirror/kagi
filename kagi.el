@@ -394,7 +394,7 @@ If INSERT is non-nil, the response is inserted at point.
 Otherwise, show the result in a separate buffer."
   (interactive "sfastgpt> \nP")
   (let ((result (kagi-fastgpt prompt)))
-    (if insert
+    (if (and insert (not buffer-read-only))
         (save-excursion
           (insert result))
       (kagi--fastgpt-display-result result))))
