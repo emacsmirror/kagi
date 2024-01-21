@@ -76,6 +76,11 @@ on dummy data."
   :type '(choice string function)
   :group 'kagi)
 
+(defcustom kagi-fastgpt-translate-default-target-language nil
+  "The default target language for translations by function `kagi-translate'."
+  :type 'string
+  :group 'kagi)
+
 (defcustom kagi-summarizer-api-url "https://kagi.com/api/v0/summarize"
   "The Kagi Summarizer API entry point."
   :type '(choice string function)
@@ -398,6 +403,32 @@ Otherwise, show the result in a separate buffer."
         (save-excursion
           (insert result))
       (kagi--fastgpt-display-result result))))
+
+(defun kagi-translate (text target-language &optional interactive-p)
+  "Translate the TEXT to TARGET-LANGUAGE using FastGPT.
+
+When INTERACTIVE-P is nil, the translation is returned as a string.
+
+When non-nil, the translation is shown in the echo area when the
+result is short, otherwise it is displayed in a new buffer."
+  (interactive
+   (let ((default-target-language (or kagi-fastgpt-translate-default-target-language
+                                      "English")))
+     (list (if (use-region-p)
+               (buffer-substring-no-properties (region-beginning) (region-end))
+             (read-buffer (format-prompt "Buffer name or text" nil)))
+           (or kagi-fastgpt-translate-default-target-language
+               (read-string (format-prompt "Target language" default-target-language) nil nil default-target-language))
+           t)))
+  (let* ((prompt (format "Translate the following text to %s:
+
+%s"
+                         target-language text))
+         (result (kagi-fastgpt prompt))
+         (result-lines (length (string-lines result))))
+    (cond ((and interactive-p (eql result-lines 1)) (message result))
+          ((and interactive-p (> result-lines 1)) (kagi--fastgpt-display-result result))
+          (t result))))
 
 ;;; Summarizer
 
