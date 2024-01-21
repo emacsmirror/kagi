@@ -348,10 +348,8 @@ list of conses."
   (save-excursion
     (insert (substring-no-properties summary))))
 
-(defun kagi--process-prompt (prompt)
-  "Submit a PROMPT to FastGPT and process the API response.
-
-Returns a formatted string to be displayed by the shell."
+(defun kagi-fastgpt (prompt)
+  "Submit a PROMPT to FastGPT and return a formatted response string."
   (let* ((response (kagi--call-fastgpt prompt))
          (parsed-response (json-parse-string response))
          (output (kagi--gethash parsed-response "data" "output"))
@@ -374,7 +372,7 @@ Returns a formatted string to be displayed by the shell."
    :execute-command
    (lambda (command _history callback error-callback)
      (condition-case err
-         (funcall callback (kagi--process-prompt command) nil)
+         (funcall callback (kagi-fastgpt-prompt command) nil)
        (json-parse-error (funcall error-callback
                                   (format "Could not parse the server response %s" (cdr err))))
        (error (funcall error-callback (format "An error occurred during the request %s" (cdr err)))))))
@@ -389,18 +387,17 @@ Returns a formatted string to be displayed by the shell."
   (shell-maker-start kagi-fastgpt--config))
 
 ;;;###autoload
-(defun kagi-fastgpt-prompt (prompt &optional interactive)
-  "Feed the given PROMPT to FastGPT and return a response.
+(defun kagi-fastgpt-prompt (prompt &optional insert)
+  "Feed the given PROMPT to FastGPT.
 
-When INTERACTIVE is nil, the response is returned as a string.
-
-When INTERACTIVE is non-nil, the function was called
-interactively and the result is displayed in a new buffer."
+If INSERT is non-nil, the response is inserted at point.
+Otherwise, show the result in a separate buffer."
   (interactive "sfastgpt> \np")
-  (let ((result (kagi--process-prompt prompt)))
-    (if interactive
-        (kagi--fastgpt-display-result result)
-      result)))
+  (let ((result (kagi-fastgpt prompt)))
+    (if insert
+        (save-excursion
+          (insert result))
+      (kagi--fastgpt-display-result result))))
 
 ;;; Summarizer
 
