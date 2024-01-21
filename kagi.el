@@ -392,7 +392,7 @@ list of conses."
 
 If INSERT is non-nil, the response is inserted at point.
 Otherwise, show the result in a separate buffer."
-  (interactive "sfastgpt> \np")
+  (interactive "sfastgpt> \nP")
   (let ((result (kagi-fastgpt prompt)))
     (if insert
         (save-excursion
