@@ -337,8 +337,7 @@ list of conses."
 
 (defun kagi--display-summary (summary buffer-name)
   "Display the SUMMARY in a buffer called BUFFER-NAME."
-  (with-current-buffer (get-buffer-create buffer-name)
-    (erase-buffer)
+  (with-current-buffer (generate-new-buffer-name buffer-name)
     (insert summary)
     (goto-char 0)
     (text-mode)
@@ -358,6 +357,15 @@ Returns a formatted string to be displayed by the shell."
          (output (kagi--gethash parsed-response "data" "output"))
          (references (kagi--gethash parsed-response "data" "references")))
     (format "%s\n\n%s" (kagi--format-output output) (kagi--format-references references))))
+
+(defun kagi--fastgpt-display-result (result)
+  "Display the RESULT of a FastGPT prompt in a new buffer."
+  (let ((buffer-name (generate-new-buffer-name "*fastgpt-result*")))
+    (with-current-buffer (get-buffer-create buffer-name)
+      (save-excursion
+        (insert result))
+      (text-mode)
+      (display-buffer buffer-name))))
 
 (defvar kagi-fastgpt--config
   (make-shell-maker-config
@@ -379,6 +387,20 @@ Returns a formatted string to be displayed by the shell."
   "Start an FastGPT shell."
   (interactive)
   (shell-maker-start kagi-fastgpt--config))
+
+;;;###autoload
+(defun kagi-fastgpt-prompt (prompt &optional interactive)
+  "Feed the given PROMPT to FastGPT and return a response.
+
+When INTERACTIVE is nil, the response is returned as a string.
+
+When INTERACTIVE is non-nil, the function was called
+interactively and the result is displayed in a new buffer."
+  (interactive "sfastgpt> \np")
+  (let ((result (kagi--process-prompt prompt)))
+    (if interactive
+        (kagi--fastgpt-display-result result)
+      result)))
 
 ;;; Summarizer
 
