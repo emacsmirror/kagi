@@ -23,7 +23,9 @@ Both functions are accessed through an [[https://help.kagi.com/kagi/api/overview
 
 ** FastGPT
 
-The FastGPT functionality has only one command: =kagi-fastgpt-shell=. This opens a shell buffer in a new window where prompts can be typed. Kagi FastGPT typically returns output based on actual search results. When point is on one of the listed URLs, press =C-c RET= to open it.
+- =kagi-fastgpt-shell= :: Opens a shell buffer in a new window where prompts can be typed. This Kagi FastGPT typically returns output based on actual search results. When point is on one of the listed URLs, press =C-c RET= to open it.
+- =kagi-fastgpt-prompt= :: Enter a prompt in the minibuffer and show the result in a separate buffer. With a universal prefix (=C-u=), the result is inserted at point.
+- =kagi-fastgpt= :: Function to retrieve a FastGPT response, to be used from Lisp code.
 
 ** Universal Summarizer
 
