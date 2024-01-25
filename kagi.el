@@ -107,41 +107,47 @@ https://help.kagi.com/kagi/api/summarizer.html."
   :group 'kagi)
 
 (defvar kagi--summarizer-languages '(("Document language" . nil)
-                                     ("Bulgarian [BG]" . "BG")
-                                     ("Czech [CZ]" . "CZ")
-                                     ("Danish [DA]" . "DA")
-                                     ("German [DE]" . "DE")
-                                     ("Greek [EL]" . "EL")
-                                     ("English [EN]" . "EN")
-                                     ("Spanish [ES]" . "ES")
-                                     ("Estonian [ET]" . "ET")
-                                     ("Finnish [FI]" . "FI")
-                                     ("French [FR]" . "FR")
-                                     ("Hungarian [HU]" . "HU")
-                                     ("Indonesian [ID]" . "ID")
-                                     ("Italian [IT]" . "IT")
-                                     ("Japanese [JA]" . "JA")
-                                     ("Korean [KO]" . "KO")
-                                     ("Lithuanian [LT]" . "LT")
-                                     ("Latvian [LV]" . "LV")
-                                     ("Norwegian [NB]" . "NB")
-                                     ("Dutch [NL]" . "NL")
-                                     ("Polish [PL]" . "PL")
-                                     ("Portuguese [PT]" . "PT")
-                                     ("Romanian [RO]" . "RO")
-                                     ("Russian [RU]" . "RU")
-                                     ("Slovak [SK]" . "SK")
-                                     ("Slovenian [SL]" . "SL")
-                                     ("Swedish [SV]" . "SV")
-                                     ("Turkish [TR]" . "TR")
-                                     ("Ukrainian [UK]" . "UK")
-                                     ("Chinese (simplified) [ZH]" . "ZH"))
+                                     ("Bulgarian" . "BG")
+                                     ("Czech" . "CZ")
+                                     ("Danish" . "DA")
+                                     ("German" . "DE")
+                                     ("Greek" . "EL")
+                                     ("English" . "EN")
+                                     ("Spanish" . "ES")
+                                     ("Estonian" . "ET")
+                                     ("Finnish" . "FI")
+                                     ("French" . "FR")
+                                     ("Hungarian" . "HU")
+                                     ("Indonesian" . "ID")
+                                     ("Italian" . "IT")
+                                     ("Japanese" . "JA")
+                                     ("Korean" . "KO")
+                                     ("Lithuanian" . "LT")
+                                     ("Latvian" . "LV")
+                                     ("Norwegian" . "NB")
+                                     ("Dutch" . "NL")
+                                     ("Polish" . "PL")
+                                     ("Portuguese" . "PT")
+                                     ("Romanian" . "RO")
+                                     ("Russian" . "RU")
+                                     ("Slovak" . "SK")
+                                     ("Slovenian" . "SL")
+                                     ("Swedish" . "SV")
+                                     ("Turkish" . "TR")
+                                     ("Ukrainian" . "UK")
+                                     ("Chinese (simplified)" . "ZH"))
   "Supported languages by the Kagi Universal Summarizer.")
 
 (defcustom kagi-summarizer-default-language nil
-  "Default target language of the summary."
+  "Default target language of the summary.
+
+The value should be a string of two characters representing the
+ language. See variable `kagi--summarizer-languages' for the list
+ of language codes."
   :type (append '(choice)
-                (mapcar (lambda (lang) `(const :tag ,(car lang) ,(cdr lang)))
+                (mapcar (lambda (lang)
+                          `(const :tag ,(format "%s [%s]" (car lang) (cdr lang))
+                                  ,(cdr lang)))
                         kagi--summarizer-languages))
   :group 'kagi)
 
@@ -500,13 +506,18 @@ this when PROMPT-INSERT-P is non-nil."
          (y-or-n-p "Insert summary at point?")))
    (list
     (when (equal current-prefix-arg '(4))
-      (alist-get
-       (completing-read (format-prompt "Output language" "")
-                        kagi--summarizer-languages nil t)
-       kagi--summarizer-languages
-       (or kagi-summarizer-default-language "EN")
-       nil
-       #'string=)))
+      (let ((language-table (mapcar (lambda (lang)
+                                      (cons
+                                       (format "%s [%s]" (car lang) (cdr lang))
+                                       (cdr lang)))
+                                    kagi--summarizer-languages)))
+        (alist-get
+         (completing-read (format-prompt "Output language" "")
+                          language-table nil t)
+         language-table
+         (or kagi-summarizer-default-language "EN")
+         nil
+         #'string=))))
    (list
     (when (equal current-prefix-arg '(4))
       (completing-read (format-prompt "Engine" "")
