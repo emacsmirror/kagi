@@ -154,6 +154,10 @@ same text will be charged.)"
   "Face for bold parts in the Kagi output."
   :group 'kagi)
 
+(defface kagi-italic '((t :inherit italic))
+  "Face for italic parts in the Kagi output."
+  :group 'kagi)
+
 (defface kagi-code '((t :inherit fixed-pitch))
   "Face for code parts in the Kagi output."
   :group 'kagi)
@@ -171,6 +175,7 @@ same text will be charged.)"
 (defconst kagi--markup-to-face
   '(("<b>" "</b>" 'kagi-bold)
     ("**" "**" 'kagi-bold)
+    ("$" "$" 'kagi-italic)
     ("```" "```" 'kagi-code))
   "Contains a mapping from markup elements to faces.")
 
@@ -232,7 +237,7 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--data" "@-")))
 
 (defvar kagi--fastgpt-stubbed-response
-  "{\"data\":{\"output\":\"<b>Test</b> response in **bold**.\"}}"
+  "{\"data\":{\"output\":\"<b>Test</b> response in **bold** and $italic$.\"}}"
   "Stubbed response for the Kagi FastGPT endpoint.")
 
 (defvar kagi--summarizer-stubbed-response
