@@ -435,7 +435,10 @@ result is short, otherwise it is displayed in a new buffer."
   (interactive
    (list (if (use-region-p)
              (buffer-substring-no-properties (region-beginning) (region-end))
-           (read-buffer (format-prompt "Buffer name or text" nil)))
+           (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
+             (if (get-buffer buffer-or-text)
+                 (buffer-string)
+               buffer-or-text)))
          (kagi--read-language (format-prompt "Target language" nil))
          (when (equal current-prefix-arg '(4))
            (kagi--read-language (format-prompt "Source language" nil)))
