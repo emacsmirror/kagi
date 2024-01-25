@@ -76,11 +76,6 @@ on dummy data."
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-fastgpt-translate-default-target-language nil
-  "The default target language for translations by function `kagi-translate'."
-  :type 'string
-  :group 'kagi)
-
 (defcustom kagi-summarizer-api-url "https://kagi.com/api/v0/summarize"
   "The Kagi Summarizer API entry point."
   :type '(choice string function)
@@ -106,37 +101,43 @@ https://help.kagi.com/kagi/api/summarizer.html."
                         kagi--summarizer-engines))
   :group 'kagi)
 
-(defvar kagi--summarizer-languages '(("Document language" . nil)
-                                     ("Bulgarian" . "BG")
-                                     ("Czech" . "CZ")
-                                     ("Danish" . "DA")
-                                     ("German" . "DE")
-                                     ("Greek" . "EL")
-                                     ("English" . "EN")
-                                     ("Spanish" . "ES")
-                                     ("Estonian" . "ET")
-                                     ("Finnish" . "FI")
-                                     ("French" . "FR")
-                                     ("Hungarian" . "HU")
-                                     ("Indonesian" . "ID")
-                                     ("Italian" . "IT")
-                                     ("Japanese" . "JA")
-                                     ("Korean" . "KO")
-                                     ("Lithuanian" . "LT")
-                                     ("Latvian" . "LV")
-                                     ("Norwegian" . "NB")
-                                     ("Dutch" . "NL")
-                                     ("Polish" . "PL")
-                                     ("Portuguese" . "PT")
-                                     ("Romanian" . "RO")
-                                     ("Russian" . "RU")
-                                     ("Slovak" . "SK")
-                                     ("Slovenian" . "SL")
-                                     ("Swedish" . "SV")
-                                     ("Turkish" . "TR")
-                                     ("Ukrainian" . "UK")
-                                     ("Chinese (simplified)" . "ZH"))
+(defvar kagi--languages '(("Bulgarian" . "BG")
+                          ("Czech" . "CZ")
+                          ("Danish" . "DA")
+                          ("German" . "DE")
+                          ("Greek" . "EL")
+                          ("English" . "EN")
+                          ("Spanish" . "ES")
+                          ("Estonian" . "ET")
+                          ("Finnish" . "FI")
+                          ("French" . "FR")
+                          ("Hungarian" . "HU")
+                          ("Indonesian" . "ID")
+                          ("Italian" . "IT")
+                          ("Japanese" . "JA")
+                          ("Korean" . "KO")
+                          ("Lithuanian" . "LT")
+                          ("Latvian" . "LV")
+                          ("Norwegian" . "NB")
+                          ("Dutch" . "NL")
+                          ("Polish" . "PL")
+                          ("Portuguese" . "PT")
+                          ("Romanian" . "RO")
+                          ("Russian" . "RU")
+                          ("Slovak" . "SK")
+                          ("Slovenian" . "SL")
+                          ("Swedish" . "SV")
+                          ("Turkish" . "TR")
+                          ("Ukrainian" . "UK")
+                          ("Chinese (simplified)" . "ZH"))
+  "Supported languages by the Kagi LLM.")
+
+(defvar kagi--summarizer-languages (append
+                                    '(("Document language" . nil)
+                                      kagi--languages))
   "Supported languages by the Kagi Universal Summarizer.")
+
+(defvar kagi--language-history nil)
 
 (defcustom kagi-summarizer-default-language nil
   "Default target language of the summary.
@@ -410,26 +411,45 @@ Otherwise, show the result in a separate buffer."
           (insert result))
       (kagi--fastgpt-display-result result))))
 
-(defun kagi-translate (text target-language &optional interactive-p)
+(defun kagi--read-language (prompt)
+  "Read a language from the minibuffer interactively.
+
+PROMPT is passed to the corresponding parameters of
+`completing-read', refer to its documentation for more info."
+  (alist-get (completing-read prompt
+                              kagi--languages
+                              nil
+                              nil
+                              nil
+                              kagi--language-history
+                              "English")
+             kagi--languages))
+
+(defun kagi-translate (text target-language &optional source-language interactive-p)
   "Translate the TEXT to TARGET-LANGUAGE using FastGPT.
+
+With a single universal prefix, also prompt for the SOURCE-LANGUAGE.
 
 When INTERACTIVE-P is nil, the translation is returned as a string.
 
 When non-nil, the translation is shown in the echo area when the
 result is short, otherwise it is displayed in a new buffer."
   (interactive
-   (let ((default-target-language (or kagi-fastgpt-translate-default-target-language
-                                      "English")))
-     (list (if (use-region-p)
-               (buffer-substring-no-properties (region-beginning) (region-end))
-             (read-buffer (format-prompt "Buffer name or text" nil)))
-           (or kagi-fastgpt-translate-default-target-language
-               (read-string (format-prompt "Target language" default-target-language) nil nil default-target-language))
-           t)))
-  (let* ((prompt (format "Translate the following text to %s:
+   (list (if (use-region-p)
+             (buffer-substring-no-properties (region-beginning) (region-end))
+           (read-buffer (format-prompt "Buffer name or text" nil)))
+         (kagi--read-language (format-prompt "Target language" nil))
+         (when (equal current-prefix-arg '(4))
+           (kagi--read-language (format-prompt "Source language" nil)))
+         t))
+  (let* ((prompt (format "Translate the following text %sto %s:
 
 %s"
-                         target-language text))
+                         target-language
+                         (if source-language
+                             (format "from %s " source-language)
+                           "")
+                         text))
          (result (kagi-fastgpt prompt))
          (result-lines (length (string-lines result))))
     (cond ((and interactive-p (eql result-lines 1)) (message result))
@@ -513,7 +533,7 @@ this when PROMPT-INSERT-P is non-nil."
                                     kagi--summarizer-languages)))
         (alist-get
          (completing-read (format-prompt "Output language" "")
-                          language-table nil t)
+                          language-table nil t nil kagi--language-history)
          language-table
          (or kagi-summarizer-default-language "EN")
          nil
