@@ -443,10 +443,10 @@ result is short, otherwise it is displayed in a new buffer."
   (let* ((prompt (format "Translate the following text %sto %s:
 
 %s"
-                         target-language
                          (if source-language
                              (format "from %s " source-language)
                            "")
+                         target-language
                          text))
          (result (kagi-fastgpt prompt))
          (result-lines (length (string-lines result))))
