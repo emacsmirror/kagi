@@ -416,14 +416,12 @@ Otherwise, show the result in a separate buffer."
 
 PROMPT is passed to the corresponding parameters of
 `completing-read', refer to its documentation for more info."
-  (alist-get (completing-read prompt
-                              kagi--languages
-                              nil
-                              nil
-                              nil
-                              kagi--language-history
-                              "English")
-             kagi--languages))
+  (completing-read prompt kagi--languages
+                   nil
+                   nil
+                   nil
+                   kagi--language-history
+                   "English"))
 
 (defun kagi-translate (text target-language &optional source-language interactive-p)
   "Translate the TEXT to TARGET-LANGUAGE using FastGPT.
