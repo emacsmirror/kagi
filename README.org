@@ -204,15 +204,18 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 
 *** New
 
-The summarizer commands =kagi-summarize-*= now accept a universal prefix. This allows you to:
+- The summarizer commands =kagi-summarize-*= now accept a universal prefix. This allows you to:
 
-- insert the summary at point (instead of a separate buffer);
-- choose a different target language;
-- choose a different summarizer engine.
+  - insert the summary at point (instead of a separate buffer);
+  - choose a different target language;
+  - choose a different summarizer engine.
+
 
 *** Fixes
 
 - Fixed language code for Korean summaries.
+- **text** is converted to the =kagi-bold= face.
+- $text$ is converted to the new =kagi-italic= face.
 
 ** 0.2
 
