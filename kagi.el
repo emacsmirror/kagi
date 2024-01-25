@@ -170,6 +170,7 @@ same text will be charged.)"
 
 (defconst kagi--markup-to-face
   '(("<b>" "</b>" 'kagi-bold)
+    ("**" "**" 'kagi-bold)
     ("```" "```" 'kagi-code))
   "Contains a mapping from markup elements to faces.")
 
@@ -231,7 +232,7 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--data" "@-")))
 
 (defvar kagi--fastgpt-stubbed-response
-  "{\"data\":{\"output\":\"<b>Test</b> response.\"}}"
+  "{\"data\":{\"output\":\"<b>Test</b> response in **bold**.\"}}"
   "Stubbed response for the Kagi FastGPT endpoint.")
 
 (defvar kagi--summarizer-stubbed-response
