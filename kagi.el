@@ -451,7 +451,7 @@ result is short, otherwise it is displayed in a new buffer."
                            "")
                          target-language
                          text))
-         (result (kagi-fastgpt prompt))
+         (result (string-trim (kagi-fastgpt prompt)))
          (result-lines (length (string-lines result))))
     (cond ((and interactive-p (eql result-lines 1)) (message result))
           ((and interactive-p (> result-lines 1)) (kagi--fastgpt-display-result result))
