@@ -133,8 +133,8 @@ https://help.kagi.com/kagi/api/summarizer.html."
   "Supported languages by the Kagi LLM.")
 
 (defvar kagi--summarizer-languages (append
-                                    '(("Document language" . nil)
-                                      kagi--languages))
+                                    '(("Document language" . nil))
+                                    kagi--languages)
   "Supported languages by the Kagi Universal Summarizer.")
 
 (defvar kagi--language-history nil)
