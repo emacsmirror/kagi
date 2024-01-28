@@ -390,7 +390,7 @@ list of conses."
    :execute-command
    (lambda (command _history callback error-callback)
      (condition-case err
-         (funcall callback (kagi-fastgpt-prompt command) nil)
+         (funcall callback (kagi-fastgpt command) nil)
        (json-parse-error (funcall error-callback
                                   (format "Could not parse the server response %s" (cdr err))))
        (error (funcall error-callback (format "An error occurred during the request %s" (cdr err)))))))
