@@ -162,6 +162,19 @@ same text will be charged.)"
   :type 'boolean
   :group 'kagi)
 
+(defconst kagi--summarizer-summary-formats '((paragraph . "summary")
+                                             (takeaway . "takeaway"))
+  "Mapping from summary type symbol to the expected API string.")
+
+(defcustom kagi-summarizer-default-summary-format 'paragraph
+  "The summary format that should be returned.
+
+Symbol paragraph returns a paragraph of prose. Symbol takeaway
+returns a bullet list."
+  :type '(choice (const :tag "Paragraph" paragraph)
+                 (const :tag "Bullet-list" takeaway))
+  :group 'kagi)
+
 (defface kagi-bold '((t :inherit bold))
   "Face for bold parts in the Kagi output."
   :group 'kagi)
@@ -324,7 +337,8 @@ list of conses."
   (append items
           `(("engine" . ,kagi-summarizer-engine)
             ("summary_type" . "summary")
-            ("cache" . ,kagi-summarizer-cache))
+            ("cache" . ,kagi-summarizer-cache)
+            ("summary_type" . ,kagi-summarizer-default-summary-format))
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
