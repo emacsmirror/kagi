@@ -203,7 +203,7 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 
 * Changelog
 
-** 0.3pre
+** 0.3
 
 *** New
 
@@ -213,6 +213,7 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
   - choose a different target language;
   - choose a different summarizer engine.
 
+- =kagi-translate= translates texts or complete buffers to another language (including programming languages).
 
 *** Fixes
 
