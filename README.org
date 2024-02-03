@@ -203,6 +203,13 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 
 * Changelog
 
+** 0.3.1
+
+*** Fixes
+
+- Fix for displaying a summary in a new buffer.
+- Fix for =kagi-summarize-region= that doesn't need to ask for insert at point.
+
 ** 0.3
 
 *** New
