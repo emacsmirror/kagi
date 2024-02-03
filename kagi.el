@@ -529,11 +529,11 @@ defined in `kagi--summarizer-engines'."
 Not all commands need to insert a summary, so only prompt for
 this when PROMPT-INSERT-P is non-nil."
   (append
-   (list
-    (and prompt-insert-p
-         (equal current-prefix-arg '(4))
-         (not buffer-read-only)
-         (y-or-n-p "Insert summary at point?")))
+   (when prompt-insert-p
+     (list
+      (and (equal current-prefix-arg '(4))
+           (not buffer-read-only)
+           (y-or-n-p "Insert summary at point?"))))
    (list
     (when (equal current-prefix-arg '(4))
       (let ((language-table (mapcar (lambda (lang)
