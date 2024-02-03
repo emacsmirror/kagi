@@ -162,16 +162,12 @@ same text will be charged.)"
   :type 'boolean
   :group 'kagi)
 
-(defconst kagi--summarizer-summary-formats '((paragraph . "summary")
-                                             (takeaway . "takeaway"))
-  "Mapping from summary type symbol to the expected API string.")
-
-(defcustom kagi-summarizer-default-summary-format 'paragraph
+(defcustom kagi-summarizer-default-summary-format 'summary
   "The summary format that should be returned.
 
-Symbol paragraph returns a paragraph of prose. Symbol takeaway
+Symbol 'summary returns a paragraph of prose. Symbol 'takeaway
 returns a bullet list."
-  :type '(choice (const :tag "Paragraph" paragraph)
+  :type '(choice (const :tag "Paragraph" summary)
                  (const :tag "Bullet-list" takeaway))
   :group 'kagi)
 
@@ -507,7 +503,7 @@ result is short, otherwise it is displayed in a new buffer."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 ;;;###autoload
-(defun kagi-summarize (text-or-url &optional language engine)
+(defun kagi-summarize (text-or-url &optional language engine type)
   "Return the summary of the given TEXT-OR-URL.
 
 LANGUAGE is a supported two letter abbreviation of the language,
@@ -515,8 +511,10 @@ as defined in `kagi--summarizer-languages'. When nil, the target
 is automatically determined.
 
 ENGINE is the name of a supported summarizer engine, as
-defined in `kagi--summarizer-engines'."
+defined in `kagi--summarizer-engines'.
 
+TYPE is the summary type, where 'summary returns a paragraph of
+text and 'takeaway returns a bullet list."
   (let* ((kagi-summarizer-default-language
           (if (stringp language)
               (upcase language)
@@ -524,7 +522,8 @@ defined in `kagi--summarizer-engines'."
          (kagi-summarizer-engine
           (if (stringp engine)
               (downcase engine)
-            kagi-summarizer-engine)))
+            kagi-summarizer-engine))
+         (kagi-summarizer-default-summary-format type))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
@@ -565,10 +564,21 @@ this when PROMPT-INSERT-P is non-nil."
    (list
     (when (equal current-prefix-arg '(4))
       (completing-read (format-prompt "Engine" "")
-                       kagi--summarizer-engines nil t kagi-summarizer-engine)))))
+                       kagi--summarizer-engines nil t kagi-summarizer-engine)))
+   (list
+    (when (equal current-prefix-arg '(4))
+      (let ((summary-types '(("Summary" . summary)
+                             ("Bullet-list" . takeaway))))
+        (alist-get
+         (completing-read (format-prompt "Summary type" "")
+                          summary-types nil t)
+         summary-types
+         kagi-summarizer-default-summary-format
+         nil
+         #'string=))))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer &optional insert language engine)
+(defun kagi-summarize-buffer (buffer &optional insert language engine type)
   "Summarize the BUFFER's content and show it in a new window.
 
 By default, the summary is shown in a new buffer.
@@ -591,7 +601,7 @@ target LANGUAGE to use and which summarizer ENGINE to use."
                 (read-buffer (format-prompt "Buffer" "") nil t)
                 (kagi--get-summarizer-parameters t)))
   (let ((summary (with-current-buffer buffer
-                   (kagi-summarize (buffer-string) language engine)))
+                   (kagi-summarize (buffer-string) language engine type)))
         (summary-buffer-name (with-current-buffer buffer
                                (kagi--summary-buffer-name (buffer-name)))))
     (if (and insert (not buffer-read-only))
@@ -599,7 +609,7 @@ target LANGUAGE to use and which summarizer ENGINE to use."
       (kagi--display-summary summary summary-buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-region (begin end &optional language engine)
+(defun kagi-summarize-region (begin end &optional language engine type)
   "Summarize the region's content marked by BEGIN and END positions.
 
 The summary is always shown in a new buffer.
@@ -620,11 +630,12 @@ ENGINE to use."
   (kagi--display-summary
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
-                   engine)
+                   engine
+                   type)
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-url (url &optional insert language engine)
+(defun kagi-summarize-url (url &optional insert language engine type)
   "Show the summary of the content behind the given URL.
 
 By default, the summary is shown in a new buffer.
@@ -658,7 +669,7 @@ types are supported:
    (cons
     (read-string (format-prompt "URL" ""))
     (kagi--get-summarizer-parameters t)))
-  (let ((summary (kagi-summarize url language engine)))
+  (let ((summary (kagi-summarize url language engine type)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
       (kagi--display-summary
