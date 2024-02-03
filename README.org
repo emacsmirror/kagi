@@ -203,6 +203,10 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 
 * Changelog
 
+** 0.4pre
+
+- Introduce variable =kagi-summarizer-default-summary-format=, to produce a paragraph summary (default) or a take-away in bullet-list format.
+
 ** 0.3.1
 
 *** Fixes
