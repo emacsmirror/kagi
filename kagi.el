@@ -356,7 +356,7 @@ list of conses."
 (defun kagi--display-summary (summary buffer-name)
   "Display the SUMMARY in a buffer called BUFFER-NAME."
   (let ((new-buffer-name (generate-new-buffer-name buffer-name)))
-    (with-current-buffer new-buffer-name
+    (with-current-buffer (get-buffer-create new-buffer-name)
       (insert summary)
       (goto-char 0)
       (text-mode)
