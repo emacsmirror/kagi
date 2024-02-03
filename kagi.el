@@ -5,7 +5,7 @@
 ;; Author: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Created: 16 Dec 2023
-;; Package-Version: 0.3
+;; Package-Version: 0.3.1
 ;; Package-Requires: ((emacs "29.1") (shell-maker "0.46.1"))
 ;; Keywords: terminals wp
 ;; URL: https://codeberg.org/bram85/kagi.el
@@ -369,11 +369,12 @@ list of conses."
 
 (defun kagi--display-summary (summary buffer-name)
   "Display the SUMMARY in a buffer called BUFFER-NAME."
-  (with-current-buffer (generate-new-buffer-name buffer-name)
-    (insert summary)
-    (goto-char 0)
-    (text-mode)
-    (display-buffer buffer-name)))
+  (let ((new-buffer-name (generate-new-buffer-name buffer-name)))
+    (with-current-buffer (get-buffer-create new-buffer-name)
+      (insert summary)
+      (goto-char 0)
+      (text-mode)
+      (display-buffer new-buffer-name))))
 
 (defun kagi--insert-summary (summary)
   "Insert the SUMMARY at point."
@@ -542,11 +543,11 @@ defined in `kagi--summarizer-engines'."
 Not all commands need to insert a summary, so only prompt for
 this when PROMPT-INSERT-P is non-nil."
   (append
-   (list
-    (and prompt-insert-p
-         (equal current-prefix-arg '(4))
-         (not buffer-read-only)
-         (y-or-n-p "Insert summary at point?")))
+   (when prompt-insert-p
+     (list
+      (and (equal current-prefix-arg '(4))
+           (not buffer-read-only)
+           (y-or-n-p "Insert summary at point?"))))
    (list
     (when (equal current-prefix-arg '(4))
       (let ((language-table (mapcar (lambda (lang)
