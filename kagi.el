@@ -165,7 +165,7 @@ same text will be charged.)"
 (defcustom kagi-summarizer-default-summary-format 'summary
   "The summary format that should be returned.
 
-Symbol 'summary returns a paragraph of prose. Symbol 'takeaway
+Symbol `summary' returns a paragraph of prose. Symbol `takeaway'
 returns a bullet list."
   :type '(choice (const :tag "Paragraph" summary)
                  (const :tag "Bullet-list" takeaway))
@@ -502,7 +502,7 @@ result is short, otherwise it is displayed in a new buffer."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 ;;;###autoload
-(defun kagi-summarize (text-or-url &optional language engine type)
+(defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
 
 LANGUAGE is a supported two letter abbreviation of the language,
@@ -512,8 +512,8 @@ is automatically determined.
 ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'.
 
-TYPE is the summary type, where 'summary returns a paragraph of
-text and 'takeaway returns a bullet list."
+FORMAT is the summary format, where `summary' returns a paragraph
+of text and `takeaway' returns a bullet list."
   (let* ((kagi-summarizer-default-language
           (if (stringp language)
               (upcase language)
@@ -522,7 +522,7 @@ text and 'takeaway returns a bullet list."
           (if (stringp engine)
               (downcase engine)
             kagi-summarizer-engine))
-         (kagi-summarizer-default-summary-format type))
+         (kagi-summarizer-default-summary-format format))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
@@ -566,18 +566,18 @@ this when PROMPT-INSERT-P is non-nil."
                        kagi--summarizer-engines nil t kagi-summarizer-engine)))
    (list
     (when (equal current-prefix-arg '(4))
-      (let ((summary-types '(("Summary" . summary)
-                             ("Bullet-list" . takeaway))))
+      (let ((summary-formats '(("Summary" . summary)
+                               ("Bullet-list" . takeaway))))
         (alist-get
-         (completing-read (format-prompt "Summary type" "")
-                          summary-types nil t)
-         summary-types
+         (completing-read (format-prompt "Summary format" "")
+                          summary-formats nil t)
+         summary-formats
          kagi-summarizer-default-summary-format
          nil
          #'string=))))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer &optional insert language engine type)
+(defun kagi-summarize-buffer (buffer &optional insert language engine format)
   "Summarize the BUFFER's content and show it in a new window.
 
 By default, the summary is shown in a new buffer.
@@ -593,14 +593,18 @@ is automatically determined.
 ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'.
 
+FORMAT is the summary format, where `summary' returns a paragraph
+of text and `takeaway' returns a bullet list.
+
 With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
-target LANGUAGE to use and which summarizer ENGINE to use."
+target LANGUAGE to use, which summarizer ENGINE to use and which
+summary FORMAT to use."
   (interactive (cons
                 (read-buffer (format-prompt "Buffer" "") nil t)
                 (kagi--get-summarizer-parameters t)))
   (let ((summary (with-current-buffer buffer
-                   (kagi-summarize (buffer-string) language engine type)))
+                   (kagi-summarize (buffer-string) language engine format)))
         (summary-buffer-name (with-current-buffer buffer
                                (kagi--summary-buffer-name (buffer-name)))))
     (if (and insert (not buffer-read-only))
@@ -608,7 +612,7 @@ target LANGUAGE to use and which summarizer ENGINE to use."
       (kagi--display-summary summary summary-buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-region (begin end &optional language engine type)
+(defun kagi-summarize-region (begin end &optional language engine format)
   "Summarize the region's content marked by BEGIN and END positions.
 
 The summary is always shown in a new buffer.
@@ -620,9 +624,12 @@ is automatically determined.
 ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'.
 
+FORMAT is the summary format, where `summary' returns a paragraph
+of text and `takeaway' returns a bullet list.
+
 With a single universal prefix argument (`C-u'), the user is
-prompted for which target LANGUAGE to use and which summarizer
-ENGINE to use."
+prompted for which target LANGUAGE to use, which summarizer
+ENGINE to use and which summary FORMAT to use."
   (interactive (append
                 (list (region-beginning) (region-end))
                 (kagi--get-summarizer-parameters)))
@@ -630,11 +637,11 @@ ENGINE to use."
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
                    engine
-                   type)
+                   format)
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
-(defun kagi-summarize-url (url &optional insert language engine type)
+(defun kagi-summarize-url (url &optional insert language engine format)
   "Show the summary of the content behind the given URL.
 
 By default, the summary is shown in a new buffer.
@@ -650,9 +657,13 @@ is automatically determined.
 ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'.
 
+FORMAT is the summary format, where `summary' returns a paragraph
+of text and `takeaway' returns a bullet list.
+
 With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
-target LANGUAGE to use and which summarizer ENGINE to use.
+target LANGUAGE to use, which summarizer ENGINE to use and which
+summary FORMAT to use.
 
 According to the Kagi API documentation, the following media
 types are supported:
@@ -668,7 +679,7 @@ types are supported:
    (cons
     (read-string (format-prompt "URL" ""))
     (kagi--get-summarizer-parameters t)))
-  (let ((summary (kagi-summarize url language engine type)))
+  (let ((summary (kagi-summarize url language engine format)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
       (kagi--display-summary
