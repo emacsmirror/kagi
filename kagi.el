@@ -332,9 +332,8 @@ configuration. The given ITEMS are appended to it, which is a
 list of conses."
   (append items
           `(("engine" . ,kagi-summarizer-engine)
-            ("summary_type" . "summary")
-            ("cache" . ,kagi-summarizer-cache)
-            ("summary_type" . ,kagi-summarizer-default-summary-format))
+            ("summary_type" . ,kagi-summarizer-default-summary-format)
+            ("cache" . ,kagi-summarizer-cache))
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
