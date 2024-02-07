@@ -461,7 +461,7 @@ result is short, otherwise it is displayed in a new buffer."
          (when (equal current-prefix-arg '(4))
            (kagi--read-language (format-prompt "Source language" nil)))
          t))
-  (let* ((prompt (format "Translate the following text %sto %s:
+  (let* ((prompt (format "Translate the following text %sto %s, return the translation in the target language only:
 
 %s"
                          (if source-language
