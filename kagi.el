@@ -439,6 +439,7 @@ PROMPT is passed to the corresponding parameters of
                    kagi--language-history
                    "English"))
 
+;;;###autoload
 (defun kagi-translate (text target-language &optional source-language interactive-p)
   "Translate the TEXT to TARGET-LANGUAGE using FastGPT.
 
@@ -501,7 +502,6 @@ result is short, otherwise it is displayed in a new buffer."
   "Non-nil if string S is a URL."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
-;;;###autoload
 (defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
 
