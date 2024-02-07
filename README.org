@@ -56,21 +56,16 @@ You way want to load and configure the package with ~use-package~, for example p
 
 #+begin_src elisp
   (use-package kagi
-    :commands
-    kagi-fastgpt-shell
-    kagi-summarize-buffer
-    kagi-summarize-region
-    kagi-summarize-url
     :ensure t
     :custom
     (kagi-api-token "ABCDEF")
     ;; or use a function, e.g. with the password-store package:
     (kagi-api-token (lambda () (password-store-get "Kagi/API")))
 
-    ;; summarizer settings
+    ;; Univernal Summarizer settings
     (kagi-summarizer-engine "cecil")
-    (kagi-summarize-default-language "EN")
-    (kagi-summarize-cache t)
+    (kagi-summarizer-default-language "EN")
+    (kagi-summarizer-cache t)
     :custom-face
     ;; kagi-code defaults to fixed-pitch, but can be overridden as
     ;; follows:
