@@ -476,6 +476,38 @@ result is short, otherwise it is displayed in a new buffer."
           ((and interactive-p (> result-lines 1)) (kagi--fastgpt-display-result result))
           (t result))))
 
+;;;###autoload
+(defun kagi-grammar (text &optional interactive-p)
+  "Check the grammar for the given TEXT.
+
+The TEXT can be either from the region, a buffer or entered manually.
+
+When `kagi-grammar' is called non-interactively (INTERACTIVE-P is
+nil), the function should return the string 'OK' when there are
+no errors."
+  (interactive
+   (list (if (use-region-p)
+             (buffer-substring-no-properties (region-beginning) (region-end))
+           (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
+             (cond ((get-buffer buffer-or-text)
+                    (with-current-buffer buffer-or-text
+                      (buffer-string)))
+                   ((< 0 (length buffer-or-text)) buffer-or-text)
+                   (t (error "No buffer or text entered")))))
+         t))
+  (let* ((prompt (format "Grammar check the following text. %s
+
+%s"
+                         (if interactive-p
+                             ""
+                           "Say OK if there are no errors.")
+                         text))
+         (result (string-trim (kagi-fastgpt prompt)))
+         (result-lines (length (string-lines result))))
+    (cond ((and (eql result-lines 1)) (message result))
+          ((and (> result-lines 1)) (kagi--fastgpt-display-result result))
+          (t result))))
+
 ;;; Summarizer
 
 (defun kagi--get-domain-name (url)
