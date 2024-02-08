@@ -439,9 +439,27 @@ PROMPT is passed to the corresponding parameters of
                    kagi--language-history
                    "English"))
 
+(defun kagi--get-buffer-or-text ()
+  "Return the text to operate on.
+
+If the region is active, return the corresponding text.
+
+Otherwise, the user is requested to enter a buffer name or enter
+its own text manually."
+  (if (use-region-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+    (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
+      (cond ((get-buffer buffer-or-text)
+             (with-current-buffer buffer-or-text
+               (buffer-string)))
+            ((< 0 (length buffer-or-text)) buffer-or-text)
+            (t (error "No buffer or text entered"))))))
+
 ;;;###autoload
 (defun kagi-translate (text target-language &optional source-language interactive-p)
   "Translate the TEXT to TARGET-LANGUAGE using FastGPT.
+
+The TEXT can be either from the region, a buffer or entered manually.
 
 With a single universal prefix, also prompt for the SOURCE-LANGUAGE.
 
@@ -450,18 +468,12 @@ When INTERACTIVE-P is nil, the translation is returned as a string.
 When non-nil, the translation is shown in the echo area when the
 result is short, otherwise it is displayed in a new buffer."
   (interactive
-   (list (if (use-region-p)
-             (buffer-substring-no-properties (region-beginning) (region-end))
-           (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
-             (cond ((get-buffer buffer-or-text)
-                    (with-current-buffer buffer-or-text
-                      (buffer-string)))
-                   ((< 0 (length buffer-or-text)) buffer-or-text)
-                   (t (error "No buffer or text entered")))))
-         (kagi--read-language (format-prompt "Target language" nil))
-         (when (equal current-prefix-arg '(4))
-           (kagi--read-language (format-prompt "Source language" nil)))
-         t))
+   (list
+    (kagi--get-buffer-or-text)
+    (kagi--read-language (format-prompt "Target language" nil))
+    (when (equal current-prefix-arg '(4))
+      (kagi--read-language (format-prompt "Source language" nil)))
+    t))
   (let* ((prompt (format "Translate the following text %sto %s, return the translation in the target language only:
 
 %s"
@@ -477,30 +489,22 @@ result is short, otherwise it is displayed in a new buffer."
           (t result))))
 
 ;;;###autoload
-(defun kagi-grammar (text &optional interactive-p)
-  "Check the grammar for the given TEXT.
+(defun kagi-proofread (text &optional interactive-p)
+  "Proofread the given TEXT using FastGPT.
 
 The TEXT can be either from the region, a buffer or entered manually.
 
-When `kagi-grammar' is called non-interactively (INTERACTIVE-P is
+When `kagi-proofread' is called non-interactively (INTERACTIVE-P is
 nil), the function should return the string 'OK' when there are
-no errors."
+no issues."
   (interactive
-   (list (if (use-region-p)
-             (buffer-substring-no-properties (region-beginning) (region-end))
-           (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
-             (cond ((get-buffer buffer-or-text)
-                    (with-current-buffer buffer-or-text
-                      (buffer-string)))
-                   ((< 0 (length buffer-or-text)) buffer-or-text)
-                   (t (error "No buffer or text entered")))))
-         t))
-  (let* ((prompt (format "Grammar check the following text. %s
+   (list (kagi--get-buffer-or-text) t))
+  (let* ((prompt (format "Proofread the following text. %s
 
 %s"
                          (if interactive-p
                              ""
-                           "Say OK if there are no errors.")
+                           "Say OK if there are no issues.")
                          text))
          (result (string-trim (kagi-fastgpt prompt)))
          (result-lines (length (string-lines result))))

@@ -30,7 +30,7 @@ Both functions are accessed through Kagi's [[https://help.kagi.com/kagi/api/over
 kagi.el has some functions that use FastGPT to perform certain operations on text:
 
 - =kagi-translate= :: Translates strings or complete buffers to another language (including programming languages).
-- =kagi-grammar= :: Performs a grammar check on strings or buffers.
+- =kagi-proofread= :: Proofread a string or buffer.
 
 ** Universal Summarizer
 
