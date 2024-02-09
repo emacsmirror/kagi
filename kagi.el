@@ -415,17 +415,29 @@ list of conses."
   (shell-maker-start kagi-fastgpt--config))
 
 ;;;###autoload
-(defun kagi-fastgpt-prompt (prompt &optional insert)
+(defun kagi-fastgpt-prompt (prompt &optional insert interactive-p)
   "Feed the given PROMPT to FastGPT.
 
-If INSERT is non-nil, the response is inserted at point.
-Otherwise, show the result in a separate buffer."
-  (interactive "sfastgpt> \nP")
-  (let ((result (kagi-fastgpt prompt)))
-    (if (and insert (not buffer-read-only))
-        (save-excursion
-          (insert result))
-      (kagi--fastgpt-display-result result))))
+If INSERT is non-nil, the response is inserted at point (if the
+buffer is writable).
+
+If INTERACTIVE-P is non-nil, the result is presented either in the minibuffer for single line outputs, or shown in a separate buffer.
+
+If INTERACTIVE-P is nil, the result is returned as a
+string (suitable for invocations from Emacs Lisp)."
+  (interactive (list (read-string "fastgpt> ")
+                     current-prefix-arg
+                     t))
+  (let* ((result (string-trim (kagi-fastgpt prompt)))
+         (result-lines (length (string-lines result))))
+    (cond ((and insert (not buffer-read-only))
+           (save-excursion
+             (insert result)))
+          ((and interactive-p (eql result-lines 1))
+           (message result))
+          ((and interactive-p (> result-lines 1))
+           (kagi--fastgpt-display-result result))
+          ((not interactive-p) result))))
 
 (defun kagi--read-language (prompt)
   "Read a language from the minibuffer interactively.
@@ -439,6 +451,7 @@ PROMPT is passed to the corresponding parameters of
                    kagi--language-history
                    "English"))
 
+;; TODO rename
 (defun kagi--get-buffer-or-text ()
   "Return the text to operate on.
 
@@ -474,19 +487,16 @@ result is short, otherwise it is displayed in a new buffer."
     (when (equal current-prefix-arg '(4))
       (kagi--read-language (format-prompt "Source language" nil)))
     t))
-  (let* ((prompt (format "Translate the following text %sto %s, return the translation in the target language only:
+  (kagi-fastgpt-prompt
+   (format "Translate the following text %sto %s, return the translation in the target language only:
 
 %s"
-                         (if source-language
-                             (format "from %s " source-language)
-                           "")
-                         target-language
-                         text))
-         (result (string-trim (kagi-fastgpt prompt)))
-         (result-lines (length (string-lines result))))
-    (cond ((and interactive-p (eql result-lines 1)) (message result))
-          ((and interactive-p (> result-lines 1)) (kagi--fastgpt-display-result result))
-          (t result))))
+           (if source-language
+               (format "from %s " source-language)
+             "")
+           target-language
+           text)
+   nil t))
 
 ;;;###autoload
 (defun kagi-proofread (text &optional interactive-p)
@@ -499,18 +509,15 @@ nil), the function should return the string 'OK' when there are
 no issues."
   (interactive
    (list (kagi--get-buffer-or-text) t))
-  (let* ((prompt (format "Proofread the following text. %s
+  (kagi-fastgpt-prompt
+   (format "Proofread the following text. %s
 
 %s"
-                         (if interactive-p
-                             ""
-                           "Say OK if there are no issues.")
-                         text))
-         (result (string-trim (kagi-fastgpt prompt)))
-         (result-lines (length (string-lines result))))
-    (cond ((and (eql result-lines 1)) (message result))
-          ((and (> result-lines 1)) (kagi--fastgpt-display-result result))
-          (t result))))
+           (if interactive-p
+               ""
+             "Say OK if there are no issues.")
+           text)
+   nil t))
 
 ;;; Summarizer
 
