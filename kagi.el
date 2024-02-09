@@ -421,7 +421,9 @@ list of conses."
 If INSERT is non-nil, the response is inserted at point (if the
 buffer is writable).
 
-If INTERACTIVE-P is non-nil, the result is presented either in the minibuffer for single line outputs, or shown in a separate buffer.
+If INTERACTIVE-P is non-nil, the result is presented either in
+the minibuffer for single line outputs, or shown in a separate
+buffer.
 
 If INTERACTIVE-P is nil, the result is returned as a
 string (suitable for invocations from Emacs Lisp)."
@@ -498,7 +500,7 @@ result is short, otherwise it is displayed in a new buffer."
                           "")
                         target-language
                         text)))
-    (kagi-fastgpt-prompt prompt nil t)))
+    (kagi-fastgpt-prompt prompt nil interactive-p)))
 
 ;;;###autoload
 (defun kagi-proofread (text &optional interactive-p)
@@ -518,7 +520,7 @@ no issues."
                             ""
                           "Say OK if there are no issues.")
                         text)))
-    (kagi-fastgpt-prompt prompt nil t)))
+    (kagi-fastgpt-prompt prompt nil interactive-p)))
 
 ;;; Summarizer
 
