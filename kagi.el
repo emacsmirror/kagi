@@ -487,16 +487,15 @@ result is short, otherwise it is displayed in a new buffer."
     (when (equal current-prefix-arg '(4))
       (kagi--read-language (format-prompt "Source language" nil)))
     t))
-  (kagi-fastgpt-prompt
-   (format "Translate the following text %sto %s, return the translation in the target language only:
+  (let ((prompt (format "Translate the following text %sto %s, return the translation in the target language only:
 
 %s"
-           (if source-language
-               (format "from %s " source-language)
-             "")
-           target-language
-           text)
-   nil t))
+                        (if source-language
+                            (format "from %s " source-language)
+                          "")
+                        target-language
+                        text)))
+    (kagi-fastgpt-prompt prompt nil t)))
 
 ;;;###autoload
 (defun kagi-proofread (text &optional interactive-p)
@@ -509,15 +508,14 @@ nil), the function should return the string 'OK' when there are
 no issues."
   (interactive
    (list (kagi--get-buffer-or-text) t))
-  (kagi-fastgpt-prompt
-   (format "Proofread the following text. %s
+  (let ((prompt (format "Proofread the following text. %s
 
 %s"
-           (if interactive-p
-               ""
-             "Say OK if there are no issues.")
-           text)
-   nil t))
+                        (if interactive-p
+                            ""
+                          "Say OK if there are no issues.")
+                        text)))
+    (kagi-fastgpt-prompt prompt nil t)))
 
 ;;; Summarizer
 
