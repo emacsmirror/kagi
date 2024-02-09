@@ -205,7 +205,16 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 
 ** 0.4pre
 
+*** New
+
 - Introduce variable =kagi-summarizer-default-summary-format=, to produce a paragraph summary (default) or a take-away in bullet-list format.
+
+- =kagi-proofread= asks FastGPT to proofread the region, a buffer or a text input.
+
+*** Fixes
+
+- Change the prompt for =kagi-translate= to return translations only, without preamble.
+- Added autoload markers where they were missing.
 
 ** 0.3.1
 
