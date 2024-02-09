@@ -451,14 +451,17 @@ PROMPT is passed to the corresponding parameters of
                    kagi--language-history
                    "English"))
 
-;; TODO rename
-(defun kagi--get-buffer-or-text ()
-  "Return the text to operate on.
+(defun kagi--get-text-for-prompt ()
+  "Return the text to insert in a prompt.
+
+The text is obtained interactively. Typically this is the user
+text that gets inserted in a prompt (e.g. translate the
+following, proofread the following, etc.).
 
 If the region is active, return the corresponding text.
 
 Otherwise, the user is requested to enter a buffer name or enter
-its own text manually."
+the text manually."
   (if (use-region-p)
       (buffer-substring-no-properties (region-beginning) (region-end))
     (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
@@ -482,7 +485,7 @@ When non-nil, the translation is shown in the echo area when the
 result is short, otherwise it is displayed in a new buffer."
   (interactive
    (list
-    (kagi--get-buffer-or-text)
+    (kagi--get-text-for-prompt)
     (kagi--read-language (format-prompt "Target language" nil))
     (when (equal current-prefix-arg '(4))
       (kagi--read-language (format-prompt "Source language" nil)))
@@ -507,7 +510,7 @@ When `kagi-proofread' is called non-interactively (INTERACTIVE-P is
 nil), the function should return the string 'OK' when there are
 no issues."
   (interactive
-   (list (kagi--get-buffer-or-text) t))
+   (list (kagi--get-text-for-prompt) t))
   (let ((prompt (format "Proofread the following text. %s
 
 %s"
