@@ -596,7 +596,7 @@ this when PROMPT-INSERT-P is non-nil."
     (when (equal current-prefix-arg '(4))
       (let ((language-table (mapcar (lambda (lang)
                                       (cons
-                                       (format "%s [%s]" (car lang) (cdr lang))
+                                       (format "%s" (car lang))
                                        (cdr lang)))
                                     kagi--summarizer-languages)))
         (alist-get

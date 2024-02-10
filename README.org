@@ -215,6 +215,7 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 
 - Change the prompt for =kagi-translate= to return translations only, without preamble.
 - Added autoload markers where they were missing.
+- Language selection menu for summaries was not formatted properly.
 
 ** 0.3.1
 
