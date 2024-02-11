@@ -4,7 +4,10 @@ set positional-arguments
 cask *args:
     cask $@
 
-test:
+compile:
+	cask emacs -batch -L . -L test --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $(cask files); (ret=$? ; cask clean-elc && exit $ret)
+
+test: compile
     cask exec buttercup -L .
 
 buttercup:
