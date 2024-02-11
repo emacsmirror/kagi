@@ -194,10 +194,10 @@ returns a bullet list."
       value)))
 
 (defconst kagi--markup-to-face
-  '(("<b>" "</b>" 'kagi-bold)
-    ("**" "**" 'kagi-bold)
-    ("$" "$" 'kagi-italic)
-    ("```" "```" 'kagi-code))
+  '(("<b>" "</b>" kagi-bold)
+    ("**" "**" kagi-bold)
+    ("$" "$" kagi-italic)
+    ("```" "```" kagi-code))
   "Contains a mapping from markup elements to faces.")
 
 (defun kagi--convert-markup-to-faces (string)
