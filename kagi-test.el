@@ -4,7 +4,7 @@
 
 ;; Author: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
-;; Created: 24 Dec 2023
+;; Created: 11 Feb 2024
 ;; Package-Version: 0.1
 ;; Package-Requires: ((emacs "28.2") (shell-maker "0.44.1"))
 ;; Keywords: convenience
