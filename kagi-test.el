@@ -1,6 +1,6 @@
 ;;; kagi-test.el --- Kagi API tests -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023 Bram Schoenmakers
+;; Copyright (C) 2023 - 2024 Bram Schoenmakers
 
 ;; Author: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
