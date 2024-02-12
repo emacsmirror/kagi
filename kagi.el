@@ -63,14 +63,6 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-stubbed-responses nil
-  "Whether the package should return a stubbed response.
-
-To be used for testing purposes, such that no credits are spent
-on dummy data."
-  :type 'boolean
-  :group 'kagi)
-
 (defcustom kagi-fastgpt-api-url "https://kagi.com/api/v0/fastgpt"
   "The Kagi FastGPT API entry point."
   :type '(choice string function)
