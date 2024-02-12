@@ -58,8 +58,9 @@ TEXT is the output text, optionally with a list of REFERENCES."
 
 (describe "kagi.el"
   (describe "Kagi FastGPT"
+    :var ((dummy-output "text"))
     (before-each
-      (spy-on #'kagi--call-api))
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
     (it "converts *bold* markup to a bold face"
       (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "**bold**"))
       (expect (kagi-fastgpt-prompt "foo")
@@ -105,7 +106,27 @@ https://www.example.com"
                       (propertize "[1]" 'font-lock-face 'kagi-bold)
                       (propertize "Snippet 1" 'font-lock-face 'kagi-bold)
                       (propertize "[2]" 'font-lock-face 'kagi-bold)
-                      (propertize "2" 'font-lock-face 'kagi-italic)))))
+                      (propertize "2" 'font-lock-face 'kagi-italic))))
+    (it "inserts the output when requested"
+      (spy-on #'insert)
+      (kagi-fastgpt-prompt "foo" t)
+      ;; one additional insert call is to fill the temporary buffer for POST data
+      (expect #'insert :to-have-been-called-times 2)
+      (expect #'insert :to-have-been-called-with dummy-output))
+    (it "does not insert the output by default"
+      (spy-on #'insert)
+      (kagi-fastgpt-prompt "foo")
+      ;; one insert call is to fill the temporary buffer for POST data
+      (expect #'insert :to-have-been-called-times 1))
+    (it "shows short output in the echo area when called interactively"
+      (spy-on #'message)
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
+      (kagi-fastgpt-prompt "foo" nil t))
+    (it "shows longer output in a separate buffer when called interactively"
+      (spy-on #'kagi--fastgpt-display-result)
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
+      (kagi-fastgpt-prompt "foo" nil t)
+      (expect #'kagi--fastgpt-display-result :to-have-been-called)))
 
   (xdescribe "Kagi Summarizer"
     (before-each
