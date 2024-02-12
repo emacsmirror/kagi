@@ -58,28 +58,30 @@ TEXT is the output text, optionally with a list of REFERENCES."
 
 (describe "kagi.el"
   (describe "Kagi FastGPT"
+    (before-each
+      (spy-on #'kagi--call-api))
     (it "converts *bold* markup to a bold face"
-      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "**bold**"))
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "**bold**"))
       (expect (kagi-fastgpt-prompt "foo")
               :to-be-equal-including-properties
               (propertize "bold" 'font-lock-face 'kagi-bold)))
     (it "converts <b>bold</b> markup to a bold face"
-      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "<b>bold</b>"))
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "<b>bold</b>"))
       (expect (kagi-fastgpt-prompt "foo")
               :to-be-equal-including-properties
               (propertize "bold" 'font-lock-face 'kagi-bold)))
     (it "converts $italic$ markup to an italic face"
-      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "$italic$"))
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "$italic$"))
       (expect (kagi-fastgpt-prompt "foo")
               :to-be-equal-including-properties
               (propertize "italic" 'font-lock-face 'kagi-italic)))
     (it "converts ```code``` markup to a code face"
-      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "```echo $*```"))
+      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "```echo $*```"))
       (expect (kagi-fastgpt-prompt "foo")
               :to-be-equal-including-properties
               (propertize "echo $*" 'font-lock-face 'kagi-code)))
     (it "formats references properly"
-      (spy-on #'kagi--call-fastgpt
+      (spy-on #'kagi--call-api
               :and-return-value
               (kagi-test--dummy-output
                "Main text"
@@ -106,6 +108,8 @@ https://www.example.com"
                       (propertize "2" 'font-lock-face 'kagi-italic)))))
 
   (xdescribe "Kagi Summarizer"
+    (before-each
+      (spy-on #'kagi--call-api))
     (it "contains a spec with an expectation"
       (expect t :to-be t))))
 

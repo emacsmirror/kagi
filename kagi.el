@@ -257,34 +257,18 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--header" "Content-Type: application/json"
       "--data" "@-")))
 
-(defvar kagi--fastgpt-stubbed-response
-  "{\"data\":{\"output\":\"<b>Test</b> response in **bold** and $italic$.\"}}"
-  "Stubbed response for the Kagi FastGPT endpoint.")
-
-(defvar kagi--summarizer-stubbed-response
-  "{\"data\":{\"output\":\"```Test``` response.\"}}"
-  "Stubbed response for the Kagi Summarizer endpoint.")
-
-(defun kagi--call-process-region (&rest args)
-  "`call-process-region' wrapper.
-
-Calls `call-process-region' with ARGS, unless
-`kagi-stubbed-responses' is non-nil.
-
-In that case, this function will not do an actual API call but
-return some dummy data."
-  (if (not kagi-stubbed-responses)
-      (apply #'call-process-region args)
-    (let* ((url (car (last args)))
-           (response (cond
-                      ((string= url kagi-fastgpt-api-url)
-                       kagi--fastgpt-stubbed-response)
-                      ((string= url kagi-summarizer-api-url)
-                       kagi--summarizer-stubbed-response)
-                      (t ""))))
-      (erase-buffer)
-      (insert response)
-      0)))
+(defun kagi--call-api (obj url)
+  (with-temp-buffer
+    (insert (json-encode obj))
+    (let* ((call-process-flags '(nil nil "curl" t t nil))
+           (curl-flags (kagi--curl-flags))
+           (all-flags (append call-process-flags
+                              curl-flags
+                              (list url)))
+           (return (apply #'call-process-region all-flags)))
+      (if (zerop return)
+          (buffer-string)
+        (error "Call to Kagi API returned with status %s" return)))))
 
 (defun kagi--call-fastgpt (prompt)
   "Submit the given PROMPT to the FastGPT API.
@@ -292,17 +276,7 @@ return some dummy data."
 Returns the JSON response as a string. See
 https://help.kagi.com/kagi/api/fastgpt.html for the
 interpretation."
-  (with-temp-buffer
-    (insert (json-encode `((query . ,prompt))))
-    (let* ((call-process-flags '(nil nil "curl" t t nil))
-           (curl-flags (kagi--curl-flags))
-           (all-flags (append call-process-flags
-                              curl-flags
-                              (list kagi-fastgpt-api-url)))
-           (return (apply #'kagi--call-process-region all-flags)))
-      (if (zerop return)
-          (buffer-string)
-        (error "Call to FastGPT API returned with status %s" return)))))
+  (kagi--call-api (list (cons 'query prompt)) kagi-fastgpt-api-url))
 
 (defun kagi--call-summarizer (obj)
   "Submit a request to the Summarizer API.
@@ -312,17 +286,7 @@ The given OBJ is encoded to JSON and used as the request's POST data.
 Returns the JSON response as a string. See
 https://help.kagi.com/kagi/api/summarizer.html for the
 interpretation."
-  (with-temp-buffer
-    (insert (json-encode obj))
-    (let* ((call-process-flags '(nil nil "curl" t t nil))
-           (curl-flags (kagi--curl-flags))
-           (all-flags (append call-process-flags
-                              curl-flags
-                              (list kagi-summarizer-api-url)))
-           (return (apply #'kagi--call-process-region all-flags)))
-      (if (zerop return)
-          (buffer-string)
-        (error "Call to Summarizer API returned with status %s" return)))))
+  (kagi--call-api obj kagi-summarizer-api-url))
 
 (defun kagi--build-summarizer-request-object (items)
   "Build a request object for a summary.
