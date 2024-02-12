@@ -42,8 +42,14 @@
 
 (require 'kagi)
 
-(defun kagi-test--dummy-output (text)
-  (format "{\"data\":{\"output\":\"%s\"}}" text))
+(defun kagi-test--dummy-output (text &optional references)
+  "Construct a fictitious result from the Kagi FastGPT API.
+
+TEXT is the output text, optionally with a list of REFERENCES."
+  (json-encode (list (cons "data" (append
+                                   (list (cons "output" text))
+                                   (when references
+                                     (list (cons "references" references))))))))
 
 (buttercup-define-matcher-for-binary-function
     :to-be-equal-including-properties equal-including-properties
@@ -52,11 +58,52 @@
 
 (describe "kagi.el"
   (describe "Kagi FastGPT"
-    (it "converts bold markup ** to a bold face"
+    (it "converts *bold* markup to a bold face"
       (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "**bold**"))
       (expect (kagi-fastgpt-prompt "foo")
               :to-be-equal-including-properties
-              (propertize "bold" 'font-lock-face 'kagi-bold))))
+              (propertize "bold" 'font-lock-face 'kagi-bold)))
+    (it "converts <b>bold</b> markup to a bold face"
+      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "<b>bold</b>"))
+      (expect (kagi-fastgpt-prompt "foo")
+              :to-be-equal-including-properties
+              (propertize "bold" 'font-lock-face 'kagi-bold)))
+    (it "converts $italic$ markup to an italic face"
+      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "$italic$"))
+      (expect (kagi-fastgpt-prompt "foo")
+              :to-be-equal-including-properties
+              (propertize "italic" 'font-lock-face 'kagi-italic)))
+    (it "converts ```code``` markup to a code face"
+      (spy-on #'kagi--call-fastgpt :and-return-value (kagi-test--dummy-output "```echo $*```"))
+      (expect (kagi-fastgpt-prompt "foo")
+              :to-be-equal-including-properties
+              (propertize "echo $*" 'font-lock-face 'kagi-code)))
+    (it "formats references properly"
+      (spy-on #'kagi--call-fastgpt
+              :and-return-value
+              (kagi-test--dummy-output
+               "Main text"
+               '(((title . "First title")
+                  (snippet . "**Snippet 1**")
+                  (url . "https://www.example.org"))
+                 ((title . "Second title")
+                  (snippet . "Snippet $2$")
+                  (url . "https://www.example.com")))))
+      (expect (kagi-fastgpt-prompt "foo")
+              :to-be-equal-including-properties
+              (format "Main text
+
+%s First title
+%s
+https://www.example.org
+
+%s Second title
+Snippet %s
+https://www.example.com"
+                      (propertize "[1]" 'font-lock-face 'kagi-bold)
+                      (propertize "Snippet 1" 'font-lock-face 'kagi-bold)
+                      (propertize "[2]" 'font-lock-face 'kagi-bold)
+                      (propertize "2" 'font-lock-face 'kagi-italic)))))
 
   (xdescribe "Kagi Summarizer"
     (it "contains a spec with an expectation"
