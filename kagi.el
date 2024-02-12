@@ -228,7 +228,7 @@ FastGPT with the following prompt:
 
 (defun kagi--format-reference-index (i)
   "Format the index of reference number I."
-  (propertize (format "[%d]" i) 'font-lock-face 'bold))
+  (propertize (format "[%d]" i) 'font-lock-face 'kagi-bold))
 
 (defun kagi--format-references (references)
   "Format the REFRENCES as a string.
