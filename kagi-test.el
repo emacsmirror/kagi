@@ -151,7 +151,12 @@ https://www.example.com"
           ;; has Spanish in the prompt
           (expect (nth 0 args) :to-match "Spanish")
           ;; called non-interactively
-          (expect (nth 2 args) :to-equal nil)))))
+          (expect (nth 2 args) :to-equal nil)))
+      (it "calls kagi-fastgpt-prompt with interactive flag when called interactively"
+        (kagi-translate "foo" "English" nil t)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          ;; called interactively
+          (expect (nth 2 args) :to-equal t)))))
 
   (xdescribe "Kagi Summarizer"
     (before-each
