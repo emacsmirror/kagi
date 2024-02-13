@@ -61,40 +61,41 @@ TEXT is the output text, optionally with a list of REFERENCES."
     :var ((dummy-output "text"))
     (before-each
       (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
-    (it "converts *bold* markup to a bold face"
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "**bold**"))
-      (expect (kagi-fastgpt-prompt "foo")
-              :to-be-equal-including-properties
-              (propertize "bold" 'font-lock-face 'kagi-bold)))
-    (it "converts <b>bold</b> markup to a bold face"
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "<b>bold</b>"))
-      (expect (kagi-fastgpt-prompt "foo")
-              :to-be-equal-including-properties
-              (propertize "bold" 'font-lock-face 'kagi-bold)))
-    (it "converts $italic$ markup to an italic face"
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "$italic$"))
-      (expect (kagi-fastgpt-prompt "foo")
-              :to-be-equal-including-properties
-              (propertize "italic" 'font-lock-face 'kagi-italic)))
-    (it "converts ```code``` markup to a code face"
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "```echo $*```"))
-      (expect (kagi-fastgpt-prompt "foo")
-              :to-be-equal-including-properties
-              (propertize "echo $*" 'font-lock-face 'kagi-code)))
-    (it "formats references properly"
-      (spy-on #'kagi--call-api
-              :and-return-value
-              (kagi-test--dummy-output
-               "Main text"
-               '(((title . "First title")
-                  (snippet . "**Snippet 1**")
-                  (url . "https://www.example.org"))
-                 ((title . "Second title")
-                  (snippet . "Snippet $2$")
-                  (url . "https://www.example.com")))))
-      (expect (kagi-fastgpt-prompt "foo")
-              :to-be-equal-including-properties
-              (format "Main text
+    (describe "kagi-fastgpt-prompt"
+      (it "converts *bold* markup to a bold face"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "**bold**"))
+        (expect (kagi-fastgpt-prompt "foo")
+                :to-be-equal-including-properties
+                (propertize "bold" 'font-lock-face 'kagi-bold)))
+      (it "converts <b>bold</b> markup to a bold face"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "<b>bold</b>"))
+        (expect (kagi-fastgpt-prompt "foo")
+                :to-be-equal-including-properties
+                (propertize "bold" 'font-lock-face 'kagi-bold)))
+      (it "converts $italic$ markup to an italic face"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "$italic$"))
+        (expect (kagi-fastgpt-prompt "foo")
+                :to-be-equal-including-properties
+                (propertize "italic" 'font-lock-face 'kagi-italic)))
+      (it "converts ```code``` markup to a code face"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "```echo $*```"))
+        (expect (kagi-fastgpt-prompt "foo")
+                :to-be-equal-including-properties
+                (propertize "echo $*" 'font-lock-face 'kagi-code)))
+      (it "formats references properly"
+        (spy-on #'kagi--call-api
+                :and-return-value
+                (kagi-test--dummy-output
+                 "Main text"
+                 '(((title . "First title")
+                    (snippet . "**Snippet 1**")
+                    (url . "https://www.example.org"))
+                   ((title . "Second title")
+                    (snippet . "Snippet $2$")
+                    (url . "https://www.example.com")))))
+        (expect (kagi-fastgpt-prompt "foo")
+                :to-be-equal-including-properties
+                (format "Main text
 
 %s First title
 %s
@@ -103,30 +104,55 @@ https://www.example.org
 %s Second title
 Snippet %s
 https://www.example.com"
-                      (propertize "[1]" 'font-lock-face 'kagi-bold)
-                      (propertize "Snippet 1" 'font-lock-face 'kagi-bold)
-                      (propertize "[2]" 'font-lock-face 'kagi-bold)
-                      (propertize "2" 'font-lock-face 'kagi-italic))))
-    (it "inserts the output when requested"
-      (spy-on #'insert)
-      (kagi-fastgpt-prompt "foo" t)
-      ;; one additional insert call is to fill the temporary buffer for POST data
-      (expect #'insert :to-have-been-called-times 2)
-      (expect #'insert :to-have-been-called-with dummy-output))
-    (it "does not insert the output by default"
-      (spy-on #'insert)
-      (kagi-fastgpt-prompt "foo")
-      ;; one insert call is to fill the temporary buffer for POST data
-      (expect #'insert :to-have-been-called-times 1))
-    (it "shows short output in the echo area when called interactively"
-      (spy-on #'message)
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
-      (kagi-fastgpt-prompt "foo" nil t))
-    (it "shows longer output in a separate buffer when called interactively"
-      (spy-on #'kagi--fastgpt-display-result)
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
-      (kagi-fastgpt-prompt "foo" nil t)
-      (expect #'kagi--fastgpt-display-result :to-have-been-called)))
+                        (propertize "[1]" 'font-lock-face 'kagi-bold)
+                        (propertize "Snippet 1" 'font-lock-face 'kagi-bold)
+                        (propertize "[2]" 'font-lock-face 'kagi-bold)
+                        (propertize "2" 'font-lock-face 'kagi-italic))))
+      (it "inserts the output when requested"
+        (spy-on #'insert)
+        (kagi-fastgpt-prompt "foo" t)
+        ;; one additional insert call is to fill the temporary buffer for POST data
+        (expect #'insert :to-have-been-called-times 2)
+        (expect #'insert :to-have-been-called-with dummy-output))
+      (it "does not insert the output by default"
+        (spy-on #'insert)
+        (kagi-fastgpt-prompt "foo")
+        ;; one insert call is to fill the temporary buffer for POST data
+        (expect #'insert :to-have-been-called-times 1))
+      (it "shows short output in the echo area when called interactively"
+        (spy-on #'message)
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
+        (kagi-fastgpt-prompt "foo" nil t)
+        (expect #'message :to-have-been-called-with dummy-output))
+      (it "shows longer output in a separate buffer when called interactively"
+        (spy-on #'kagi--fastgpt-display-result)
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
+        (kagi-fastgpt-prompt "foo" nil t)
+        (expect #'kagi--fastgpt-display-result :to-have-been-called)))
+    (describe "kagi-translate"
+      (before-each
+        (spy-on #'message)
+        (spy-on #'kagi--fastgpt-display-result))
+      (it "returns output on minimal input"
+        (kagi-translate "foo" "English")
+        (expect #'kagi--call-api :to-have-been-called)
+        (expect #'message :not :to-have-been-called)
+        (expect #'kagi--fastgpt-display-result :not :to-have-been-called))
+      (it "returns output with a source language"
+        (kagi-translate "foo" "English" "Spanish")
+        (expect #'kagi--call-api :to-have-been-called))
+      (it "shows short output in the echo area when called interactively"
+        (spy-on #'message)
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
+        (kagi-translate "foo" "English" nil t)
+        (expect #'message :to-have-been-called-with dummy-output)
+        (expect #'kagi--fastgpt-display-result :not :to-have-been-called))
+      (it "shows longer output in a separate buffer when called interactively"
+        (spy-on #'kagi--fastgpt-display-result)
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
+        (kagi-translate "foo" "English" nil t)
+        (expect #'message :not :to-have-been-called)
+        (expect #'kagi--fastgpt-display-result :to-have-been-called))))
 
   (xdescribe "Kagi Summarizer"
     (before-each
