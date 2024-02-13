@@ -62,6 +62,9 @@ TEXT is the output text, optionally with a list of REFERENCES."
     (before-each
       (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
     (describe "kagi-fastgpt-prompt"
+      (before-each
+        (spy-on #'message)
+        (spy-on #'kagi--fastgpt-display-result))
       (it "converts *bold* markup to a bold face"
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output "**bold**"))
         (expect (kagi-fastgpt-prompt "foo")
@@ -120,39 +123,35 @@ https://www.example.com"
         ;; one insert call is to fill the temporary buffer for POST data
         (expect #'insert :to-have-been-called-times 1))
       (it "shows short output in the echo area when called interactively"
-        (spy-on #'message)
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
         (kagi-fastgpt-prompt "foo" nil t)
-        (expect #'message :to-have-been-called-with dummy-output))
-      (it "shows longer output in a separate buffer when called interactively"
-        (spy-on #'kagi--fastgpt-display-result)
-        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
-        (kagi-fastgpt-prompt "foo" nil t)
-        (expect #'kagi--fastgpt-display-result :to-have-been-called)))
-    (describe "kagi-translate"
-      (before-each
-        (spy-on #'message)
-        (spy-on #'kagi--fastgpt-display-result))
-      (it "returns output on minimal input"
-        (kagi-translate "foo" "English")
-        (expect #'kagi--call-api :to-have-been-called)
-        (expect #'message :not :to-have-been-called)
-        (expect #'kagi--fastgpt-display-result :not :to-have-been-called))
-      (it "returns output with a source language"
-        (kagi-translate "foo" "English" "Spanish")
-        (expect #'kagi--call-api :to-have-been-called))
-      (it "shows short output in the echo area when called interactively"
-        (spy-on #'message)
-        (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
-        (kagi-translate "foo" "English" nil t)
         (expect #'message :to-have-been-called-with dummy-output)
         (expect #'kagi--fastgpt-display-result :not :to-have-been-called))
       (it "shows longer output in a separate buffer when called interactively"
-        (spy-on #'kagi--fastgpt-display-result)
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
-        (kagi-translate "foo" "English" nil t)
+        (kagi-fastgpt-prompt "foo" nil t)
         (expect #'message :not :to-have-been-called)
-        (expect #'kagi--fastgpt-display-result :to-have-been-called))))
+        (expect #'kagi--fastgpt-display-result :to-have-been-called)))
+    (describe "kagi-translate"
+      (before-each
+        (spy-on #'kagi-fastgpt-prompt :and-call-through))
+      (it "returns output on minimal input"
+        (kagi-translate "foo" "English")
+        (expect #'kagi-fastgpt-prompt :to-have-been-called-times 1)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          ;; has English in the prompt
+          (expect (nth 0 args) :to-match "English")
+          ;; called non-interactively
+          (expect (nth 2 args) :to-equal nil)))
+      (it "returns output with a source language"
+        (kagi-translate "foo" "English" "Spanish")
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          ;; has English in the prompt
+          (expect (nth 0 args) :to-match "English")
+          ;; has Spanish in the prompt
+          (expect (nth 0 args) :to-match "Spanish")
+          ;; called non-interactively
+          (expect (nth 2 args) :to-equal nil)))))
 
   (xdescribe "Kagi Summarizer"
     (before-each
