@@ -134,7 +134,7 @@ https://www.example.com"
         (expect #'kagi--fastgpt-display-result :to-have-been-called)))
     (describe "kagi-translate"
       (before-each
-        (spy-on #'kagi-fastgpt-prompt :and-call-through))
+        (spy-on #'kagi-fastgpt-prompt))
       (it "returns output on minimal input"
         (kagi-translate "foo" "English")
         (expect #'kagi-fastgpt-prompt :to-have-been-called-times 1)
