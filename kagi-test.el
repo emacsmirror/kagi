@@ -160,7 +160,17 @@ https://www.example.com"
         (kagi-translate "foo" "English" nil t)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           ;; called interactively
-          (expect (nth 2 args) :to-equal t))))
+          (expect (nth 2 args) :to-equal t)))
+      (it "reads text from the region if active"
+        (spy-on #'use-region-p :and-return-value t)
+        (spy-on #'buffer-substring-no-properties :and-return-value "region text")
+        (spy-on #'region-beginning :and-return-value 0)
+        (spy-on #'region-end :and-return-value 1)
+        (spy-on #'kagi--read-language :and-return-value "toki pona")
+        (call-interactively #'kagi-translate)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "region text")
+          (expect (nth 0 args) :to-match "toki pona"))))
     (describe "kagi-proofread"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
@@ -171,7 +181,15 @@ https://www.example.com"
         (kagi-proofread "foo" t)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           ;; called interactively
-          (expect (nth 2 args) :to-equal t)))))
+          (expect (nth 2 args) :to-equal t)))
+      (it "reads text from the region if active"
+        (spy-on #'use-region-p :and-return-value t)
+        (spy-on #'buffer-substring-no-properties :and-return-value "region text")
+        (spy-on #'region-beginning :and-return-value 0)
+        (spy-on #'region-end :and-return-value 1)
+        (call-interactively #'kagi-proofread)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "region text")))))
 
   (xdescribe "Kagi Summarizer"
     (before-each
