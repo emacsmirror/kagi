@@ -376,13 +376,19 @@ list of conses."
   (save-excursion
     (insert (substring-no-properties summary))))
 
-(defun kagi-fastgpt (prompt)
-  "Submit a PROMPT to FastGPT and return a formatted response string."
+(defun kagi--fastgpt (prompt)
+  "Submit a PROMPT to FastGPT and return a formatted response string.
+
+This is used by `kagi-fastgpt-shell' and `kagi-fastgpt-prompt' to
+obtain a result from FastGPT. Use the latter function for
+retrieving a result from Lisp code."
   (let* ((response (kagi--call-fastgpt prompt))
          (parsed-response (json-parse-string response))
          (output (kagi--gethash parsed-response "data" "output"))
          (references (kagi--gethash parsed-response "data" "references")))
     (format "%s\n\n%s" (kagi--format-output output) (kagi--format-references references))))
+
+(define-obsolete-function-alias 'kagi-fastgpt 'kagi-fastgpt-prompt "0.4")
 
 (defun kagi--fastgpt-display-result (result)
   "Display the RESULT of a FastGPT prompt in a new buffer."
@@ -400,7 +406,7 @@ list of conses."
    :execute-command
    (lambda (command _history callback error-callback)
      (condition-case err
-         (funcall callback (kagi-fastgpt command) nil)
+         (funcall callback (kagi--fastgpt command) nil)
        (json-parse-error (funcall error-callback
                                   (format "Could not parse the server response %s" (cdr err))))
        (error (funcall error-callback (format "An error occurred during the request %s" (cdr err)))))))
@@ -430,7 +436,7 @@ string (suitable for invocations from Emacs Lisp)."
   (interactive (list (read-string "fastgpt> ")
                      current-prefix-arg
                      t))
-  (let* ((result (string-trim (kagi-fastgpt prompt)))
+  (let* ((result (string-trim (kagi--fastgpt prompt)))
          (result-lines (length (string-lines result))))
     (cond ((and insert (not buffer-read-only))
            (save-excursion
