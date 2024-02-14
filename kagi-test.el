@@ -136,25 +136,39 @@ https://www.example.com"
     (describe "kagi-translate"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
-      (it "returns output on minimal input"
-        (kagi-translate "foo" "English")
+      (it "calls kagi-fastgpt-prompt non-interactively with target language in prompt"
+        (kagi-translate "hello" "toki pona")
         (expect #'kagi-fastgpt-prompt :to-have-been-called-times 1)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; has English in the prompt
-          (expect (nth 0 args) :to-match "English")
+          ;; not going to test the exact
+          ;; phrasing of the prompt, but at
+          ;; least 'toki pona' has to
+          ;; appear.
+          (expect (nth 0 args) :to-match "toki pona")
           ;; called non-interactively
           (expect (nth 2 args) :to-equal nil)))
-      (it "returns output with a source language"
-        (kagi-translate "foo" "English" "Spanish")
+      (it "calls kagi-fastgpt-prompt non-interactively with source and target language in prompt"
+        (kagi-translate "bonjour" "toki pona" "French")
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; has English in the prompt
-          (expect (nth 0 args) :to-match "English")
-          ;; has Spanish in the prompt
-          (expect (nth 0 args) :to-match "Spanish")
+          ;; has 'toki pona' in the prompt
+          (expect (nth 0 args) :to-match "toki pona")
+          ;; and has French in the prompt
+          (expect (nth 0 args) :to-match "French")
           ;; called non-interactively
           (expect (nth 2 args) :to-equal nil)))
       (it "calls kagi-fastgpt-prompt with interactive flag when called interactively"
         (kagi-translate "foo" "English" nil t)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          ;; called interactively
+          (expect (nth 2 args) :to-equal t))))
+    (describe "kagi-proofread"
+      (before-each
+        (spy-on #'kagi-fastgpt-prompt))
+      (it "calls kagi-fastgpt-prompt"
+        (kagi-proofread "foo")
+        (expect #'kagi-fastgpt-prompt :to-have-been-called))
+      (it "calls kagi-fastgpt-prompt with interactive flag when called interactively"
+        (kagi-proofread "foo" t)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           ;; called interactively
           (expect (nth 2 args) :to-equal t)))))
