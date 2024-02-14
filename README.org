@@ -200,6 +200,17 @@ If you recognize this confusion, you may want to add the following line to your 
 
 Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-shell= has been invoked, the keybinding is done in a mode hook.
 
+* Development
+
+kagi.el comes with some unit tests, written with [[https://github.com/jorgenschaefer/emacs-buttercup/][buttercup]] and can be executed in a controlled [[https://github.com/cask/cask/][Cask]] environment:
+
+1. =git clone https://github.com/cask/cask/=
+2. =make -C cask install=
+3. Run =cask= in the kagi.el directory to setup the environment.
+4. Run the tests with =cask exec buttercup -L .=
+
+There's also a [[https://github.com/casey/just][justfile]] which allows you to execute =just test= to compile the Emacs Lisp source and run the unit tests afterwards in one go.
+
 * Changelog
 
 ** 0.4pre
@@ -213,6 +224,8 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 - Introduce variable =kagi-summarizer-default-summary-format=, to produce a paragraph summary (default) or a take-away in bullet-list format.
 
 - =kagi-proofread= asks FastGPT to proofread the region, a buffer or a text input.
+
+- Unit tests added.
 
 *** Fixes
 
