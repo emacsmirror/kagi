@@ -24,8 +24,7 @@ Both functions are accessed through Kagi's [[https://help.kagi.com/kagi/api/over
 ** FastGPT
 
 - =kagi-fastgpt-shell= :: Opens a shell buffer in a new window where prompts can be typed. This Kagi FastGPT typically returns output based on actual search results. When point is on one of the listed URLs, press =C-c RET= to open it.
-- =kagi-fastgpt-prompt= :: Enter a prompt in the minibuffer and show the result in a separate buffer. With a universal prefix (=C-u=), the result is inserted at point.
-- =kagi-fastgpt= :: Function to retrieve a FastGPT response, to be used from Lisp code.
+- =kagi-fastgpt-prompt= :: Enter a prompt in the minibuffer and show the result in a separate buffer. With a universal prefix (=C-u=), the result is inserted at point. This function can also be used from Lisp code.
 
 kagi.el has some functions that use FastGPT to perform certain operations on text:
 
@@ -204,6 +203,10 @@ Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-s
 * Changelog
 
 ** 0.4pre
+
+*** Breaking changes
+
+- Obsoleted function =kagi-fastgpt= in favor of =kagi-fastgpt-prompt=. To be removed in a next release.
 
 *** New
 
