@@ -40,6 +40,7 @@
 
 ;;; Code:
 
+(require 'buttercup)
 (require 'kagi)
 
 (defun kagi-test--dummy-output (text &optional references)
