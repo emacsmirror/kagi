@@ -156,11 +156,6 @@ https://www.example.com"
           (expect (nth 0 args) :to-match "French")
           ;; called non-interactively
           (expect (nth 2 args) :to-equal nil)))
-      (it "calls kagi-fastgpt-prompt with interactive flag when called interactively"
-        (kagi-translate "foo" "English" nil t)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; called interactively
-          (expect (nth 2 args) :to-equal t)))
       (it "reads text from the region if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
@@ -170,18 +165,14 @@ https://www.example.com"
         (call-interactively #'kagi-translate)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           (expect (nth 0 args) :to-match "region text")
-          (expect (nth 0 args) :to-match "toki pona"))))
+          (expect (nth 0 args) :to-match "toki pona")
+          (expect (nth 2 args) :to-equal t))))
     (describe "kagi-proofread"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
       (it "calls kagi-fastgpt-prompt"
         (kagi-proofread "foo")
         (expect #'kagi-fastgpt-prompt :to-have-been-called))
-      (it "calls kagi-fastgpt-prompt with interactive flag when called interactively"
-        (kagi-proofread "foo" t)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; called interactively
-          (expect (nth 2 args) :to-equal t)))
       (it "reads text from the region if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
@@ -189,7 +180,8 @@ https://www.example.com"
         (spy-on #'region-end :and-return-value 1)
         (call-interactively #'kagi-proofread)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "region text")))))
+          (expect (nth 0 args) :to-match "region text")
+          (expect (nth 2 args) :to-equal t)))))
 
   (xdescribe "Kagi Summarizer"
     (before-each
