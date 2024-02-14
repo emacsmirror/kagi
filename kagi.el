@@ -386,7 +386,10 @@ retrieving a result from Lisp code."
          (parsed-response (json-parse-string response))
          (output (kagi--gethash parsed-response "data" "output"))
          (references (kagi--gethash parsed-response "data" "references")))
-    (format "%s\n\n%s" (kagi--format-output output) (kagi--format-references references))))
+    (string-trim
+     (format "%s\n\n%s"
+             (kagi--format-output output)
+             (kagi--format-references references)))))
 
 (define-obsolete-function-alias 'kagi-fastgpt 'kagi-fastgpt-prompt "0.4")
 
@@ -436,7 +439,7 @@ string (suitable for invocations from Emacs Lisp)."
   (interactive (list (read-string "fastgpt> ")
                      current-prefix-arg
                      t))
-  (let* ((result (string-trim (kagi--fastgpt prompt)))
+  (let* ((result (kagi--fastgpt prompt))
          (result-lines (length (string-lines result))))
     (cond ((and insert (not buffer-read-only))
            (save-excursion
