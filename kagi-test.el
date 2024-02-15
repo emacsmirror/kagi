@@ -58,7 +58,7 @@ TEXT is the output text, optionally with a list of REFERENCES."
   :expect-mismatch-phrase "Expected `%A' not to be equal (incl. properties) to %b, but `%A' was %a.")
 
 (describe "kagi.el"
-  (describe "Kagi FastGPT"
+  (describe "FastGPT"
     :var ((dummy-output "text"))
     (before-each
       (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
