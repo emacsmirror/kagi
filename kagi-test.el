@@ -172,7 +172,9 @@ https://www.example.com"
         (spy-on #'kagi-fastgpt-prompt))
       (it "calls kagi-fastgpt-prompt"
         (kagi-proofread "foo")
-        (expect #'kagi-fastgpt-prompt :to-have-been-called))
+        (expect #'kagi-fastgpt-prompt :to-have-been-called)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "foo")))
       (it "reads text from the region if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
