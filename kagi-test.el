@@ -159,8 +159,8 @@ https://www.example.com"
       (it "reads text from the region if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
-        (spy-on #'region-beginning :and-return-value 0)
-        (spy-on #'region-end :and-return-value 1)
+        (spy-on #'region-beginning)
+        (spy-on #'region-end)
         (spy-on #'kagi--read-language :and-return-value "toki pona")
         (call-interactively #'kagi-translate)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
@@ -176,8 +176,8 @@ https://www.example.com"
       (it "reads text from the region if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
-        (spy-on #'region-beginning :and-return-value 0)
-        (spy-on #'region-end :and-return-value 1)
+        (spy-on #'region-beginning)
+        (spy-on #'region-end)
         (call-interactively #'kagi-proofread)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           (expect (nth 0 args) :to-match "region text")
