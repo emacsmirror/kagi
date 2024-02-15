@@ -115,13 +115,15 @@ https://www.example.com"
       (it "inserts the output when requested"
         (spy-on #'insert)
         (kagi-fastgpt-prompt "foo" t)
-        ;; one additional insert call is to fill the temporary buffer for POST data
+        ;; one additional insert call is to fill the temporary buffer
+        ;; for POST data
         (expect #'insert :to-have-been-called-times 2)
         (expect #'insert :to-have-been-called-with dummy-output))
       (it "does not insert the output by default"
         (spy-on #'insert)
         (kagi-fastgpt-prompt "foo")
-        ;; one insert call is to fill the temporary buffer for POST data
+        ;; one insert call is to fill the temporary buffer for POST
+        ;; data
         (expect #'insert :to-have-been-called-times 1))
       (it "shows short output in the echo area when called interactively"
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
@@ -140,10 +142,8 @@ https://www.example.com"
         (kagi-translate "hello" "toki pona")
         (expect #'kagi-fastgpt-prompt :to-have-been-called-times 1)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; not going to test the exact
-          ;; phrasing of the prompt, but at
-          ;; least 'toki pona' has to
-          ;; appear.
+          ;; not going to test the exact phrasing of the prompt, but
+          ;; at least 'toki pona' has to appear.
           (expect (nth 0 args) :to-match "toki pona")
           ;; called non-interactively
           (expect (nth 2 args) :to-equal nil)))
