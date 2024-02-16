@@ -58,10 +58,10 @@ TEXT is the output text, optionally with a list of REFERENCES."
   :expect-mismatch-phrase "Expected `%A' not to be equal (incl. properties) to %b, but `%A' was %a.")
 
 (describe "kagi.el"
+  :var ((dummy-output "text"))
+  (before-each
+    (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
   (describe "FastGPT"
-    :var ((dummy-output "text"))
-    (before-each
-      (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
     (describe "kagi-fastgpt-prompt"
       (before-each
         (spy-on #'message)
@@ -235,8 +235,6 @@ https://www.example.com"
         (expect (call-interactively #'kagi-proofread) :to-throw))))
 
   (xdescribe "Summarizer"
-    (before-each
-      (spy-on #'kagi--call-api))
     (it "contains a spec with an expectation"
       (expect t :to-be t))))
 
