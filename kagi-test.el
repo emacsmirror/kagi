@@ -234,8 +234,23 @@ https://www.example.com"
         (spy-on #'get-buffer :and-return-value nil)
         (expect (call-interactively #'kagi-proofread) :to-throw))))
 
-  (xdescribe "Summarizer"
-    (it "contains a spec with an expectation"
-      (expect t :to-be t))))
+  (describe "Summarizer"
+    :var ((just-enough-input nil)
+          (just-too-little-input nil))
+    (before-all
+      (dotimes (_ 50) (push "a" just-enough-input))
+      (setq just-too-little-input (string-join (cdr just-enough-input) " "))
+      (setq just-enough-input (string-join just-enough-input " ")))
+    (describe "kagi-summarize"
+      (it "returns a summary on minimal input"
+        (expect (kagi-summarize just-enough-input) :to-equal dummy-output))
+      (it "throws on just too little output"
+        (expect (kagi-summarize just-too-little-input) :to-throw))
+      (it "throws an error on too little input"
+        (expect (kagi-summarize "foo") :to-throw))
+      (it "throws an error on empty input"
+        (expect (kagi-summarize "") :to-throw))
+      (it "throws an error on missing input"
+        (expect (kagi-summarize nil) :to-throw)))))
 
 ;;; kagi-test.el ends here
