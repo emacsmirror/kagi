@@ -156,7 +156,7 @@ https://www.example.com"
           (expect (nth 0 args) :to-match "French")
           ;; called non-interactively
           (expect (nth 2 args) :to-equal nil)))
-      (it "reads text from the region if active"
+      (it "passes the region text to kagi-fastgpt-prompt, if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
         (spy-on #'region-beginning)
@@ -166,7 +166,33 @@ https://www.example.com"
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           (expect (nth 0 args) :to-match "region text")
           (expect (nth 0 args) :to-match "toki pona")
-          (expect (nth 2 args) :to-equal t))))
+          (expect (nth 2 args) :to-equal t)))
+      (it "passes the user input if the region is inactive"
+        (spy-on #'use-region-p :and-return-value nil)
+        (spy-on #'kagi--read-language :and-return-value "toki pona")
+        (spy-on #'read-buffer :and-return-value "user text")
+        (spy-on #'get-buffer :and-return-value nil)
+        (call-interactively #'kagi-translate)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "user text")
+          (expect (nth 2 args) :to-equal t)))
+      (it "passes the buffer text if buffer is selected"
+        (spy-on #'use-region-p :and-return-value nil)
+        (spy-on #'kagi--read-language :and-return-value "toki pona")
+        (spy-on #'read-buffer)
+        (spy-on #'get-buffer :and-return-value t)
+        (spy-on #'set-buffer)
+        (spy-on #'buffer-string :and-return-value "buffer text")
+        (call-interactively #'kagi-translate)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "buffer text")
+          (expect (nth 2 args) :to-equal t)))
+      (it "raises an error when no text is given"
+        (spy-on #'use-region-p :and-return-value nil)
+        (spy-on #'kagi--read-language :and-return-value "toki pona")
+        (spy-on #'read-buffer :and-return-value "")
+        (spy-on #'get-buffer :and-return-value nil)
+        (expect (call-interactively #'kagi-translate) :to-throw)))
     (describe "kagi-proofread"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
@@ -175,7 +201,7 @@ https://www.example.com"
         (expect #'kagi-fastgpt-prompt :to-have-been-called)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           (expect (nth 0 args) :to-match "foo")))
-      (it "reads text from the region if active"
+      (it "passes the region text to kagi-fastgpt-prompt, if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
         (spy-on #'region-beginning)
@@ -183,9 +209,32 @@ https://www.example.com"
         (call-interactively #'kagi-proofread)
         (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
           (expect (nth 0 args) :to-match "region text")
-          (expect (nth 2 args) :to-equal t)))))
+          (expect (nth 2 args) :to-equal t)))
+      (it "passes the user input if the region is inactive"
+        (spy-on #'use-region-p :and-return-value nil)
+        (spy-on #'read-buffer :and-return-value "user text")
+        (spy-on #'get-buffer :and-return-value nil)
+        (call-interactively #'kagi-proofread)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "user text")
+          (expect (nth 2 args) :to-equal t)))
+      (it "passes the buffer text if buffer is selected"
+        (spy-on #'use-region-p :and-return-value nil)
+        (spy-on #'read-buffer)
+        (spy-on #'get-buffer :and-return-value t)
+        (spy-on #'set-buffer)
+        (spy-on #'buffer-string :and-return-value "buffer text")
+        (call-interactively #'kagi-proofread)
+        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
+          (expect (nth 0 args) :to-match "buffer text")
+          (expect (nth 2 args) :to-equal t)))
+      (it "raises an error when no text is given"
+        (spy-on #'use-region-p :and-return-value nil)
+        (spy-on #'read-buffer :and-return-value "")
+        (spy-on #'get-buffer :and-return-value nil)
+        (expect (call-interactively #'kagi-proofread) :to-throw))))
 
-  (xdescribe "Kagi Summarizer"
+  (xdescribe "Summarizer"
     (before-each
       (spy-on #'kagi--call-api))
     (it "contains a spec with an expectation"
