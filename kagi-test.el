@@ -319,6 +319,17 @@ https://www.example.com"
         (setq kagi-summarizer-engine "steve")
         (expect (kagi-summarize dummy-https-url) :to-equal dummy-output)
         (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "engine") :to-equal "cecil"))))))
+          (expect (map-elt args "engine") :to-equal "cecil")))
+      (it "returns a summary when the take-away style is requested"
+        (expect (kagi-summarize just-enough-text-input nil nil 'takeaway) :to-equal dummy-output))
+      (it "uses the summary style when an invalid format is given"
+        (kagi-summarize just-enough-text-input nil nil 'invalid)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "summary_type") :to-equal 'summary)))
+      (it "uses the summary style when an invalid format is configured"
+        (setq kagi-summarizer-default-summary-format 'invalid)
+        (kagi-summarize just-enough-text-input)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "summary_type") :to-equal 'summary))))))
 
 ;;; kagi-test.el ends here

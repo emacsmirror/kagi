@@ -551,6 +551,14 @@ to `kagi-summarizer-default-language'."
          (downcase kagi-summarizer-engine))
         (t "cecil")))
 
+(defun kagi--summarizer-format (hint)
+  "Return a valid summary type based on the type given in HINT."
+  (let ((choices '(summary takeaway)))
+    (cond ((seq-contains-p choices hint) hint)
+          ((seq-contains-p choices kagi-summarizer-default-summary-format)
+           kagi-summarizer-default-summary-format)
+          (t 'summary))))
+
 (defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
 
@@ -567,7 +575,8 @@ of text and `takeaway' returns a bullet list."
           (kagi--summarizer-determine-language language))
          (kagi-summarizer-engine
           (kagi--summarizer-engine engine))
-         (kagi-summarizer-default-summary-format format))
+         (kagi-summarizer-default-summary-format
+          (kagi--summarizer-format format)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
