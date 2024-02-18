@@ -514,7 +514,11 @@ no issues."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
 (defun kagi--summarizer-determine-language (hint)
-  "Determine the language for the summary given a language HINT."
+  "Determine the language for the summary given a language HINT.
+
+The HINT may be a language code (e.g. `DE') or a language
+name (e.g. `GERMAN'). If as invalid hint is given, it falls back
+to `kagi-summarizer-default-language'."
   (if hint
       (or
        (map-elt kagi--summarizer-languages (capitalize hint))
