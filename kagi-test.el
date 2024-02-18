@@ -254,7 +254,7 @@ https://www.example.com"
     (describe "kagi-summarize"
       :var ((kagi-summarizer-default-language))
       (before-each
-        (setq kagi-summarizer-default-language "XY"))
+        (setq kagi-summarizer-default-language "NL"))
       (it "returns a summary on minimal text input"
         (expect (kagi-summarize just-enough-text-input) :to-equal dummy-output))
       (it "makes exactly one API call"
@@ -287,11 +287,16 @@ https://www.example.com"
       (it "falls back to the default language for invalid language codes"
         (expect (kagi-summarize just-enough-text-input "VL") :to-equal dummy-output)
         (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "XY")))
+          (expect (map-elt args "target_language") :to-equal "NL")))
       (it "falls back to the default language for invalid language names"
         (expect (kagi-summarize just-enough-text-input "Valyrian") :to-equal dummy-output)
         (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "XY")))
+          (expect (map-elt args "target_language") :to-equal "NL")))
+      (it "falls back to English if the default language is invalid"
+        (setq kagi-summarizer-default-language "XY")
+        (expect (kagi-summarize just-enough-text-input "Valyrian") :to-equal dummy-output)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "EN")))
       (it "returns a summary for an HTTPS URL"
         (expect (kagi-summarize dummy-https-url) :to-equal dummy-output))
       (it "returns a summary for an uppercase HTTPS URL"

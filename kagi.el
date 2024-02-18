@@ -513,25 +513,31 @@ no issues."
   "Non-nil if string S is a URL."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
+(defun kagi--valid-language-name-p (language)
+  "Return non-nil if LANGUAGE is a valid language name."
+  (and (stringp language)
+       (map-elt kagi--summarizer-languages (capitalize language))))
+
+(defun kagi--valid-language-code-p (language)
+  "Return t if LANGUAGE is a valid two letter language code for the summarizer."
+  (and (stringp language)
+       (seq-contains-p
+        (map-values kagi--summarizer-languages)
+        (upcase language))))
+
 (defun kagi--summarizer-determine-language (hint)
   "Determine the language for the summary given a language HINT.
 
 The HINT may be a language code (e.g. `DE') or a language
-name (e.g. `GERMAN'). If as invalid hint is given, it falls back
+name (e.g. `German'). If as invalid hint is given, it falls back
 to `kagi-summarizer-default-language'."
-  (if (stringp hint)
-      (or
-       ;; check language code
-       (map-elt kagi--summarizer-languages (capitalize hint))
-       ;; not a valid code, check it as a name
-       (and (seq-contains-p
-             (map-values kagi--summarizer-languages)
-             (upcase hint))
-            (upcase hint))
-       ;; neither valid code or name, fallback
-       kagi-summarizer-default-language)
-    ;; hint was nil or something else, fallback
-    kagi-summarizer-default-language))
+  (cond
+   ((kagi--valid-language-code-p hint) (upcase hint))
+   ((kagi--valid-language-name-p hint)
+    (map-elt kagi--summarizer-languages (capitalize hint)))
+   ((kagi--valid-language-code-p kagi-summarizer-default-language)
+    kagi-summarizer-default-language)
+   (t "EN")))
 
 (defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
