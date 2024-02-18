@@ -305,7 +305,7 @@ https://www.example.com"
         (expect (kagi-summarize dummy-http-url) :to-equal dummy-output))
       (it "throws for an unsupported URL scheme"
         (expect (kagi-summarize dummy-ftp-url) :to-throw))
-      (it "return a summary for a valid engine with different capitalization"
+      (it "returns a summary for a valid engine with different capitalization"
         (expect (kagi-summarize dummy-https-url nil "Daphne") :to-equal dummy-output)
         (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
           (expect (map-elt args "engine") :to-equal "daphne"))
