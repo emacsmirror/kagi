@@ -238,22 +238,63 @@ https://www.example.com"
         (expect (call-interactively #'kagi-proofread) :to-throw))))
 
   (describe "Summarizer"
-    :var ((just-enough-input nil)
-          (just-too-little-input nil))
+    :var ((just-enough-text-input nil)
+          (just-too-little-text-input nil)
+          (dummy-https-url "https://www.example.com")
+          (dummy-http-url "http://www.example.com")
+          (dummp-ftp-url "ftp://example.com"))
     (before-all
-      (dotimes (_ 50) (push "a" just-enough-input))
-      (setq just-too-little-input (string-join (cdr just-enough-input) " "))
-      (setq just-enough-input (string-join just-enough-input " ")))
+      (dotimes (_ 50) (push "a" just-enough-text-input))
+      (setq just-too-little-text-input (string-join (cdr just-enough-text-input) " "))
+      (setq just-enough-text-input (string-join just-enough-text-input " ")))
+    (before-each
+      (spy-on #'kagi--call-summarizer :and-call-through))
     (describe "kagi-summarize"
-      (it "returns a summary on minimal input"
-        (expect (kagi-summarize just-enough-input) :to-equal dummy-output))
-      (it "throws on just too little output"
-        (expect (kagi-summarize just-too-little-input) :to-throw))
-      (it "throws an error on too little input"
+      :var ((kagi-summarizer-default-language))
+      (before-each
+        (setq kagi-summarizer-default-language "XY"))
+      (it "returns a summary on minimal text input"
+        (expect (kagi-summarize just-enough-text-input) :to-equal dummy-output))
+      (it "makes exactly one API call"
+        (kagi-summarize just-enough-text-input)
+        (expect #'kagi--call-api :to-have-been-called-times 1))
+      (it "throws on just too little text output"
+        (expect (kagi-summarize just-too-little-text-input) :to-throw))
+      (it "throws an error on too little text input"
         (expect (kagi-summarize "foo") :to-throw))
       (it "throws an error on empty input"
         (expect (kagi-summarize "") :to-throw))
       (it "throws an error on missing input"
-        (expect (kagi-summarize nil) :to-throw)))))
+        (expect (kagi-summarize nil) :to-throw))
+      (it "returns a summary for a valid language code"
+        (expect (kagi-summarize just-enough-text-input "NL" :to-equal dummy-output))
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "NL")))
+      (it "returns a summary for a valid language code with wrong capitalization"
+        (expect (kagi-summarize just-enough-text-input "nL" :to-equal dummy-output))
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "NL")))
+      (it "returns a summary for a valid language name"
+        (expect (kagi-summarize just-enough-text-input "Dutch" :to-equal dummy-output))
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "NL")))
+      (it "returns a summary for a valid language name with different capitalization"
+        (expect (kagi-summarize just-enough-text-input "dUtch" :to-equal dummy-output))
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "NL")))
+      (it "falls back to the default language for invalid language codes"
+        (expect (kagi-summarize just-enough-text-input "VL") :to-equal dummy-output)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "XY")))
+      (it "falls back to the default language for invalid language names"
+        (expect (kagi-summarize just-enough-text-input "Valyrian") :to-equal dummy-output)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "target_language") :to-equal "XY")))
+      (it "returns a summary for an HTTPS URL"
+        (expect (kagi-summarize dummy-https-url) :to-equal dummy-output))
+      (it "returns a summary for an HTTP URL"
+        (expect (kagi-summarize dummy-http-url) :to-equal dummy-output))
+      (it "throws for an unsupported URL scheme"
+        (expect (kagi-summarize dummy-ftp-url) :to-throw)))))
 
 ;;; kagi-test.el ends here

@@ -513,6 +513,15 @@ no issues."
   "Non-nil if string S is a URL."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
+(defun kagi--summarizer-determine-language (hint)
+  "Determine the language for the summary given a language HINT."
+  (if hint
+      (or
+       (map-elt kagi--summarizer-languages (capitalize hint))
+       (and (seq-contains-p (map-values kagi--summarizer-languages) (upcase hint)) (upcase hint))
+       kagi-summarizer-default-language)
+    kagi-summarizer-default-language))
+
 (defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
 
@@ -526,9 +535,7 @@ defined in `kagi--summarizer-engines'.
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list."
   (let* ((kagi-summarizer-default-language
-          (if (stringp language)
-              (upcase language)
-            kagi-summarizer-default-language))
+          (kagi--summarizer-determine-language language))
          (kagi-summarizer-engine
           (if (stringp engine)
               (downcase engine)
