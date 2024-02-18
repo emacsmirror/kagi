@@ -571,12 +571,12 @@ defined in `kagi--summarizer-engines'.
 
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list."
-  (let* ((kagi-summarizer-default-language
-          (kagi--summarizer-determine-language language))
-         (kagi-summarizer-engine
-          (kagi--summarizer-engine engine))
-         (kagi-summarizer-default-summary-format
-          (kagi--summarizer-format format)))
+  (let ((kagi-summarizer-default-language
+         (kagi--summarizer-determine-language language))
+        (kagi-summarizer-engine
+         (kagi--summarizer-engine engine))
+        (kagi-summarizer-default-summary-format
+         (kagi--summarizer-format format)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
