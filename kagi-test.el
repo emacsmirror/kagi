@@ -134,7 +134,10 @@ https://www.example.com"
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
         (kagi-fastgpt-prompt "foo" nil t)
         (expect #'message :not :to-have-been-called)
-        (expect #'kagi--fastgpt-display-result :to-have-been-called)))
+        (expect #'kagi--fastgpt-display-result :to-have-been-called))
+      (it "makes exactly one API call"
+        (kagi-fastgpt-prompt "foo")
+        (expect #'kagi--call-api :to-have-been-called-times 1)))
     (describe "kagi-translate"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
