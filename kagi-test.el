@@ -242,7 +242,9 @@ https://www.example.com"
           (just-too-little-text-input nil)
           (dummy-https-url "https://www.example.com")
           (dummy-http-url "http://www.example.com")
-          (dummp-ftp-url "ftp://example.com"))
+          (dummy-ftp-url "ftp://example.com")
+          ;; make pattern matching case sensitive
+          (case-fold-search nil))
     (before-all
       (dotimes (_ 50) (push "a" just-enough-text-input))
       (setq just-too-little-text-input (string-join (cdr just-enough-text-input) " "))
@@ -292,6 +294,8 @@ https://www.example.com"
           (expect (map-elt args "target_language") :to-equal "XY")))
       (it "returns a summary for an HTTPS URL"
         (expect (kagi-summarize dummy-https-url) :to-equal dummy-output))
+      (it "returns a summary for an uppercase HTTPS URL"
+        (expect (kagi-summarize (upcase dummy-https-url)) :to-equal dummy-output))
       (it "returns a summary for an HTTP URL"
         (expect (kagi-summarize dummy-http-url) :to-equal dummy-output))
       (it "throws for an unsupported URL scheme"
