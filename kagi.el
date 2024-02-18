@@ -539,6 +539,18 @@ to `kagi-summarizer-default-language'."
     kagi-summarizer-default-language)
    (t "EN")))
 
+(defun kagi--valid-engine-p (engine)
+  "Return non-nil when the given ENGINE is valid."
+  (and (stringp engine)
+       (map-elt kagi--summarizer-engines (downcase engine))))
+
+(defun kagi--summarizer-engine (hint)
+  "Return a valid engine name based on the name given in HINT."
+  (cond ((kagi--valid-engine-p hint) (downcase hint))
+        ((kagi--valid-engine-p kagi-summarizer-engine)
+         (downcase kagi-summarizer-engine))
+        (t "cecil")))
+
 (defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
 
@@ -554,9 +566,7 @@ of text and `takeaway' returns a bullet list."
   (let* ((kagi-summarizer-default-language
           (kagi--summarizer-determine-language language))
          (kagi-summarizer-engine
-          (if (stringp engine)
-              (downcase engine)
-            kagi-summarizer-engine))
+          (kagi--summarizer-engine engine))
          (kagi-summarizer-default-summary-format format))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)

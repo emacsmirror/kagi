@@ -304,6 +304,21 @@ https://www.example.com"
       (it "returns a summary for an HTTP URL"
         (expect (kagi-summarize dummy-http-url) :to-equal dummy-output))
       (it "throws for an unsupported URL scheme"
-        (expect (kagi-summarize dummy-ftp-url) :to-throw)))))
+        (expect (kagi-summarize dummy-ftp-url) :to-throw))
+      (it "return a summary for a valid engine with different capitalization"
+        (expect (kagi-summarize dummy-https-url nil "Daphne") :to-equal dummy-output)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "engine") :to-equal "daphne"))
+        )
+      (it "uses kagi-summarizer-engine variable for invalid engine values"
+        (setq kagi-summarizer-engine "Daphne")
+        (expect (kagi-summarize dummy-https-url nil "bram") :to-equal dummy-output)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "engine") :to-equal "daphne")))
+      (it "uses the cecil engine when an invalid engine is configured"
+        (setq kagi-summarizer-engine "steve")
+        (expect (kagi-summarize dummy-https-url) :to-equal dummy-output)
+        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
+          (expect (map-elt args "engine") :to-equal "cecil"))))))
 
 ;;; kagi-test.el ends here
