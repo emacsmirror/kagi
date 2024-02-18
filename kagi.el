@@ -519,11 +519,18 @@ no issues."
 The HINT may be a language code (e.g. `DE') or a language
 name (e.g. `GERMAN'). If as invalid hint is given, it falls back
 to `kagi-summarizer-default-language'."
-  (if hint
+  (if (stringp hint)
       (or
+       ;; check language code
        (map-elt kagi--summarizer-languages (capitalize hint))
-       (and (seq-contains-p (map-values kagi--summarizer-languages) (upcase hint)) (upcase hint))
+       ;; not a valid code, check it as a name
+       (and (seq-contains-p
+             (map-values kagi--summarizer-languages)
+             (upcase hint))
+            (upcase hint))
+       ;; neither valid code or name, fallback
        kagi-summarizer-default-language)
+    ;; hint was nil or something else, fallback
     kagi-summarizer-default-language))
 
 (defun kagi-summarize (text-or-url &optional language engine format)
