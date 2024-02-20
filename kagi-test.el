@@ -330,6 +330,23 @@ https://www.example.com"
         (setq kagi-summarizer-default-summary-format 'invalid)
         (kagi-summarize just-enough-text-input)
         (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "summary_type") :to-equal 'summary))))))
+          (expect (map-elt args "summary_type") :to-equal 'summary))))
+    (describe "kagi-summarize-buffer"
+      (before-each
+        (spy-on #'read-buffer)
+        (spy-on #'set-buffer)
+        (spy-on #'kagi-summarize)
+        (spy-on #'kagi--display-summary)
+        (spy-on #'kagi--insert-summary))
+      (it "calls kagi-summarize with text"
+        (kagi-summarize-buffer "dummy")
+        (expect #'kagi-summarize :to-have-been-called)
+        (expect #'kagi--display-summary :to-have-been-called)
+        (expect #'kagi--insert-summary :not :to-have-been-called))
+      (it "inserts the summary when requested"
+        (kagi-summarize-buffer "dummy" t)
+        (expect #'kagi-summarize :to-have-been-called)
+        (expect #'kagi--display-summary :not :to-have-been-called)
+        (expect #'kagi--insert-summary :to-have-been-called)))))
 
 ;;; kagi-test.el ends here
