@@ -225,6 +225,8 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 
 - =kagi-proofread= asks FastGPT to proofread the region, a buffer or a text input.
 
+- =kagi-summarize-buffer= returns the summary when called non-interactively.
+
 - Unit tests added.
 
 *** Fixes

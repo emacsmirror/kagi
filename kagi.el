@@ -631,7 +631,7 @@ this when PROMPT-INSERT-P is non-nil."
          #'string=))))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer &optional insert language engine format)
+(defun kagi-summarize-buffer (buffer &optional insert language engine format interactive-p)
   "Summarize the BUFFER's content and show it in a new window.
 
 By default, the summary is shown in a new buffer.
@@ -654,16 +654,17 @@ With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
 target LANGUAGE to use, which summarizer ENGINE to use and which
 summary FORMAT to use."
-  (interactive (cons
-                (read-buffer (format-prompt "Buffer" "") nil t)
-                (kagi--get-summarizer-parameters t)))
+  (interactive (append
+                (list (read-buffer (format-prompt "Buffer" "") nil t))
+                (kagi--get-summarizer-parameters t)
+                (list t)))
   (let ((summary (with-current-buffer buffer
                    (kagi-summarize (buffer-string) language engine format)))
         (summary-buffer-name (with-current-buffer buffer
                                (kagi--summary-buffer-name (buffer-name)))))
-    (if (and insert (not buffer-read-only))
-        (kagi--insert-summary summary)
-      (kagi--display-summary summary summary-buffer-name))))
+    (cond ((and insert (not buffer-read-only)) (kagi--insert-summary summary))
+          (interactive-p (kagi--display-summary summary summary-buffer-name))
+          (t summary))))
 
 ;;;###autoload
 (defun kagi-summarize-region (begin end &optional language engine format)
