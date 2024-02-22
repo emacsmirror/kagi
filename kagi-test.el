@@ -383,7 +383,8 @@ https://www.example.com"
       (before-each
         (spy-on #'kagi-summarize :and-return-value dummy-output)
         (spy-on #'read-string :and-return-value "https://www.example.com")
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(nil lang bram random)))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(nil lang bram random))
+        (spy-on #'kagi--insert-summary))
       (it "passes arguments to kagi-summary"
         (call-interactively #'kagi-summarize-url)
         (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
@@ -392,6 +393,7 @@ https://www.example.com"
       (it "opens a buffer with the summary"
         (call-interactively #'kagi-summarize-url)
         (expect #'kagi--display-summary :to-have-been-called)
+        (expect #'kagi--insert-summary :not :to-have-been-called)
         (kagi-test--expect-arg #'kagi--display-summary 0 :to-equal dummy-output))
       (it "opens a buffer with the domain name for an HTTPS URL"
         (call-interactively #'kagi-summarize-url)
@@ -417,7 +419,7 @@ https://www.example.com"
         (call-interactively #'kagi-summarize-url)
         (expect #'kagi--display-summary :to-have-been-called)
         (kagi-test--expect-arg #'kagi--display-summary 1 :to-equal "abc.example.com (summary)"))
-      (xit "inserts the summary when requested non-interactively"
+      (it "inserts the summary when requested non-interactively"
         (kagi-summarize-url "https://www.example.com" t)
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called)
