@@ -653,7 +653,9 @@ of text and `takeaway' returns a bullet list.
 With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
 target LANGUAGE to use, which summarizer ENGINE to use and which
-summary FORMAT to use."
+summary FORMAT to use.
+
+INTERACTIVE-P is t when called interactively."
   (interactive (append
                 (list (read-buffer (format-prompt "Buffer" "") nil t))
                 (kagi--get-summarizer-parameters t)
