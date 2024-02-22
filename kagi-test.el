@@ -64,6 +64,13 @@ The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
   `(let ((args (spy-calls-args-for ,function-symbol 0)))
      (expect (nth ,num args) ,@expect-args)))
 
+(defmacro kagi-test--expect-object (function-symbol key &rest expect-args)
+  "Check the argument NUM of the first call of FUNCTION-SYMBOL.
+
+The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
+  `(let ((args (car (spy-calls-args-for ,function-symbol 0))))
+     (expect (map-elt args ,key) ,@expect-args)))
+
 (describe "kagi.el"
   :var ((dummy-output "text"))
   (before-each
@@ -267,33 +274,26 @@ https://www.example.com"
         (expect (kagi-summarize nil) :to-throw))
       (it "returns a summary for a valid language code"
         (expect (kagi-summarize just-enough-text-input "NL" :to-equal dummy-output))
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "NL")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "NL"))
       (it "returns a summary for a valid language code with wrong capitalization"
         (expect (kagi-summarize just-enough-text-input "nL" :to-equal dummy-output))
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "NL")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "NL"))
       (it "returns a summary for a valid language name"
         (expect (kagi-summarize just-enough-text-input "Dutch" :to-equal dummy-output))
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "NL")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "NL"))
       (it "returns a summary for a valid language name with different capitalization"
         (expect (kagi-summarize just-enough-text-input "dUtch" :to-equal dummy-output))
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "NL")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "NL"))
       (it "falls back to the default language for invalid language codes"
         (expect (kagi-summarize just-enough-text-input "VL") :to-equal dummy-output)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "NL")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "NL"))
       (it "falls back to the default language for invalid language names"
         (expect (kagi-summarize just-enough-text-input "Valyrian") :to-equal dummy-output)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "NL")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "NL"))
       (it "falls back to English if the default language is invalid"
         (setq kagi-summarizer-default-language "XY")
         (expect (kagi-summarize just-enough-text-input "Valyrian") :to-equal dummy-output)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "target_language") :to-equal "EN")))
+        (kagi-test--expect-object #'kagi--call-summarizer "target_language" :to-equal "EN"))
       (it "returns a summary for an HTTPS URL"
         (expect (kagi-summarize dummy-https-url) :to-equal dummy-output))
       (it "returns a summary for an uppercase HTTPS URL"
@@ -304,30 +304,24 @@ https://www.example.com"
         (expect (kagi-summarize dummy-ftp-url) :to-throw))
       (it "returns a summary for a valid engine with different capitalization"
         (expect (kagi-summarize dummy-https-url nil "Daphne") :to-equal dummy-output)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "engine") :to-equal "daphne"))
-        )
+        (kagi-test--expect-object #'kagi--call-summarizer "engine" :to-equal "daphne"))
       (it "uses kagi-summarizer-engine variable for invalid engine values"
         (setq kagi-summarizer-engine "Daphne")
         (expect (kagi-summarize dummy-https-url nil "bram") :to-equal dummy-output)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "engine") :to-equal "daphne")))
+        (kagi-test--expect-object #'kagi--call-summarizer "engine" :to-equal "daphne"))
       (it "uses the cecil engine when an invalid engine is configured"
         (setq kagi-summarizer-engine "steve")
         (expect (kagi-summarize dummy-https-url) :to-equal dummy-output)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "engine") :to-equal "cecil")))
+        (kagi-test--expect-object #'kagi--call-summarizer "engine" :to-equal "cecil"))
       (it "returns a summary when the take-away style is requested"
         (expect (kagi-summarize just-enough-text-input nil nil 'takeaway) :to-equal dummy-output))
       (it "uses the summary style when an invalid format is given"
         (kagi-summarize just-enough-text-input nil nil 'invalid)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "summary_type") :to-equal 'summary)))
+        (kagi-test--expect-object #'kagi--call-summarizer "summary_type" :to-equal 'summary))
       (it "uses the summary style when an invalid format is configured"
         (setq kagi-summarizer-default-summary-format 'invalid)
         (kagi-summarize just-enough-text-input)
-        (let ((args (car (spy-calls-args-for #'kagi--call-summarizer 0))))
-          (expect (map-elt args "summary_type") :to-equal 'summary))))
+        (kagi-test--expect-object #'kagi--call-summarizer "summary_type" :to-equal 'summary)))
     (describe "kagi-summarize-buffer"
       (before-each
         (spy-on #'read-buffer)
