@@ -236,7 +236,6 @@ https://www.example.com"
         (spy-on #'read-buffer :and-return-value "")
         (spy-on #'get-buffer)
         (expect (call-interactively #'kagi-proofread) :to-throw))))
-
   (describe "Summarizer"
     :var ((just-enough-text-input nil)
           (just-too-little-text-input nil)
@@ -335,18 +334,40 @@ https://www.example.com"
       (before-each
         (spy-on #'read-buffer)
         (spy-on #'set-buffer)
-        (spy-on #'kagi-summarize)
+        (spy-on #'buffer-name :and-return-value "dummy-buffer")
+        (spy-on #'kagi-summarize :and-return-value dummy-output)
         (spy-on #'kagi--display-summary)
         (spy-on #'kagi--insert-summary))
-      (it "calls kagi-summarize with text"
-        (kagi-summarize-buffer "dummy")
+      (it "returns the summary when called non-interactively"
+        (expect (kagi-summarize-buffer "dummy") :to-be dummy-output)
         (expect #'kagi-summarize :to-have-been-called)
-        (expect #'kagi--display-summary :to-have-been-called)
+        (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :not :to-have-been-called))
-      (it "inserts the summary when requested"
+      (it "inserts the summary when requested, non-interactively"
         (kagi-summarize-buffer "dummy" t)
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :not :to-have-been-called)
-        (expect #'kagi--insert-summary :to-have-been-called)))))
+        (expect #'kagi--insert-summary :to-have-been-called))
+      (it "returns the summary when called interactively"
+        (call-interactively #'kagi-summarize-buffer)
+        (expect #'kagi-summarize :to-have-been-called)
+        (expect #'kagi--display-summary :to-have-been-called)
+        (expect #'kagi--insert-summary :not :to-have-been-called))
+      (it "inserts the summary when requested, interactively"
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(t nil nil))
+        (call-interactively #'kagi-summarize-buffer)
+        (expect #'kagi-summarize :to-have-been-called)
+        (expect #'kagi--display-summary :not :to-have-been-called)
+        (expect #'kagi--insert-summary :to-have-been-called))
+      (it "passes arguments to kagi-summary"
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(t lang bram random))
+        (call-interactively #'kagi-summarize-buffer)
+        (expect #'kagi-summarize :to-have-been-called)
+        (expect #'kagi--display-summary :not :to-have-been-called)
+        (expect #'kagi--insert-summary :to-have-been-called)
+        (let ((args (spy-calls-args-for #'kagi-summarize 0)))
+          (expect (nth 1 args) :to-equal 'lang)
+          (expect (nth 2 args) :to-equal 'bram)
+          (expect (nth 3 args) :to-equal 'random))))))
 
 ;;; kagi-test.el ends here
