@@ -7,8 +7,8 @@ cask *args:
 compile:
 	cask emacs -batch -L . -L test --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $(cask files); (ret=$? ; cask clean-elc && exit $ret)
 
-test: compile
-    cask exec buttercup -L .
+test pattern=".": compile
+    cask exec buttercup -L . --pattern {{pattern}} --no-skip
 
 buttercup:
     emacs -batch -f package-initialize -L . -f buttercup-run-discover
