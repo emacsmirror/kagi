@@ -57,6 +57,13 @@ TEXT is the output text, optionally with a list of REFERENCES."
   :expect-match-phrase "Expected `%A' to be equal (incl. properties) to %b, but `%A' was %a."
   :expect-mismatch-phrase "Expected `%A' not to be equal (incl. properties) to %b, but `%A' was %a.")
 
+(defmacro kagi-test--expect-arg (function-symbol num &rest expect-args)
+  "Check the argument NUM of the first call of FUNCTION-SYMBOL.
+
+The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
+  `(let ((args (spy-calls-args-for ,function-symbol 0)))
+     (expect (nth ,num args) ,@expect-args)))
+
 (describe "kagi.el"
   :var ((dummy-output "text"))
   (before-each
@@ -144,21 +151,19 @@ https://www.example.com"
       (it "calls kagi-fastgpt-prompt non-interactively with target language in prompt"
         (kagi-translate "hello" "toki pona")
         (expect #'kagi-fastgpt-prompt :to-have-been-called-times 1)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; not going to test the exact phrasing of the prompt, but
-          ;; at least 'toki pona' has to appear.
-          (expect (nth 0 args) :to-match "toki pona")
-          ;; called non-interactively
-          (expect (nth 2 args) :to-equal nil)))
+        ;; not going to test the exact phrasing of the prompt, but
+        ;; at least 'toki pona' has to appear.
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "toki pona")
+        ;; called non-interactively
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal nil))
       (it "calls kagi-fastgpt-prompt non-interactively with source and target language in prompt"
         (kagi-translate "bonjour" "toki pona" "French")
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          ;; has 'toki pona' in the prompt
-          (expect (nth 0 args) :to-match "toki pona")
-          ;; and has French in the prompt
-          (expect (nth 0 args) :to-match "French")
-          ;; called non-interactively
-          (expect (nth 2 args) :to-equal nil)))
+        ;; has 'toki pona' in the prompt
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "toki pona")
+        ;; and has French in the prompt
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "French")
+        ;; called non-interactively
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal nil))
       (it "passes the region text to kagi-fastgpt-prompt, if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
@@ -166,19 +171,17 @@ https://www.example.com"
         (spy-on #'region-end)
         (spy-on #'kagi--read-language :and-return-value "toki pona")
         (call-interactively #'kagi-translate)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "region text")
-          (expect (nth 0 args) :to-match "toki pona")
-          (expect (nth 2 args) :to-equal t)))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "region text")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "toki pona")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal t))
       (it "passes the user input if the region is inactive"
         (spy-on #'use-region-p)
         (spy-on #'kagi--read-language :and-return-value "toki pona")
         (spy-on #'read-buffer :and-return-value "user text")
         (spy-on #'get-buffer)
         (call-interactively #'kagi-translate)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "user text")
-          (expect (nth 2 args) :to-equal t)))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "user text")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal t))
       (it "passes the buffer text if buffer is selected"
         (spy-on #'use-region-p)
         (spy-on #'kagi--read-language :and-return-value "toki pona")
@@ -187,9 +190,8 @@ https://www.example.com"
         (spy-on #'set-buffer)
         (spy-on #'buffer-string :and-return-value "buffer text")
         (call-interactively #'kagi-translate)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "buffer text")
-          (expect (nth 2 args) :to-equal t)))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "buffer text")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal t))
       (it "raises an error when no text is given"
         (spy-on #'use-region-p)
         (spy-on #'kagi--read-language :and-return-value "toki pona")
@@ -202,25 +204,22 @@ https://www.example.com"
       (it "calls kagi-fastgpt-prompt"
         (kagi-proofread "foo")
         (expect #'kagi-fastgpt-prompt :to-have-been-called)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "foo")))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "foo"))
       (it "passes the region text to kagi-fastgpt-prompt, if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
         (spy-on #'region-beginning)
         (spy-on #'region-end)
         (call-interactively #'kagi-proofread)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "region text")
-          (expect (nth 2 args) :to-equal t)))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "region text")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal t))
       (it "passes the user input if the region is inactive"
         (spy-on #'use-region-p)
         (spy-on #'read-buffer :and-return-value "user text")
         (spy-on #'get-buffer)
         (call-interactively #'kagi-proofread)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "user text")
-          (expect (nth 2 args) :to-equal t)))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "user text")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal t))
       (it "passes the buffer text if buffer is selected"
         (spy-on #'use-region-p)
         (spy-on #'read-buffer)
@@ -228,9 +227,8 @@ https://www.example.com"
         (spy-on #'set-buffer)
         (spy-on #'buffer-string :and-return-value "buffer text")
         (call-interactively #'kagi-proofread)
-        (let ((args (spy-calls-args-for #'kagi-fastgpt-prompt 0)))
-          (expect (nth 0 args) :to-match "buffer text")
-          (expect (nth 2 args) :to-equal t)))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "buffer text")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal t))
       (it "raises an error when no text is given"
         (spy-on #'use-region-p)
         (spy-on #'read-buffer :and-return-value "")
@@ -365,9 +363,8 @@ https://www.example.com"
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called)
-        (let ((args (spy-calls-args-for #'kagi-summarize 0)))
-          (expect (nth 1 args) :to-equal 'lang)
-          (expect (nth 2 args) :to-equal 'bram)
-          (expect (nth 3 args) :to-equal 'random))))))
+        (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
+        (kagi-test--expect-arg #'kagi-summarize 2 :to-equal 'bram)
+        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)))))
 
 ;;; kagi-test.el ends here
