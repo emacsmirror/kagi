@@ -254,7 +254,8 @@ https://www.example.com"
       (setq just-too-little-text-input (string-join (cdr just-enough-text-input) " "))
       (setq just-enough-text-input (string-join just-enough-text-input " ")))
     (before-each
-      (spy-on #'kagi--call-summarizer :and-call-through))
+      (spy-on #'kagi--call-summarizer :and-call-through)
+      (spy-on #'kagi--display-summary))
     (describe "kagi-summarize"
       :var ((kagi-summarizer-default-language))
       (before-each
@@ -328,7 +329,6 @@ https://www.example.com"
         (spy-on #'set-buffer)
         (spy-on #'buffer-name :and-return-value "dummy-buffer")
         (spy-on #'kagi-summarize :and-return-value dummy-output)
-        (spy-on #'kagi--display-summary)
         (spy-on #'kagi--insert-summary))
       (it "returns the summary when called non-interactively"
         (expect (kagi-summarize-buffer "dummy") :to-be dummy-output)
@@ -359,6 +359,23 @@ https://www.example.com"
         (expect #'kagi--insert-summary :to-have-been-called)
         (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
         (kagi-test--expect-arg #'kagi-summarize 2 :to-equal 'bram)
-        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)))))
+        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)))
+    (describe "kagi-summarize-region"
+      (before-each
+        (spy-on #'region-beginning)
+        (spy-on #'region-end)
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(lang bram random))
+        (spy-on #'kagi-summarize :and-return-value dummy-output)
+        (spy-on #'buffer-name :and-return-value "buffer-name")
+        (spy-on #'buffer-substring-no-properties))
+      (it "passes arguments to kagi-summary"
+        (call-interactively #'kagi-summarize-region)
+        (expect #'kagi--display-summary :to-have-been-called)
+        (kagi-test--expect-arg #'kagi--display-summary 1 :to-equal "buffer-name (summary)")
+        (kagi-test--expect-arg #'kagi-summarize :to-have-been-called)
+        (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
+        (kagi-test--expect-arg #'kagi-summarize 2 :to-equal 'bram)
+        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)))
+    (describe "kagi-summarize-url")))
 
 ;;; kagi-test.el ends here
