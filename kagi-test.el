@@ -340,7 +340,7 @@ https://www.example.com"
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called))
-      (it "returns the summary when called interactively"
+      (it "displays the summary when called interactively"
         (call-interactively #'kagi-summarize-buffer)
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :to-have-been-called)
