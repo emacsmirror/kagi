@@ -249,9 +249,12 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--header" "Content-Type: application/json"
       "--data" "@-")))
 
-(defun kagi--call-api (obj url)
+(defun kagi--call-api (object url)
+  "Submit the OBJECT to the API end-point at URL.
+
+The OBJECT will be JSON encoded and sent as HTTP POST data."
   (with-temp-buffer
-    (insert (json-encode obj))
+    (insert (json-encode object))
     (let* ((call-process-flags '(nil nil "curl" t t nil))
            (curl-flags (kagi--curl-flags))
            (all-flags (append call-process-flags
