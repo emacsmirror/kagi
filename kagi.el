@@ -553,7 +553,8 @@ to `kagi-summarizer-default-language'."
 
 (defun kagi--summarizer-format (hint)
   "Return a valid summary type based on the type given in HINT."
-  (let ((choices '(summary takeaway)))
+  (let* ((custom-type (cdr (get 'kagi-summarizer-default-summary-format 'custom-type)))
+         (choices (mapcar (lambda (e) (car (last e))) custom-type)))
     (cond ((seq-contains-p choices hint) hint)
           ((seq-contains-p choices kagi-summarizer-default-summary-format)
            kagi-summarizer-default-summary-format)

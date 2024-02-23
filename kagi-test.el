@@ -314,6 +314,8 @@ https://www.example.com"
         (setq kagi-summarizer-engine "steve")
         (expect (kagi-summarize dummy-https-url) :to-equal dummy-output)
         (kagi-test--expect-object #'kagi--call-summarizer "engine" :to-equal "cecil"))
+      (it "returns a summary when the summary style is requested"
+        (expect (kagi-summarize just-enough-text-input nil nil 'summary) :to-equal dummy-output))
       (it "returns a summary when the take-away style is requested"
         (expect (kagi-summarize just-enough-text-input nil nil 'takeaway) :to-equal dummy-output))
       (it "uses the summary style when an invalid format is given"
