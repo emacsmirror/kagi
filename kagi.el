@@ -63,14 +63,6 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-stubbed-responses nil
-  "Whether the package should return a stubbed response.
-
-To be used for testing purposes, such that no credits are spent
-on dummy data."
-  :type 'boolean
-  :group 'kagi)
-
 (defcustom kagi-fastgpt-api-url "https://kagi.com/api/v0/fastgpt"
   "The Kagi FastGPT API entry point."
   :type '(choice string function)
@@ -257,34 +249,21 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
       "--header" "Content-Type: application/json"
       "--data" "@-")))
 
-(defvar kagi--fastgpt-stubbed-response
-  "{\"data\":{\"output\":\"<b>Test</b> response in **bold** and $italic$.\"}}"
-  "Stubbed response for the Kagi FastGPT endpoint.")
+(defun kagi--call-api (object url)
+  "Submit the OBJECT to the API end-point at URL.
 
-(defvar kagi--summarizer-stubbed-response
-  "{\"data\":{\"output\":\"```Test``` response.\"}}"
-  "Stubbed response for the Kagi Summarizer endpoint.")
-
-(defun kagi--call-process-region (&rest args)
-  "`call-process-region' wrapper.
-
-Calls `call-process-region' with ARGS, unless
-`kagi-stubbed-responses' is non-nil.
-
-In that case, this function will not do an actual API call but
-return some dummy data."
-  (if (not kagi-stubbed-responses)
-      (apply #'call-process-region args)
-    (let* ((url (car (last args)))
-           (response (cond
-                      ((string= url kagi-fastgpt-api-url)
-                       kagi--fastgpt-stubbed-response)
-                      ((string= url kagi-summarizer-api-url)
-                       kagi--summarizer-stubbed-response)
-                      (t ""))))
-      (erase-buffer)
-      (insert response)
-      0)))
+The OBJECT will be JSON encoded and sent as HTTP POST data."
+  (with-temp-buffer
+    (insert (json-encode object))
+    (let* ((call-process-flags '(nil nil "curl" t t nil))
+           (curl-flags (kagi--curl-flags))
+           (all-flags (append call-process-flags
+                              curl-flags
+                              (list url)))
+           (return (apply #'call-process-region all-flags)))
+      (if (zerop return)
+          (buffer-string)
+        (error "Call to Kagi API returned with status %s" return)))))
 
 (defun kagi--call-fastgpt (prompt)
   "Submit the given PROMPT to the FastGPT API.
@@ -292,17 +271,7 @@ return some dummy data."
 Returns the JSON response as a string. See
 https://help.kagi.com/kagi/api/fastgpt.html for the
 interpretation."
-  (with-temp-buffer
-    (insert (json-encode `((query . ,prompt))))
-    (let* ((call-process-flags '(nil nil "curl" t t nil))
-           (curl-flags (kagi--curl-flags))
-           (all-flags (append call-process-flags
-                              curl-flags
-                              (list kagi-fastgpt-api-url)))
-           (return (apply #'kagi--call-process-region all-flags)))
-      (if (zerop return)
-          (buffer-string)
-        (error "Call to FastGPT API returned with status %s" return)))))
+  (kagi--call-api (list (cons 'query prompt)) kagi-fastgpt-api-url))
 
 (defun kagi--call-summarizer (obj)
   "Submit a request to the Summarizer API.
@@ -312,17 +281,7 @@ The given OBJ is encoded to JSON and used as the request's POST data.
 Returns the JSON response as a string. See
 https://help.kagi.com/kagi/api/summarizer.html for the
 interpretation."
-  (with-temp-buffer
-    (insert (json-encode obj))
-    (let* ((call-process-flags '(nil nil "curl" t t nil))
-           (curl-flags (kagi--curl-flags))
-           (all-flags (append call-process-flags
-                              curl-flags
-                              (list kagi-summarizer-api-url)))
-           (return (apply #'kagi--call-process-region all-flags)))
-      (if (zerop return)
-          (buffer-string)
-        (error "Call to Summarizer API returned with status %s" return)))))
+  (kagi--call-api obj kagi-summarizer-api-url))
 
 (defun kagi--build-summarizer-request-object (items)
   "Build a request object for a summary.
@@ -557,6 +516,53 @@ no issues."
   "Non-nil if string S is a URL."
   (string-match-p (rx (seq bos "http" (? "s") "://" (+ (not space)) eos)) s))
 
+(defun kagi--valid-language-name-p (language)
+  "Return non-nil if LANGUAGE is a valid language name."
+  (and (stringp language)
+       (map-elt kagi--summarizer-languages (capitalize language))))
+
+(defun kagi--valid-language-code-p (language)
+  "Return t if LANGUAGE is a valid two letter language code for the summarizer."
+  (and (stringp language)
+       (seq-contains-p
+        (map-values kagi--summarizer-languages)
+        (upcase language))))
+
+(defun kagi--summarizer-determine-language (hint)
+  "Determine the language for the summary given a language HINT.
+
+The HINT may be a language code (e.g. `DE') or a language
+name (e.g. `German'). If as invalid hint is given, it falls back
+to `kagi-summarizer-default-language'."
+  (cond
+   ((kagi--valid-language-code-p hint) (upcase hint))
+   ((kagi--valid-language-name-p hint)
+    (map-elt kagi--summarizer-languages (capitalize hint)))
+   ((kagi--valid-language-code-p kagi-summarizer-default-language)
+    kagi-summarizer-default-language)
+   (t "EN")))
+
+(defun kagi--valid-engine-p (engine)
+  "Return non-nil when the given ENGINE is valid."
+  (and (stringp engine)
+       (map-elt kagi--summarizer-engines (downcase engine))))
+
+(defun kagi--summarizer-engine (hint)
+  "Return a valid engine name based on the name given in HINT."
+  (cond ((kagi--valid-engine-p hint) (downcase hint))
+        ((kagi--valid-engine-p kagi-summarizer-engine)
+         (downcase kagi-summarizer-engine))
+        (t "cecil")))
+
+(defun kagi--summarizer-format (hint)
+  "Return a valid summary type based on the type given in HINT."
+  (let* ((custom-type (cdr (get 'kagi-summarizer-default-summary-format 'custom-type)))
+         (choices (mapcar (lambda (e) (car (last e))) custom-type)))
+    (cond ((seq-contains-p choices hint) hint)
+          ((seq-contains-p choices kagi-summarizer-default-summary-format)
+           kagi-summarizer-default-summary-format)
+          (t 'summary))))
+
 (defun kagi-summarize (text-or-url &optional language engine format)
   "Return the summary of the given TEXT-OR-URL.
 
@@ -569,15 +575,12 @@ defined in `kagi--summarizer-engines'.
 
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list."
-  (let* ((kagi-summarizer-default-language
-          (if (stringp language)
-              (upcase language)
-            kagi-summarizer-default-language))
-         (kagi-summarizer-engine
-          (if (stringp engine)
-              (downcase engine)
-            kagi-summarizer-engine))
-         (kagi-summarizer-default-summary-format format))
+  (let ((kagi-summarizer-default-language
+         (kagi--summarizer-determine-language language))
+        (kagi-summarizer-engine
+         (kagi--summarizer-engine engine))
+        (kagi-summarizer-default-summary-format
+         (kagi--summarizer-format format)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
@@ -632,7 +635,7 @@ this when PROMPT-INSERT-P is non-nil."
          #'string=))))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer &optional insert language engine format)
+(defun kagi-summarize-buffer (buffer &optional insert language engine format interactive-p)
   "Summarize the BUFFER's content and show it in a new window.
 
 By default, the summary is shown in a new buffer.
@@ -654,17 +657,20 @@ of text and `takeaway' returns a bullet list.
 With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
 target LANGUAGE to use, which summarizer ENGINE to use and which
-summary FORMAT to use."
-  (interactive (cons
-                (read-buffer (format-prompt "Buffer" "") nil t)
-                (kagi--get-summarizer-parameters t)))
+summary FORMAT to use.
+
+INTERACTIVE-P is t when called interactively."
+  (interactive (append
+                (list (read-buffer (format-prompt "Buffer" "") nil t))
+                (kagi--get-summarizer-parameters t)
+                (list t)))
   (let ((summary (with-current-buffer buffer
                    (kagi-summarize (buffer-string) language engine format)))
         (summary-buffer-name (with-current-buffer buffer
                                (kagi--summary-buffer-name (buffer-name)))))
-    (if (and insert (not buffer-read-only))
-        (kagi--insert-summary summary)
-      (kagi--display-summary summary summary-buffer-name))))
+    (cond ((and insert (not buffer-read-only)) (kagi--insert-summary summary))
+          (interactive-p (kagi--display-summary summary summary-buffer-name))
+          (t summary))))
 
 ;;;###autoload
 (defun kagi-summarize-region (begin end &optional language engine format)
