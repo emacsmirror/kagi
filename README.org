@@ -218,7 +218,7 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 
 * Changelog
 
-** 0.4pre
+** 0.4
 
 *** Breaking changes
 
