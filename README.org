@@ -162,25 +162,30 @@ In a similar fashion as above, you could define a function that disables caching
 
 ** Embark integration
 
-The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]], to easily summarize a buffer, region or an URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. Press /K s/ to trigger the summarize functionality.
-
-Add the following to your configuration to trigger summary functionality with key /K s/:
+The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]]. Use it to easily summarize, translate or proofread a buffer, region or a URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. For example, press /K s/ to invoke the summarize functionality.
 
 #+begin_src elisp
-  (defmacro embark-kagi-map (name function)
+  (defmacro embark-kagi-map (name &rest keys)
     "Macro for defining a keymap for accessing Kagi functionality through Embark."
     `(defvar-keymap ,name
        :doc "Keymap for accessing Kagi functionality with Embark."
        :parent nil
-       "s" #',function))
+       ,@keys))
 
-  (embark-kagi-map embark-kagi-buffer-map kagi-summarize-buffer)
+  (embark-kagi-map embark-kagi-buffer-map
+                   "p" #'kagi-proofread
+                   "s" #'kagi-summarize-buffer
+                   "t" #'kagi-translate)
   (keymap-set embark-buffer-map "K" embark-kagi-buffer-map)
 
-  (embark-kagi-map embark-kagi-region-map kagi-summarize-region)
+  (embark-kagi-map embark-kagi-region-map
+                   "p" #'kagi-proofread
+                   "s" #'kagi-summarize-region
+                   "t" #'kagi-translate)
   (keymap-set embark-region-map "K" embark-kagi-region-map)
 
-  (embark-kagi-map embark-kagi-url-map kagi-summarize-url)
+  (embark-kagi-map embark-kagi-url-map
+                   "s" #'kagi-summarize-url)
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
