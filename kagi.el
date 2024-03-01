@@ -73,6 +73,21 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
+(defcustom kagi-fastgpt-prompts
+  '(("Definition" . "Define the following word: ")
+    ("Synonyms" . "Find synonyms for the following word: "))
+  "Prompts to choose for a buffer, text or region.
+
+This is a list of (NAME . PROMPT) elements. The NAME is a short
+name for the prompt. PROMPT can be a string or a
+function (without parameters), returning a prompt string.
+
+The placeholder `%s' can be used inside the prompt to insert the
+text at the given place. If missing, the input will be appended
+to the prompt."
+  :type '(alist :key-type string :value-type (choice string function))
+  :group 'kagi)
+
 (defvar kagi--summarizer-engines
   '(("agnes" . "Friendly, descriptive, fast summary.")
     ("cecil" . "Formal, technical, analytical summary.")
