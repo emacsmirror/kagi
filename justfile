@@ -11,6 +11,3 @@ compile:
 
 test pattern=".": compile
     cask exec buttercup -L . --pattern {{pattern}} --no-skip
-
-buttercup:
-    emacs -batch -f package-initialize -L . -f buttercup-run-discover
