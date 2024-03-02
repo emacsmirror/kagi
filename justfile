@@ -1,5 +1,7 @@
 set positional-arguments
 
+default: test
+
 # for convenience, run cask through bash
 cask *args:
     cask $@
