@@ -41,7 +41,8 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 The summarize commands accept a single universal prefix, which allows you to:
 - insert the summary at point;
 - choose a (different) target language;
-- choose which summary engine to use.
+- choose which summary engine to use;
+- choose which summary format to use (prose or bullet list).
 
 Note that texts submitted to Kagi are subject to their [[https://kagi.com/privacy#Summarizer][Privacy Policy]].
 
