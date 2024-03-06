@@ -324,7 +324,21 @@ https://www.example.com"
       (it "uses the summary style when an invalid format is configured"
         (setq kagi-summarizer-default-summary-format 'invalid)
         (kagi-summarize just-enough-text-input)
-        (kagi-test--expect-object #'kagi--call-summarizer "summary_type" :to-equal 'summary)))
+        (kagi-test--expect-object #'kagi--call-summarizer "summary_type" :to-equal 'summary))
+      (it "lets Kagi cache by default"
+        (kagi-summarize just-enough-text-input)
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal t))
+      (it "does not let Kagi cache when no-cache is set"
+        (kagi-summarize just-enough-text-input nil nil nil t)
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal nil))
+      (it "lets the no-cache argument override the configured value"
+        (setq kagi-summarizer-cache t)
+        (kagi-summarize just-enough-text-input nil nil nil t)
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal nil))
+      (it "does not let Kagi cache if configured"
+        (setq kagi-summarizer-cache nil)
+        (kagi-summarize just-enough-text-input)
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal nil)))
     (describe "kagi-summarize-buffer"
       (before-each
         (spy-on #'read-buffer)

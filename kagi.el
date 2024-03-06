@@ -563,7 +563,7 @@ to `kagi-summarizer-default-language'."
            kagi-summarizer-default-summary-format)
           (t 'summary))))
 
-(defun kagi-summarize (text-or-url &optional language engine format)
+(defun kagi-summarize (text-or-url &optional language engine format no-cache)
   "Return the summary of the given TEXT-OR-URL.
 
 LANGUAGE is a supported two letter abbreviation of the language,
@@ -574,13 +574,20 @@ ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'.
 
 FORMAT is the summary format, where `summary' returns a paragraph
-of text and `takeaway' returns a bullet list."
+of text and `takeaway' returns a bullet list.
+
+When NO-CACHE is t, inputs are not retained inside Kagi's
+infrastructure. When nil, the default value for
+`kagi-summarizer-cache' is used. Set to t for confidential
+content."
   (let ((kagi-summarizer-default-language
          (kagi--summarizer-determine-language language))
         (kagi-summarizer-engine
          (kagi--summarizer-engine engine))
         (kagi-summarizer-default-summary-format
-         (kagi--summarizer-format format)))
+         (kagi--summarizer-format format))
+        ;; TODO break out logic in separate function
+        (kagi-summarizer-cache (if no-cache nil kagi-summarizer-cache)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
@@ -634,6 +641,7 @@ this when PROMPT-INSERT-P is non-nil."
          nil
          #'string=))))))
 
+;; TODO no-cache
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer &optional insert language engine format interactive-p)
   "Summarize the BUFFER's content and show it in a new window.
@@ -672,6 +680,7 @@ INTERACTIVE-P is t when called interactively."
           (interactive-p (kagi--display-summary summary summary-buffer-name))
           (t summary))))
 
+;; TODO no-cache
 ;;;###autoload
 (defun kagi-summarize-region (begin end &optional language engine format)
   "Summarize the region's content marked by BEGIN and END positions.
@@ -701,6 +710,7 @@ ENGINE to use and which summary FORMAT to use."
                    format)
    (kagi--summary-buffer-name (buffer-name))))
 
+;; TODO no-cache
 ;;;###autoload
 (defun kagi-summarize-url (url &optional insert language engine format)
   "Show the summary of the content behind the given URL.
