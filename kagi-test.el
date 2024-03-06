@@ -372,19 +372,20 @@ https://www.example.com"
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called))
       (it "passes arguments to kagi-summary"
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(t lang bram random))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(t lang bram random maybe))
         (call-interactively #'kagi-summarize-buffer)
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called)
         (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
         (kagi-test--expect-arg #'kagi-summarize 2 :to-equal 'bram)
-        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)))
+        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)
+        (kagi-test--expect-arg #'kagi-summarize 4 :to-equal 'maybe)))
     (describe "kagi-summarize-region"
       (before-each
         (spy-on #'region-beginning)
         (spy-on #'region-end)
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(lang bram random))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(lang bram random maybe))
         (spy-on #'kagi-summarize :and-return-value dummy-output)
         (spy-on #'buffer-name :and-return-value "buffer-name")
         (spy-on #'buffer-substring-no-properties))
@@ -394,7 +395,8 @@ https://www.example.com"
         (expect #'kagi-summarize :to-have-been-called)
         (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
         (kagi-test--expect-arg #'kagi-summarize 2 :to-equal 'bram)
-        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random))
+        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)
+        (kagi-test--expect-arg #'kagi-summarize 4 :to-equal 'maybe))
       (it "opens a buffer with the summary"
         (call-interactively #'kagi-summarize-region)
         (expect #'kagi--display-summary :to-have-been-called)
@@ -409,7 +411,8 @@ https://www.example.com"
         (call-interactively #'kagi-summarize-url)
         (kagi-test--expect-arg #'kagi-summarize 1 :to-equal 'lang)
         (kagi-test--expect-arg #'kagi-summarize 2 :to-equal 'bram)
-        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random))
+        (kagi-test--expect-arg #'kagi-summarize 3 :to-equal 'random)
+        (kagi-test--expect-arg #'kagi-summarize 4 :to-equal nil))
       (it "opens a buffer with the summary"
         (call-interactively #'kagi-summarize-url)
         (expect #'kagi--display-summary :to-have-been-called)

@@ -600,11 +600,14 @@ content."
                          (gethash "code" firsterror)))
         (error "An error occurred while requesting a summary")))))
 
-(defun kagi--get-summarizer-parameters (&optional prompt-insert-p)
+(defun kagi--get-summarizer-parameters (&optional prompt-insert-p prompt-cache-p)
   "Return a list of interactively obtained summarizer parameters.
 
 Not all commands need to insert a summary, so only prompt for
-this when PROMPT-INSERT-P is non-nil."
+this when PROMPT-INSERT-P is non-nil.
+
+Likewise, not all commands need to disable the cache, so only
+prompt when PROMPT-CACHE-P is t."
   (append
    (when prompt-insert-p
      (list
@@ -639,11 +642,14 @@ this when PROMPT-INSERT-P is non-nil."
          summary-formats
          kagi-summarizer-default-summary-format
          nil
-         #'string=))))))
+         #'string=))))
+   (list
+    (and prompt-cache-p
+         (equal current-prefix-arg '(4))
+         (y-or-n-p "Cache the result?")))))
 
-;; TODO no-cache
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer &optional insert language engine format interactive-p)
+(defun kagi-summarize-buffer (buffer &optional insert language engine format no-cache interactive-p)
   "Summarize the BUFFER's content and show it in a new window.
 
 By default, the summary is shown in a new buffer.
@@ -662,6 +668,11 @@ defined in `kagi--summarizer-engines'.
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list.
 
+When NO-CACHE is t, inputs are not retained inside Kagi's
+infrastructure. When nil, the default value for
+`kagi-summarizer-cache' is used. Set to t for confidential
+content.
+
 With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
 target LANGUAGE to use, which summarizer ENGINE to use and which
@@ -670,19 +681,18 @@ summary FORMAT to use.
 INTERACTIVE-P is t when called interactively."
   (interactive (append
                 (list (read-buffer (format-prompt "Buffer" "") nil t))
-                (kagi--get-summarizer-parameters t)
+                (kagi--get-summarizer-parameters t t)
                 (list t)))
   (let ((summary (with-current-buffer buffer
-                   (kagi-summarize (buffer-string) language engine format)))
+                   (kagi-summarize (buffer-string) language engine format no-cache)))
         (summary-buffer-name (with-current-buffer buffer
                                (kagi--summary-buffer-name (buffer-name)))))
     (cond ((and insert (not buffer-read-only)) (kagi--insert-summary summary))
           (interactive-p (kagi--display-summary summary summary-buffer-name))
           (t summary))))
 
-;; TODO no-cache
 ;;;###autoload
-(defun kagi-summarize-region (begin end &optional language engine format)
+(defun kagi-summarize-region (begin end &optional language engine format no-cache)
   "Summarize the region's content marked by BEGIN and END positions.
 
 The summary is always shown in a new buffer.
@@ -697,20 +707,25 @@ defined in `kagi--summarizer-engines'.
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list.
 
+When NO-CACHE is t, inputs are not retained inside Kagi's
+infrastructure. When nil, the default value for
+`kagi-summarizer-cache' is used. Set to t for confidential
+content.
+
 With a single universal prefix argument (`C-u'), the user is
 prompted for which target LANGUAGE to use, which summarizer
 ENGINE to use and which summary FORMAT to use."
   (interactive (append
                 (list (region-beginning) (region-end))
-                (kagi--get-summarizer-parameters)))
+                (kagi--get-summarizer-parameters nil t)))
   (kagi--display-summary
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
                    engine
-                   format)
+                   format
+                   no-cache)
    (kagi--summary-buffer-name (buffer-name))))
 
-;; TODO no-cache
 ;;;###autoload
 (defun kagi-summarize-url (url &optional insert language engine format)
   "Show the summary of the content behind the given URL.
