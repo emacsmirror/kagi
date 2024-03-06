@@ -42,7 +42,8 @@ The summarize commands accept a single universal prefix, which allows you to:
 - insert the summary at point;
 - choose a (different) target language;
 - choose which summary engine to use;
-- choose which summary format to use (prose or bullet list).
+- choose which summary format to use (prose or bullet list);
+- opt-out from caching at Kagi for confidential content.
 
 Note that texts submitted to Kagi are subject to their [[https://kagi.com/privacy#Summarizer][Privacy Policy]].
 
@@ -205,6 +206,14 @@ kagi.el comes with some unit tests, written with [[https://github.com/jorgenscha
 There's also a [[https://github.com/casey/just][justfile]] which allows you to execute =just test= to compile the Emacs Lisp source and run the unit tests afterwards in one go.
 
 * Changelog
+
+** 0.5pre
+
+*** New
+
+- =kagi-summarize= has a =no-cache= parameter to opt out from caching at Kagi's side.
+
+- =kagi-summarize-buffer= and =kagi-summarize-region= also have a =no-cache= parameter which can be toggled interactively when called with the universal prefix.
 
 ** 0.4
 
