@@ -237,14 +237,14 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 - Added autoload markers where they were missing.
 - Language selection menu for summaries was not formatted properly.
 
-** 0.3.1
+** 0.3.1 :noexport:
 
 *** Fixes
 
 - Fix for displaying a summary in a new buffer.
 - Fix for =kagi-summarize-region= that doesn't need to ask for insert at point.
 
-** 0.3
+** 0.3 :noexport:
 
 *** New
 
@@ -262,7 +262,7 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 - **text** is converted to the =kagi-bold= face.
 - $text$ is converted to the new =kagi-italic= face.
 
-** 0.2
+** 0.2 :noexport:
 
 *** Breaking changes
 
@@ -284,7 +284,7 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 
 - Add boolean variable =kagi-stubbed-responses= to enable stubbed responses, to replace actual API calls. Since calls are metered, it's more economic to use stubbed responses for development / debugging purposes.
 
-** 0.1
+** 0.1 :noexport:
 
 Initial release.
 
