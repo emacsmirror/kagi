@@ -600,16 +600,17 @@ content."
                          (gethash "code" firsterror)))
         (error "An error occurred while requesting a summary")))))
 
-(defun kagi--get-summarizer-parameters (&optional prompt-insert-p prompt-cache-p)
+(defun kagi--get-summarizer-parameters (&optional prompts)
   "Return a list of interactively obtained summarizer parameters.
 
-Not all commands need to insert a summary, so only prompt for
-this when PROMPT-INSERT-P is non-nil.
-
-Likewise, not all commands need to disable the cache, so only
-prompt when PROMPT-CACHE-P is t."
+Some parameters need to be called interactively, however, for
+some clients that doesn't make sense. E.g. we don't want to ask
+to insert when the region is highlighted. Therefore, PROMPTS is a
+list of items that can be prompted interactively. It is
+a (possibly empty) list with possible elements \\='prompt-for-insert
+or \\='prompt-for-no-cache."
   (append
-   (when prompt-insert-p
+   (when (seq-contains-p prompts 'prompt-for-insert)
      (list
       (and (equal current-prefix-arg '(4))
            (not buffer-read-only)
@@ -644,7 +645,7 @@ prompt when PROMPT-CACHE-P is t."
          nil
          #'string=))))
    (list
-    (and prompt-cache-p
+    (and (seq-contains-p prompts 'prompt-for-no-cache)
          (equal current-prefix-arg '(4))
          (y-or-n-p "Cache the result?")))))
 
@@ -681,7 +682,8 @@ summary FORMAT to use.
 INTERACTIVE-P is t when called interactively."
   (interactive (append
                 (list (read-buffer (format-prompt "Buffer" "") nil t))
-                (kagi--get-summarizer-parameters t t)
+                (kagi--get-summarizer-parameters '(prompt-for-insert
+                                                   prompt-for-no-cache))
                 (list t)))
   (let ((summary (with-current-buffer buffer
                    (kagi-summarize (buffer-string) language engine format no-cache)))
@@ -717,7 +719,7 @@ prompted for which target LANGUAGE to use, which summarizer
 ENGINE to use and which summary FORMAT to use."
   (interactive (append
                 (list (region-beginning) (region-end))
-                (kagi--get-summarizer-parameters nil t)))
+                (kagi--get-summarizer-parameters '(prompt-for-no-cache))))
   (kagi--display-summary
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
@@ -764,7 +766,7 @@ types are supported:
   (interactive
    (cons
     (read-string (format-prompt "URL" ""))
-    (kagi--get-summarizer-parameters t)))
+    (kagi--get-summarizer-parameters '(prompt-for-insert))))
   (let ((summary (kagi-summarize url language engine format)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
