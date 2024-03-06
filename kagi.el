@@ -292,7 +292,7 @@ list of conses."
   (append items
           `(("engine" . ,kagi-summarizer-engine)
             ("summary_type" . ,kagi-summarizer-default-summary-format)
-            ("cache" . ,kagi-summarizer-cache))
+            ("cache" . ,(if kagi-summarizer-cache t nil)))
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.

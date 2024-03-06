@@ -338,7 +338,11 @@ https://www.example.com"
       (it "does not let Kagi cache if configured"
         (setq kagi-summarizer-cache nil)
         (kagi-summarize just-enough-text-input)
-        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal nil)))
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal nil))
+      (it "caches by default for an invalid configuration value"
+        (setq kagi-summarizer-cache 'invalid)
+        (kagi-summarize just-enough-text-input)
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal t)))
     (describe "kagi-summarize-buffer"
       (before-each
         (spy-on #'read-buffer)
