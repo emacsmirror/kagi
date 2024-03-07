@@ -126,29 +126,6 @@ The token can be supplied directly as a string, but you could write a lambda to 
 
 The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
 
-** Examples of custom functions
-
-The =kagi-summarize= function allows you to summarize texts or URLs from Emacs Lisp.
-
-By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. An example is shown below:
-
-*** Caching override
-
-The [[https://help.kagi.com/kagi/api/summarizer.html][Summarizer API]] comes with the following note:
-
-#+begin_quote
-For handling sensitive information and documents, we recommend setting the 'cache' API parameter to False. In this way, the document will "flow through" our infrastructure and will not be retained anywhere after processing.
-#+end_quote
-
-In a similar fashion as above, you could define a function that disables caching temporarily (while having it enabled by default).
-
-#+begin_src elisp
-  (defun my/kagi/sensitive-summary (text)
-    "Summarize the current TEXT with caching disabled.")
-  (let ((kagi-summarizer-cache nil))
-    (kagi-summarize text))
-#+end_src
-
 ** Embark integration
 
 The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]]. Use it to easily summarize, translate or proofread a buffer, region or a URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. For example, press /K s/ to invoke the summarize functionality.
