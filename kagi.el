@@ -351,8 +351,6 @@ retrieving a result from Lisp code."
              (kagi--format-output output)
              (kagi--format-references references)))))
 
-(define-obsolete-function-alias 'kagi-fastgpt 'kagi-fastgpt-prompt "0.4")
-
 (defun kagi--fastgpt-display-result (result)
   "Display the RESULT of a FastGPT prompt in a new buffer."
   (let ((buffer-name (generate-new-buffer-name "*fastgpt-result*")))
