@@ -121,7 +121,8 @@ https://help.kagi.com/kagi/api/summarizer.html."
                           ("Swedish" . "SV")
                           ("Turkish" . "TR")
                           ("Ukrainian" . "UK")
-                          ("Chinese (simplified)" . "ZH"))
+                          ("Chinese (simplified)" . "ZH")
+                          ("Chinese (traditional)" . "ZH-HANT"))
   "Supported languages by the Kagi LLM.")
 
 (defvar kagi--summarizer-languages (append

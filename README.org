@@ -192,6 +192,8 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 
 - =kagi-summarize-buffer= and =kagi-summarize-region= also have a =no-cache= parameter which can be toggled interactively when called with the universal prefix.
 
+- Add support for traditional Chinese as possible summary language.
+
 ** 0.4
 
 *** Breaking changes
