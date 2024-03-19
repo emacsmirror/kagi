@@ -151,7 +151,13 @@ https://www.example.com"
         (expect #'kagi--fastgpt-display-result :to-have-been-called))
       (it "makes exactly one API call"
         (kagi-fastgpt-prompt "foo")
-        (expect #'kagi--call-api :to-have-been-called-times 1)))
+        (expect #'kagi--call-api :to-have-been-called-times 1))
+      (it "replaces all occurrences of %s when it appears in the prompt"
+        (spy-on #'kagi--fastgpt)
+        (spy-on #'completing-read :and-return-value "foo %s %s bar")
+        (spy-on #'kagi--get-text-for-prompt :and-return-value "region")
+        (call-interactively #'kagi-fastgpt-prompt)
+        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "foo region region bar")))
     (describe "kagi-translate"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))

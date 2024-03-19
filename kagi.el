@@ -74,8 +74,8 @@ https://kagi.com/settings?p=api"
   :group 'kagi)
 
 (defcustom kagi-fastgpt-prompts
-  '(("Definition" . "Define the following word: ")
-    ("Synonyms" . "Find synonyms for the following word: "))
+  '(("Definition" . "Define the following word: %s")
+    ("Synonyms" . "Find synonyms for the following word: %s"))
   "Prompts to choose for a buffer, text or region.
 
 This is a list of (NAME . PROMPT) elements. The NAME is a short
@@ -83,8 +83,7 @@ name for the prompt. PROMPT can be a string or a
 function (without parameters), returning a prompt string.
 
 The placeholder `%s' can be used inside the prompt to insert the
-text at the given place. If missing, the input will be appended
-to the prompt."
+text at the given place."
   :type '(alist :key-type string :value-type (choice string function))
   :group 'kagi)
 
@@ -397,9 +396,34 @@ retrieving a result from Lisp code."
   (interactive)
   (shell-maker-start kagi-fastgpt--config))
 
+(defun kagi--get-text-for-prompt ()
+  "Return the text to insert in a prompt.
+
+The text is obtained interactively. Typically this is the user
+text that gets inserted in a prompt (e.g. translate the
+following, proofread the following, etc.).
+
+If the region is active, return the corresponding text.
+
+Otherwise, the user is requested to enter a buffer name or enter
+the text manually."
+  (if (use-region-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+    (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
+      (cond ((get-buffer buffer-or-text)
+             (with-current-buffer buffer-or-text
+               (buffer-string)))
+            ((< 0 (length buffer-or-text)) buffer-or-text)
+            (t (error "No buffer or text entered"))))))
+
 ;;;###autoload
 (defun kagi-fastgpt-prompt (prompt &optional insert interactive-p)
   "Feed the given PROMPT to FastGPT.
+
+When PROMPT contains %s, it will be replaced with the region (if
+active), the buffer content of the selected buffer or a manually
+entered prompt. %s remains unprocessed when `kagi-fastgpt-prompt'
+is called non-interactively (when INTERACTIVE-P is nil).
 
 If INSERT is non-nil, the response is inserted at point (if the
 buffer is writable).
@@ -410,7 +434,11 @@ buffer.
 
 If INTERACTIVE-P is nil, the result is returned as a
 string (suitable for invocations from Emacs Lisp)."
-  (interactive (list (read-string "fastgpt> ")
+  (interactive (list (let* ((prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
+                            (prompt-template (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=)))
+                       (if (string-match "%s" prompt-template)
+                           (replace-match (kagi--get-text-for-prompt) t t prompt-template)
+                         prompt-template))
                      current-prefix-arg
                      t))
   (let* ((result (kagi--fastgpt prompt))
@@ -435,26 +463,6 @@ PROMPT is passed to the corresponding parameters of
                    nil
                    kagi--language-history
                    "English"))
-
-(defun kagi--get-text-for-prompt ()
-  "Return the text to insert in a prompt.
-
-The text is obtained interactively. Typically this is the user
-text that gets inserted in a prompt (e.g. translate the
-following, proofread the following, etc.).
-
-If the region is active, return the corresponding text.
-
-Otherwise, the user is requested to enter a buffer name or enter
-the text manually."
-  (if (use-region-p)
-      (buffer-substring-no-properties (region-beginning) (region-end))
-    (let ((buffer-or-text (read-buffer (format-prompt "Buffer name or text" nil))))
-      (cond ((get-buffer buffer-or-text)
-             (with-current-buffer buffer-or-text
-               (buffer-string)))
-            ((< 0 (length buffer-or-text)) buffer-or-text)
-            (t (error "No buffer or text entered"))))))
 
 ;;;###autoload
 (defun kagi-translate (text target-language &optional source-language interactive-p)
