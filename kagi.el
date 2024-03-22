@@ -423,7 +423,8 @@ the text manually."
 When PROMPT contains %s, it will be replaced with the region (if
 active), the buffer content of the selected buffer or a manually
 entered prompt. %s remains unprocessed when `kagi-fastgpt-prompt'
-is called non-interactively (when INTERACTIVE-P is nil).
+is called non-interactively (when INTERACTIVE-P is nil). %%
+becomes % and any other placeholder is left as-is.
 
 If INSERT is non-nil, the response is inserted at point (if the
 buffer is writable).
@@ -434,11 +435,18 @@ buffer.
 
 If INTERACTIVE-P is nil, the result is returned as a
 string (suitable for invocations from Emacs Lisp)."
-  (interactive (list (let* ((prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
+  (interactive (list (let* ((user-text)
+                            (prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
                             (prompt-template (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=)))
-                       (if (string-match "%s" prompt-template)
-                           (replace-match (kagi--get-text-for-prompt) t t prompt-template)
-                         prompt-template))
+                       (replace-regexp-in-string (rx (seq "%" anychar))
+                                                 (lambda (match)
+                                                   (pcase match
+                                                     ("%%" "%")
+                                                     ;; call (kagi--get-text-for-prompt) only once
+                                                     ;; when %s appears multiple times
+                                                     ("%s" (or user-text (setq user-text (kagi--get-text-for-prompt))))
+                                                     (_ match)))
+                                                 prompt-template t t))
                      current-prefix-arg
                      t))
   (let* ((result (kagi--fastgpt prompt))

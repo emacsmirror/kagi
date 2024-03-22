@@ -152,12 +152,32 @@ https://www.example.com"
       (it "makes exactly one API call"
         (kagi-fastgpt-prompt "foo")
         (expect #'kagi--call-api :to-have-been-called-times 1))
-      (it "replaces all occurrences of %s when it appears in the prompt"
+      (it "replaces all occurrences of %s with the user input or region when it appears in the prompt"
         (spy-on #'kagi--fastgpt)
-        (spy-on #'completing-read :and-return-value "foo %s %s bar")
+        (spy-on #'completing-read :and-return-value "foo %s%s bar")
         (spy-on #'kagi--get-text-for-prompt :and-return-value "region")
         (call-interactively #'kagi-fastgpt-prompt)
-        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "foo region region bar")))
+        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "foo regionregion bar"))
+      (it "retrieves the user input once when %s appears multiple times in the prompt"
+        (spy-on #'kagi--fastgpt)
+        (spy-on #'completing-read :and-return-value "%s%s")
+        (spy-on #'kagi--get-text-for-prompt :and-return-value "")
+        (call-interactively #'kagi-fastgpt-prompt)
+        (expect #'kagi--get-text-for-prompt :to-have-been-called-times 1))
+      (it "replaces all occurrences of %% with % when it appears in the prompt"
+        (spy-on #'kagi--fastgpt)
+        (spy-on #'completing-read :and-return-value "foo%%s")
+        (spy-on #'kagi--get-text-for-prompt)
+        (call-interactively #'kagi-fastgpt-prompt)
+        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "foo%s")
+        (expect #'kagi--get-text-for-prompt :not :to-have-been-called))
+      (it "does not replace an invalid placeholder %b"
+        (spy-on #'kagi--fastgpt)
+        (spy-on #'completing-read :and-return-value "foo%bar")
+        (spy-on #'kagi--get-text-for-prompt)
+        (call-interactively #'kagi-fastgpt-prompt)
+        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "foo%bar")
+        (expect #'kagi--get-text-for-prompt :not :to-have-been-called)))
     (describe "kagi-translate"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
