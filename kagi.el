@@ -416,6 +416,25 @@ the text manually."
             ((< 0 (length buffer-or-text)) buffer-or-text)
             (t (error "No buffer or text entered"))))))
 
+(defun kagi--fastgpt-construct-prompt ()
+  "Construct a prompt, either a predefined one or entered by the user.
+
+When the selected prompt contains %s, then the value is
+interactively obtained from the user (the region, buffer content
+or text input)."
+  (let* ((user-text)
+         (prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
+         (prompt-template (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=)))
+    (replace-regexp-in-string (rx (seq "%" anychar))
+                              (lambda (match)
+                                (pcase match
+                                  ("%%" "%")
+                                  ;; call (kagi--get-text-for-prompt) only once
+                                  ;; when %s appears multiple times
+                                  ("%s" (or user-text (setq user-text (kagi--get-text-for-prompt))))
+                                  (_ match)))
+                              prompt-template t t)))
+
 ;;;###autoload
 (defun kagi-fastgpt-prompt (prompt &optional insert interactive-p)
   "Feed the given PROMPT to FastGPT.
@@ -435,18 +454,7 @@ buffer.
 
 If INTERACTIVE-P is nil, the result is returned as a
 string (suitable for invocations from Emacs Lisp)."
-  (interactive (list (let* ((user-text)
-                            (prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
-                            (prompt-template (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=)))
-                       (replace-regexp-in-string (rx (seq "%" anychar))
-                                                 (lambda (match)
-                                                   (pcase match
-                                                     ("%%" "%")
-                                                     ;; call (kagi--get-text-for-prompt) only once
-                                                     ;; when %s appears multiple times
-                                                     ("%s" (or user-text (setq user-text (kagi--get-text-for-prompt))))
-                                                     (_ match)))
-                                                 prompt-template t t))
+  (interactive (list (kagi--fastgpt-construct-prompt)
                      current-prefix-arg
                      t))
   (let* ((result (kagi--fastgpt prompt))
