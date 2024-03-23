@@ -3,7 +3,7 @@ set positional-arguments
 # Run all unit tests
 default: test
 
-# for convenience, run cask through bash
+# For convenience, run cask through bash
 cask *args:
     cask $@
 
@@ -11,6 +11,6 @@ cask *args:
 compile:
 	cask emacs -batch -L . -L test --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $(cask files); (ret=$? ; cask clean-elc && exit $ret)
 
-# Run all unit tests
+# Run unit tests matching a pattern (matches all tests by default)
 test pattern=".": compile
     cask exec buttercup -L . --pattern {{pattern}} --no-skip
