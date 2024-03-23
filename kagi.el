@@ -424,7 +424,8 @@ interactively obtained from the user (the region, buffer content
 or text input)."
   (let* ((user-text)
          (prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
-         (prompt-template (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=)))
+         (prompt-cdr (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=))
+         (prompt-template (if (functionp prompt-cdr) (funcall prompt-cdr) prompt-cdr)))
     (replace-regexp-in-string (rx (seq "%" anychar))
                               (lambda (match)
                                 (pcase match
