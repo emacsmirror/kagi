@@ -148,10 +148,10 @@ The value should be a string of two characters representing the
 (defcustom kagi-summarizer-cache t
   "Determines whether the Summarizer should cache results.
 
-Repetitive queries won't be charged if caching is enabled (the
-default). For sensitive texts, you may opt for disabling the
-cache by setting this item to nil (but subsequent queries on the
-same text will be charged.)"
+Repetitive requests on the same text won't be charged if caching
+is enabled (the default). For sensitive texts, you may opt for
+disabling the cache by setting this item to nil (but subsequent
+queries on the same text will be charged.)"
   :type 'boolean
   :group 'kagi)
 
