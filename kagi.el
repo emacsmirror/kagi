@@ -94,7 +94,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
   :group 'kagi)
 
 (defvar kagi--languages '(("Bulgarian" . "BG")
-                          ("Czech" . "CZ")
+                          ("Czech" . "CS")
                           ("Danish" . "DA")
                           ("German" . "DE")
                           ("Greek" . "EL")

@@ -198,6 +198,10 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 
 - Add support for traditional Chinese as possible summary language.
 
+*** Fixes
+
+- Fixed language code for Czech summaries.
+
 ** 0.4
 
 *** Breaking changes
