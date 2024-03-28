@@ -12,7 +12,7 @@
 
 This Emacs package provides the following functionalities from the [[https://www.kagi.com][Kagi search engine]]:
 
-- FastGPT :: Kagi's LLM offering based on Anthropic Claude 3 Haiku, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
+- FastGPT :: Kagi's LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
 - Universal Summarizer :: Summarizes texts, webpages, videos and more.
 
 Both functions are accessed through Kagi's [[https://help.kagi.com/kagi/api/overview.html][APIs]]. Before a call can be made, some setup should be done on the Kagi website (see below).
