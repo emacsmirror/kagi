@@ -76,13 +76,20 @@ https://kagi.com/settings?p=api"
 (defvar kagi--fastgpt-prompts '()
   "List of prompts that were defined with `define-kagi-fastgpt-prompt'.")
 
-(defmacro define-kagi-fastgpt-prompt (symbol-name prompt)
-  "Define a prompt.
+(defmacro define-kagi-fastgpt-prompt (name prompt)
+  "Define a command NAME that executes the given PROMPT.
 
-TODO"
+PROMPT can be a string or a function returning a string.
+
+When PROMPT contains %s, it will be replaced with the region (if
+active), the buffer content of the selected buffer or a manually
+entered prompt.
+
+The NAME is also shown as an option when `kagi-fastgpt-prompt' is
+called interactively, to select the corresponding prompt."
   `(progn
-     (push (cons (symbol-name ',symbol-name) ,prompt) kagi--fastgpt-prompts)
-     (defun ,symbol-name (&optional insert)
+     (push (cons (symbol-name ',name) ,prompt) kagi--fastgpt-prompts)
+     (defun ,name (&optional insert)
        (interactive "P")
        (kagi-fastgpt-prompt ,prompt insert))))
 
