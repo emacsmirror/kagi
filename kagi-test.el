@@ -77,7 +77,7 @@ The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
     (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
   (describe "FastGPT"
     (describe "kagi-fastgpt-prompt"
-      :var ((kagi-fastgpt-prompts))
+      :var ((kagi--fastgpt-prompts))
       (before-each
         (spy-on #'message)
         (spy-on #'kagi--fastgpt-display-result))
@@ -180,13 +180,13 @@ https://www.example.com"
         (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "foo%bar")
         (expect #'kagi--get-text-for-prompt :not :to-have-been-called))
       (it "uses the cdr when the user enters a predefined prompt name"
-        (setq kagi-fastgpt-prompts '(("foo" . "bar")))
+        (setq kagi--fastgpt-prompts '(("foo" . "bar")))
         (spy-on #'kagi--fastgpt)
         (spy-on #'completing-read :and-return-value "foo")
         (call-interactively #'kagi-fastgpt-prompt)
         (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "bar"))
       (it "calls the function when a predefined prompt has one"
-        (setq kagi-fastgpt-prompts '(("function" . (lambda () "result"))))
+        (setq kagi--fastgpt-prompts '(("function" . (lambda () "result"))))
         (spy-on #'kagi--fastgpt)
         (spy-on #'completing-read :and-return-value "function")
         (call-interactively #'kagi-fastgpt-prompt)
