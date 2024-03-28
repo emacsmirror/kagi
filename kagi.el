@@ -81,7 +81,7 @@ https://kagi.com/settings?p=api"
 
 TODO"
   `(progn
-     (push (cons ',symbol-name ,prompt) kagi--fastgpt-prompts)
+     (push (cons (symbol-name ',symbol-name) ,prompt) kagi--fastgpt-prompts)
      (defun ,symbol-name (&optional insert)
        (interactive "P")
        (kagi-fastgpt-prompt ,prompt insert))))
