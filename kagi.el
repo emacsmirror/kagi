@@ -73,19 +73,18 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
-(defcustom kagi-fastgpt-prompts
-  '(("Definition" . "Define the following word: %s")
-    ("Synonyms" . "Find synonyms for the following word: %s"))
-  "Prompts to choose for a buffer, text or region.
+(defvar kagi--fastgpt-prompts '()
+  "List of prompts that were defined with `define-kagi-fastgpt-prompt'.")
 
-This is a list of (NAME . PROMPT) elements. The NAME is a short
-name for the prompt. PROMPT can be a string or a
-function (without parameters), returning a prompt string.
+(defmacro define-kagi-fastgpt-prompt (symbol-name prompt)
+  "Define a prompt.
 
-The placeholder `%s' can be used inside the prompt to insert the
-text at the given place."
-  :type '(alist :key-type string :value-type (choice string function))
-  :group 'kagi)
+TODO"
+  `(progn
+     (push (cons ',symbol-name ,prompt) kagi--fastgpt-prompts)
+     (defun ,symbol-name (&optional insert)
+       (interactive "P")
+       (kagi-fastgpt-prompt ,prompt insert))))
 
 (defvar kagi--summarizer-engines
   '(("agnes" . "Friendly, descriptive, fast summary.")
@@ -423,8 +422,8 @@ When the selected prompt contains %s, then the value is
 interactively obtained from the user (the region, buffer content
 or text input)."
   (let* ((user-text)
-         (prompt-name (completing-read "fastgpt> " kagi-fastgpt-prompts))
-         (prompt-cdr (alist-get prompt-name kagi-fastgpt-prompts prompt-name nil #'string=))
+         (prompt-name (completing-read "fastgpt> " kagi--fastgpt-prompts))
+         (prompt-cdr (alist-get prompt-name kagi--fastgpt-prompts prompt-name nil #'string=))
          (prompt-template (if (functionp prompt-cdr) (funcall prompt-cdr) prompt-cdr)))
     (replace-regexp-in-string (rx (seq "%" anychar))
                               (lambda (match)
@@ -468,6 +467,11 @@ string (suitable for invocations from Emacs Lisp)."
           ((and interactive-p (> result-lines 1))
            (kagi--fastgpt-display-result result))
           ((not interactive-p) result))))
+
+(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
+                            "Define the following word: %s")
+(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-synonym
+                            "Find synonyms for the following word: %s")
 
 (defun kagi--read-language (prompt)
   "Read a language from the minibuffer interactively.
