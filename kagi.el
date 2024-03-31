@@ -585,7 +585,6 @@ content."
          (kagi--summarizer-engine engine))
         (kagi-summarizer-default-summary-format
          (kagi--summarizer-format format))
-        ;; TODO break out logic in separate function
         (kagi-summarizer-cache (if no-cache nil kagi-summarizer-cache)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
