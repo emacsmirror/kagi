@@ -247,10 +247,11 @@ https://www.example.com"
     (describe "kagi-proofread"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
-      (it "calls kagi-fastgpt-prompt"
+      (it "calls kagi-fastgpt-prompt non-interactively"
         (kagi-proofread "foo")
         (expect #'kagi-fastgpt-prompt :to-have-been-called)
-        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "foo"))
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 0 :to-match "foo")
+        (kagi-test--expect-arg #'kagi-fastgpt-prompt 2 :to-equal nil))
       (it "passes the region text to kagi-fastgpt-prompt, if active"
         (spy-on #'use-region-p :and-return-value t)
         (spy-on #'buffer-substring-no-properties :and-return-value "region text")
