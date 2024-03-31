@@ -76,8 +76,9 @@ https://kagi.com/settings?p=api"
 (defvar kagi--fastgpt-prompts '()
   "List of prompts that were defined with `define-kagi-fastgpt-prompt'.")
 
-(defmacro define-kagi-fastgpt-prompt (name prompt)
-  "Define a command NAME that executes the given PROMPT.
+;; TODO prompt could be a function, call it
+(defmacro define-kagi-fastgpt-prompt (name symbol-name prompt)
+  "Define a command SYMBOL-NAME that executes the given PROMPT.
 
 PROMPT can be a string or a function returning a string.
 
@@ -88,10 +89,15 @@ entered prompt.
 The NAME is also shown as an option when `kagi-fastgpt-prompt' is
 called interactively, to select the corresponding prompt."
   `(progn
-     (push (cons (symbol-name ',name) ,prompt) kagi--fastgpt-prompts)
-     (defun ,name (&optional insert)
-       (interactive "P")
-       (kagi-fastgpt-prompt ,prompt insert))))
+     (push (cons ,name ,prompt) kagi--fastgpt-prompts)
+     (defun ,symbol-name (text &optional interactive-p)
+       (interactive (list (kagi--get-text-for-prompt) t))
+       (kagi-fastgpt-prompt
+        (kagi--fastgpt-expand-prompt-placeholders
+         ,prompt
+         (lambda () text))
+        nil
+        interactive-p))))
 
 (defvar kagi--summarizer-engines
   '(("agnes" . "Friendly, descriptive, fast summary.")
@@ -422,25 +428,29 @@ the text manually."
             ((< 0 (length buffer-or-text)) buffer-or-text)
             (t (error "No buffer or text entered"))))))
 
+(defun kagi--fastgpt-expand-prompt-placeholders (prompt text-function)
+  "Expand all occurences of %s in PROMPT with TEXT.
+
+It gets replaced with the region text, buffer text or user input."
+  (let ((user-text))
+    (replace-regexp-in-string (rx (seq "%" anychar))
+                              (lambda (match)
+                                (pcase match
+                                  ("%%" "%")
+                                  ("%s" (or user-text (setq user-text (funcall text-function))))
+                                  (_ match)))
+                              prompt t t)))
+
 (defun kagi--fastgpt-construct-prompt ()
   "Construct a prompt, either a predefined one or entered by the user.
 
 When the selected prompt contains %s, then the value is
 interactively obtained from the user (the region, buffer content
 or text input)."
-  (let* ((user-text)
-         (prompt-name (completing-read "fastgpt> " kagi--fastgpt-prompts))
+  (let* ((prompt-name (completing-read "fastgpt> " kagi--fastgpt-prompts))
          (prompt-cdr (alist-get prompt-name kagi--fastgpt-prompts prompt-name nil #'string=))
          (prompt-template (if (functionp prompt-cdr) (funcall prompt-cdr) prompt-cdr)))
-    (replace-regexp-in-string (rx (seq "%" anychar))
-                              (lambda (match)
-                                (pcase match
-                                  ("%%" "%")
-                                  ;; call (kagi--get-text-for-prompt) only once
-                                  ;; when %s appears multiple times
-                                  ("%s" (or user-text (setq user-text (kagi--get-text-for-prompt))))
-                                  (_ match)))
-                              prompt-template t t)))
+    (kagi--fastgpt-expand-prompt-placeholders prompt-template (lambda () (kagi--get-text-for-prompt)))))
 
 ;;;###autoload
 (defun kagi-fastgpt-prompt (prompt &optional insert interactive-p)
@@ -475,9 +485,11 @@ string (suitable for invocations from Emacs Lisp)."
            (kagi--fastgpt-display-result result))
           ((not interactive-p) result))))
 
-(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
+(define-kagi-fastgpt-prompt "Definition"
+                            kagi-fastgpt-prompt-definition
                             "Define the following word: %s")
-(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-synonym
+(define-kagi-fastgpt-prompt "Synonym"
+                            kagi-fastgpt-prompt-synonym
                             "Find synonyms for the following word: %s")
 
 (defun kagi--read-language (prompt)
@@ -521,25 +533,11 @@ result is short, otherwise it is displayed in a new buffer."
                         text)))
     (kagi-fastgpt-prompt prompt nil interactive-p)))
 
-;;;###autoload
-(defun kagi-proofread (text &optional interactive-p)
-  "Proofread the given TEXT using FastGPT.
+;; TODO interactive vs non-interactive "say OK"
+(define-kagi-fastgpt-prompt "Proofread" kagi-proofread
+                            "Proofread the following text:
 
-The TEXT can be either from the region, a buffer or entered manually.
-
-When `kagi-proofread' is called non-interactively (INTERACTIVE-P is
-nil), the function should return the string 'OK' when there are
-no issues."
-  (interactive
-   (list (kagi--get-text-for-prompt) t))
-  (let ((prompt (format "Proofread the following text. %s
-
-%s"
-                        (if interactive-p
-                            ""
-                          "Say OK if there are no issues.")
-                        text)))
-    (kagi-fastgpt-prompt prompt nil interactive-p)))
+%s")
 
 ;;; Summarizer
 
