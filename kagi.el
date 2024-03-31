@@ -76,7 +76,6 @@ https://kagi.com/settings?p=api"
 (defvar kagi--fastgpt-prompts '()
   "List of prompts that were defined with `define-kagi-fastgpt-prompt'.")
 
-;; TODO prompt could be a function, call it
 (defmacro define-kagi-fastgpt-prompt (name symbol-name prompt)
   "Define a command SYMBOL-NAME that executes the given PROMPT.
 
@@ -92,12 +91,15 @@ called interactively, to select the corresponding prompt."
      (push (cons ,name ,prompt) kagi--fastgpt-prompts)
      (defun ,symbol-name (text &optional interactive-p)
        (interactive (list (kagi--get-text-for-prompt) t))
-       (kagi-fastgpt-prompt
-        (kagi--fastgpt-expand-prompt-placeholders
-         ,prompt
-         (lambda () text))
-        nil
-        interactive-p))))
+       (let ((prompt-template (if (functionp ,prompt)
+                                  (funcall ,prompt interactive-p)
+                                ,prompt)))
+         (kagi-fastgpt-prompt
+          (kagi--fastgpt-expand-prompt-placeholders
+           prompt-template
+           (lambda () text))
+          nil
+          interactive-p)))))
 
 (defvar kagi--summarizer-engines
   '(("agnes" . "Friendly, descriptive, fast summary.")
@@ -533,11 +535,11 @@ result is short, otherwise it is displayed in a new buffer."
                         text)))
     (kagi-fastgpt-prompt prompt nil interactive-p)))
 
-;; TODO interactive vs non-interactive "say OK"
 (define-kagi-fastgpt-prompt "Proofread" kagi-proofread
-                            "Proofread the following text:
+                            (lambda (interactive-p)
+                              (format "Proofread the following text. %s
 
-%s")
+%%s" (if interactive-p "" "Say OK if there are no issues."))))
 
 ;;; Summarizer
 
