@@ -91,13 +91,14 @@ called interactively, to select the corresponding prompt."
      (push (cons ,name ,prompt) kagi--fastgpt-prompts)
      (defun ,symbol-name (text &optional interactive-p)
        (interactive (list (kagi--get-text-for-prompt) t))
-       (let ((prompt-template (if (functionp ,prompt)
-                                  (funcall ,prompt interactive-p)
-                                ,prompt)))
+       (let* ((prompt-template (if (functionp ,prompt)
+                                   (funcall ,prompt interactive-p)
+                                 ,prompt))
+              (expanded-prompt (kagi--fastgpt-expand-prompt-placeholders
+                                prompt-template
+                                (lambda () text))))
          (kagi-fastgpt-prompt
-          (kagi--fastgpt-expand-prompt-placeholders
-           prompt-template
-           (lambda () text))
+          expanded-prompt
           nil
           interactive-p)))))
 
