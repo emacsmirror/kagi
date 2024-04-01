@@ -76,7 +76,7 @@ https://kagi.com/settings?p=api"
 (defvar kagi--fastgpt-prompts '()
   "List of prompts that were defined with `define-kagi-fastgpt-prompt'.")
 
-(defmacro define-kagi-fastgpt-prompt (name symbol-name prompt)
+(defmacro define-kagi-fastgpt-prompt (symbol-name prompt &optional name)
   "Define a command SYMBOL-NAME that executes the given PROMPT.
 
 PROMPT can be a string or a function returning a string.
@@ -86,9 +86,10 @@ active), the buffer content of the selected buffer or a manually
 entered prompt.
 
 The NAME is also shown as an option when `kagi-fastgpt-prompt' is
-called interactively, to select the corresponding prompt."
+called interactively, to select the corresponding prompt. When no
+NAME is given, the SYMBOL-NAME is shown instead."
   `(progn
-     (push (cons ,name ,prompt) kagi--fastgpt-prompts)
+     (push (cons (or ,name (symbol-name ',symbol-name)) ,prompt) kagi--fastgpt-prompts)
      (defun ,symbol-name (text &optional interactive-p)
        (interactive (list (kagi--get-text-for-prompt) t))
        (let* ((prompt-template (if (functionp ,prompt)
@@ -488,12 +489,12 @@ string (suitable for invocations from Emacs Lisp)."
            (kagi--fastgpt-display-result result))
           ((not interactive-p) result))))
 
-(define-kagi-fastgpt-prompt "Definition"
-                            kagi-fastgpt-prompt-definition
-                            "Define the following word: %s")
-(define-kagi-fastgpt-prompt "Synonym"
-                            kagi-fastgpt-prompt-synonym
-                            "Find synonyms for the following word: %s")
+(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
+                            "Define the following word: %s"
+                            "Definition")
+(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-synonym
+                            "Find synonyms for the following word: %s"
+                            "Synonym")
 
 (defun kagi--read-language (prompt)
   "Read a language from the minibuffer interactively.
@@ -536,11 +537,12 @@ result is short, otherwise it is displayed in a new buffer."
                         text)))
     (kagi-fastgpt-prompt prompt nil interactive-p)))
 
-(define-kagi-fastgpt-prompt "Proofread" kagi-proofread
+(define-kagi-fastgpt-prompt kagi-proofread
                             (lambda (interactive-p)
                               (format "Proofread the following text. %s
 
-%%s" (if interactive-p "" "Say OK if there are no issues."))))
+%%s" (if interactive-p "" "Say OK if there are no issues.")))
+                            "Proofread")
 
 ;;; Summarizer
 
