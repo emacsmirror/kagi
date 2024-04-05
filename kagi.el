@@ -433,7 +433,7 @@ the text manually."
             (t (error "No buffer or text entered"))))))
 
 (defun kagi--fastgpt-expand-prompt-placeholders (prompt text-function)
-  "Expand all occurences of %s in PROMPT with TEXT.
+  "Expand all occurences of %s in PROMPT with the result of TEXT-FUNCTION.
 
 It gets replaced with the region text, buffer text or user input."
   (let ((user-text))
