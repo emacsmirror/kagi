@@ -52,6 +52,13 @@ TEXT is the output text, optionally with a list of REFERENCES."
                                    (when references
                                      (list (cons "references" references))))))))
 
+(defun kagi-test--error-output (&optional msg)
+  "Construct a fictitious erroneous result from the Kagi FastGPT API."
+  (json-encode
+   (list `(data . ((output . nil)
+                   (error . (((code . 42)
+                              (msg . ,(or msg "Too bad"))))))))))
+
 (buttercup-define-matcher-for-binary-function
     :to-be-equal-including-properties equal-including-properties
   :expect-match-phrase "Expected `%A' to be equal (incl. properties) to %b, but `%A' was %a."
@@ -151,7 +158,14 @@ https://www.example.com"
         (expect #'kagi--fastgpt-display-result :to-have-been-called))
       (it "makes exactly one API call"
         (kagi-fastgpt-prompt "foo")
-        (expect #'kagi--call-api :to-have-been-called-times 1)))
+        (expect #'kagi--call-api :to-have-been-called-times 1))
+      (it "handles empty output and returned errors from the API gracefully"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--error-output))
+        (spy-on #'kagi--fastgpt :and-call-through)
+        (expect (kagi-fastgpt-prompt "foo") :to-throw)
+        (expect (spy-context-thrown-signal
+                 (spy-calls-most-recent #'kagi--fastgpt))
+                :to-equal '(error "Too bad (42)"))))
     (describe "kagi-translate"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))

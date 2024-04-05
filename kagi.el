@@ -346,10 +346,15 @@ retrieving a result from Lisp code."
          (parsed-response (json-parse-string response))
          (output (kagi--gethash parsed-response "data" "output"))
          (references (kagi--gethash parsed-response "data" "references")))
-    (string-trim
-     (format "%s\n\n%s"
-             (kagi--format-output output)
-             (kagi--format-references references)))))
+    (if output
+        (string-trim (format "%s\n\n%s"
+                             (kagi--format-output output)
+                             (kagi--format-references references)))
+      (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
+          (error (format "%s (%s)"
+                         (gethash "msg" firsterror)
+                         (gethash "code" firsterror)))
+        (error "An error occurred while querying FastGPT")))))
 
 (defun kagi--fastgpt-display-result (result)
   "Display the RESULT of a FastGPT prompt in a new buffer."
