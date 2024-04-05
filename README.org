@@ -182,6 +182,8 @@ kagi.el comes with some unit tests, written with [[https://github.com/jorgenscha
 
 There's also a [[https://github.com/casey/just][justfile]] which allows you to execute =just test= to compile the Emacs Lisp source and run the unit tests afterwards in one go.
 
+Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be unit tests.
+
 * Changelog
 
 ** 0.5pre
