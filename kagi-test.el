@@ -55,9 +55,9 @@ TEXT is the output text, optionally with a list of REFERENCES."
 (defun kagi-test--error-output (&optional msg)
   "Construct a fictitious erroneous result from the Kagi FastGPT API."
   (json-encode
-   (list `(data . ((output . nil)
-                   (error . (((code . 42)
-                              (msg . ,(or msg "Too bad"))))))))))
+   `((data . ((output . nil)))
+     (error . (((code . 42)
+                (msg . ,(or msg "Too bad"))))))))
 
 (buttercup-define-matcher-for-binary-function
     :to-be-equal-including-properties equal-including-properties
