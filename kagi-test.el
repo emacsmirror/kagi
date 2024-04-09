@@ -82,6 +82,9 @@ The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
   :var ((dummy-output "text"))
   (before-each
     (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
+  (it "throws an error for invalid tokens"
+    (setq kagi-api-token 42)
+    (expect (kagi--curl-flags "foo") :to-throw))
   (describe "FastGPT"
     (describe "kagi-fastgpt-prompt"
       (before-each
