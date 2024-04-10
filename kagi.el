@@ -79,7 +79,12 @@ https://kagi.com/settings?p=api"
 (defmacro define-kagi-fastgpt-prompt (symbol-name prompt &optional name)
   "Define a command SYMBOL-NAME that executes the given PROMPT.
 
-PROMPT can be a string or a function returning a string.
+PROMPT can be a string or a function returning a string. The
+function may take one argument: whether the command was called
+interactively or not. This can be used to alter the prompt based
+on how the command was called. E.g. a non-interactive version
+could contain an instruction to say either Yes or No. See
+`kagi-proofread' for an example.
 
 When PROMPT contains %s, it will be replaced with the region (if
 active), the (narrowed) buffer content of the selected buffer or

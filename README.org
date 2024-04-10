@@ -143,6 +143,24 @@ The first argument is the name of the command that will be defined. The second a
 
 The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could bind the prompt command to a key, use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
 
+The prompt string may also be a function that returns the prompt
+string. The function may take one argument: whether the command was
+called interactively or not. This can be used to alter the prompt
+based on how the command was called. E.g. a non-interactive version
+could contain an instruction to say either /Yes/ or /No/. See
+=kagi-proofread= for an example:
+
+#+begin_src elisp
+  (define-kagi-fastgpt-prompt kagi-proofread
+                              (lambda (interactive-p)
+                                (format "Proofread the following text. %s
+
+  %%s" (if interactive-p "" "Say OK if there are no issues.")))
+                              "Proofread")
+#+end_src
+
+Note the =%%s= notation, =format= turns it into =%s= which becomes the prompt placeholder.
+
 ** Embark integration
 
 The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]]. Use it to easily summarize, translate or proofread a buffer, region or a URL. It can also be used to call your custom prompts with =define-kagi-fastgpt-prompt=.
