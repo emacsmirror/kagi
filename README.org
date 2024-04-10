@@ -203,6 +203,7 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 *** Fixes
 
 - Fixed language code for Czech summaries.
+- Handle error responses when calling the FastGPT API.
 
 ** 0.4
 
