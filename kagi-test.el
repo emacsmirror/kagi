@@ -359,7 +359,14 @@ https://www.example.com"
       (it "caches by default for an invalid configuration value"
         (setq kagi-summarizer-cache 'invalid)
         (kagi-summarize just-enough-text-input)
-        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal t)))
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal t))
+      (it "handles empty output and returned errors from the API gracefully"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--error-output))
+        (spy-on #'kagi-summarize :and-call-through)
+        (expect (kagi-summarize just-enough-text-input) :to-throw)
+        (expect (spy-context-thrown-signal
+                 (spy-calls-most-recent #'kagi-summarize))
+                :to-equal '(error "Too bad (42)"))))
     (describe "kagi-summarize-buffer"
       (before-each
         (spy-on #'read-buffer)
