@@ -82,8 +82,8 @@ https://kagi.com/settings?p=api"
 PROMPT can be a string or a function returning a string.
 
 When PROMPT contains %s, it will be replaced with the region (if
-active), the buffer content of the selected buffer or a manually
-entered prompt.
+active), the (narrowed) buffer content of the selected buffer or
+a manually entered prompt.
 
 The NAME is also shown as an option when `kagi-fastgpt-prompt' is
 called interactively, to select the corresponding prompt. When no
@@ -437,9 +437,10 @@ the text manually."
             (t (error "No buffer or text entered"))))))
 
 (defun kagi--fastgpt-expand-prompt-placeholders (prompt text-function)
-  "Expand all occurences of %s in PROMPT with the result of TEXT-FUNCTION.
+  "Expand all occurrences of %s in PROMPT with the result of TEXT-FUNCTION.
 
-It gets replaced with the region text, buffer text or user input."
+It gets replaced with the region text, (narrowed) buffer text or
+user input."
   (let ((user-text))
     (replace-regexp-in-string (rx (seq "%" anychar))
                               (lambda (match)
@@ -465,10 +466,11 @@ or text input)."
   "Feed the given PROMPT to FastGPT.
 
 When PROMPT contains %s, it will be replaced with the region (if
-active), the buffer content of the selected buffer or a manually
-entered prompt. %s remains unprocessed when `kagi-fastgpt-prompt'
-is called non-interactively (when INTERACTIVE-P is nil). %%
-becomes % and any other placeholder is left as-is.
+active), the (narrowed) buffer content of the selected buffer or
+a manually entered prompt. %s remains unprocessed when
+`kagi-fastgpt-prompt' is called non-interactively (when
+INTERACTIVE-P is nil). %% becomes % and any other placeholder is
+left as-is.
 
 If INSERT is non-nil, the response is inserted at point (if the
 buffer is writable).
