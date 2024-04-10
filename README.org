@@ -142,7 +142,7 @@ An example usage of this macro comes by default with this package:
 
 The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user visible name. It will be shown when calling =kagi-fastgpt-prompt= interactively.
 
-The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
+The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could bind the prompt command to a key, use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
 
 ** Embark integration
 
