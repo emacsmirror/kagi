@@ -176,11 +176,11 @@ In order to be consistent with all keymaps, and to avoid clashes, the functional
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
-** Key bindings
+** FastGPT shell key bindings
 
 Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. Enter the =help= command in the shell to get more info, or run =describe-keymap= on =fastgpt-shell-mode-map=.
 
-One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased.
+One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased (which you can undo, actually).
 
 If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
 
