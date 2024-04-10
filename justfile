@@ -1,14 +1,19 @@
 set positional-arguments
 
-# for convenience, run cask through bash
+# Run all unit tests
+default: test
+
+# For convenience, run cask through bash
 cask *args:
     cask $@
 
+# Compile the Emacs Lisp file(s)
 compile:
 	cask emacs -batch -L . -L test --eval "(setq byte-compile-error-on-warn t)" -f batch-byte-compile $(cask files); (ret=$? ; cask clean-elc && exit $ret)
 
-test pattern=".": compile
-    cask exec buttercup -L . --pattern {{pattern}} --no-skip
+# Run unit tests matching a pattern (matches all tests by default)
+test pattern="." flags="": compile
+    cask exec buttercup -L . --pattern {{pattern}} --no-skip {{flags}}
 
-buttercup:
-    emacs -batch -f package-initialize -L . -f buttercup-run-discover
+# Run unit tests matching a pattern with verbose debug info on failure
+testv pattern=".": (test pattern "--traceback full")

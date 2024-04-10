@@ -12,7 +12,7 @@
 
 This Emacs package provides the following functionalities from the [[https://www.kagi.com][Kagi search engine]]:
 
-- FastGPT :: Kagi's open source LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
+- FastGPT :: Kagi's LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
 - Universal Summarizer :: Summarizes texts, webpages, videos and more.
 
 Both functions are accessed through Kagi's [[https://help.kagi.com/kagi/api/overview.html][APIs]]. Before a call can be made, some setup should be done on the Kagi website (see below).
@@ -41,13 +41,15 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 The summarize commands accept a single universal prefix, which allows you to:
 - insert the summary at point;
 - choose a (different) target language;
-- choose which summary engine to use.
+- choose which summary engine to use;
+- choose which summary format to use (prose or bullet list);
+- opt-out from caching at Kagi for confidential content.
 
 Note that texts submitted to Kagi are subject to their [[https://kagi.com/privacy#Summarizer][Privacy Policy]].
 
 * Installation and configuration
 
-kagi.el is available on [[https://melpa.org/#/kagi][MELPA]].
+kagi.el is available on [[https://melpa.org/#/kagi][MELPA]] and [[https://stable.melpa.org/#/kagi][MELPA Stable]].
 
 To install from Git, clone with:
 
@@ -65,7 +67,7 @@ You may want to load and configure the package with ~use-package~, for example p
     ;; or use a function, e.g. with the password-store package:
     (kagi-api-token (lambda () (password-store-get "Kagi/API")))
 
-    ;; Univernal Summarizer settings
+    ;; Universal Summarizer settings
     (kagi-summarizer-engine "cecil")
     (kagi-summarizer-default-language "EN")
     (kagi-summarizer-cache t)
@@ -78,12 +80,12 @@ You may want to load and configure the package with ~use-package~, for example p
     (kagi-bold ((t (:inherit modus-themes-bold)))))
 #+end_src
 
-The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the password-store package that comes with it).
+The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the /password-store/ package that comes with it).
 
 ** Kagi API setup
 
 1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
-2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. A single query ranges from 1 to 5 cents typically, depending on the amount of tokens processed.
+2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the [[https://help.kagi.com/kagi/api/fastgpt.html#pricing][FastGPT API]] and the [[https://help.kagi.com/kagi/api/summarizer.html#pricing][Summarizer API]] for for the actual costs.
 3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
 
 ** Configuration settings
@@ -113,7 +115,7 @@ The token can be supplied directly as a string, but you could write a lambda to 
 |----------------------------------------+---------------------------------------------------------|
 | kagi-api-token                         | The Kagi API token.                                     |
 | kagi-fastgpt-api-url                   | The Kagi FastGPT API entry point.                       |
-| kagi-stubbed-responses                 | Whether the package should return a stubbed response.   |
+| kagi-fastgpt-prompts                   | Prompts to choose for a buffer, text or region.         |
 | kagi-summarizer-api-url                | The Kagi Summarizer API entry point.                    |
 | kagi-summarizer-cache                  | Determines whether the Summarizer should cache results. |
 | kagi-summarizer-default-language       | Default target language of the summary.                 |
@@ -123,42 +125,6 @@ The token can be supplied directly as a string, but you could write a lambda to 
 *** COMMENT Attribution :noexport:
 
 The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
-
-** Examples of custom functions
-
-The =kagi-summarize= function allows you to summarize texts or URLs from Emacs Lisp.
-
-By overriding a variable with a =let= construct you can (temporarily) deviate from the default / configured value. A few examples are shown below:
-
-*** Language override
-
-To obtain a Dutch summary of a video you may want to define the following function:
-
-#+begin_src elisp
-  (defun my/kagi/dutch-summary (text-or-url)
-    "Obtain a Dutch summary for the given TEXT-OR-URL."
-    (let ((kagi-summarize-default-language "NL"))
-      (kagi-summarize text-or-url)))
-#+end_src
-
-Note that, when you invoke the summarizer functionality interactively, you can also temporarily choose a different target language with the universal prefix (=C-u=) on one of the =kagi-summarize-*= commands.
-
-*** Caching override
-
-The [[https://help.kagi.com/kagi/api/summarizer.html][Summarizer API]] comes with the following note:
-
-#+begin_quote
-For handling sensitive information and documents, we recommend setting the 'cache' API parameter to False. In this way, the document will "flow through" our infrastructure and will not be retained anywhere after processing.
-#+end_quote
-
-In a similar fashion as above, you could define a function that disables caching temporarily (while having it enabled by default).
-
-#+begin_src elisp
-  (defun my/kagi/sensitive-summary (text)
-    "Summarize the current TEXT with caching disabled.")
-  (let ((kagi-summarizer-cache nil))
-    (kagi-summarize text))
-#+end_src
 
 ** Embark integration
 
@@ -216,7 +182,28 @@ kagi.el comes with some unit tests, written with [[https://github.com/jorgenscha
 
 There's also a [[https://github.com/casey/just][justfile]] which allows you to execute =just test= to compile the Emacs Lisp source and run the unit tests afterwards in one go.
 
+Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be unit tests.
+
 * Changelog
+
+** 0.5pre
+
+*** Breaking changes
+
+- Removed function =kagi-fastgpt= as announced in the 0.4 changelog.
+
+*** New
+
+- =kagi-summarize= has a =no-cache= parameter to opt out from caching at Kagi's side.
+
+- =kagi-summarize-buffer= and =kagi-summarize-region= also have a =no-cache= parameter which can be toggled interactively when called with the universal prefix.
+
+- Add support for traditional Chinese as possible summary language.
+
+*** Fixes
+
+- Fixed language code for Czech summaries.
+- Handle error responses when calling the FastGPT API.
 
 ** 0.4
 
@@ -240,14 +227,14 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 - Added autoload markers where they were missing.
 - Language selection menu for summaries was not formatted properly.
 
-** 0.3.1
+** 0.3.1 :noexport:
 
 *** Fixes
 
 - Fix for displaying a summary in a new buffer.
 - Fix for =kagi-summarize-region= that doesn't need to ask for insert at point.
 
-** 0.3
+** 0.3 :noexport:
 
 *** New
 
@@ -265,7 +252,7 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 - **text** is converted to the =kagi-bold= face.
 - $text$ is converted to the new =kagi-italic= face.
 
-** 0.2
+** 0.2 :noexport:
 
 *** Breaking changes
 
@@ -287,7 +274,7 @@ There's also a [[https://github.com/casey/just][justfile]] which allows you to e
 
 - Add boolean variable =kagi-stubbed-responses= to enable stubbed responses, to replace actual API calls. Since calls are metered, it's more economic to use stubbed responses for development / debugging purposes.
 
-** 0.1
+** 0.1 :noexport:
 
 Initial release.
 

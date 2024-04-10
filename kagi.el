@@ -124,7 +124,7 @@ https://help.kagi.com/kagi/api/summarizer.html."
   :group 'kagi)
 
 (defvar kagi--languages '(("Bulgarian" . "BG")
-                          ("Czech" . "CZ")
+                          ("Czech" . "CS")
                           ("Danish" . "DA")
                           ("German" . "DE")
                           ("Greek" . "EL")
@@ -151,7 +151,8 @@ https://help.kagi.com/kagi/api/summarizer.html."
                           ("Swedish" . "SV")
                           ("Turkish" . "TR")
                           ("Ukrainian" . "UK")
-                          ("Chinese (simplified)" . "ZH"))
+                          ("Chinese (simplified)" . "ZH")
+                          ("Chinese (traditional)" . "ZH-HANT"))
   "Supported languages by the Kagi LLM.")
 
 (defvar kagi--summarizer-languages (append
@@ -177,10 +178,10 @@ The value should be a string of two characters representing the
 (defcustom kagi-summarizer-cache t
   "Determines whether the Summarizer should cache results.
 
-Repetitive queries won't be charged if caching is enabled (the
-default). For sensitive texts, you may opt for disabling the
-cache by setting this item to nil (but subsequent queries on the
-same text will be charged.)"
+Repetitive requests on the same text won't be charged if caching
+is enabled (the default). For sensitive texts, you may opt for
+disabling the cache by setting this item to nil (but subsequent
+queries on the same text will be charged.)"
   :type 'boolean
   :group 'kagi)
 
@@ -322,7 +323,7 @@ list of conses."
   (append items
           `(("engine" . ,kagi-summarizer-engine)
             ("summary_type" . ,kagi-summarizer-default-summary-format)
-            ("cache" . ,kagi-summarizer-cache))
+            ("cache" . ,(if kagi-summarizer-cache t nil)))
 
           ;; prevent a nil in the result list, causing (json-encode)
           ;; to generate a wrong request object.
@@ -375,12 +376,15 @@ retrieving a result from Lisp code."
          (parsed-response (json-parse-string response))
          (output (kagi--gethash parsed-response "data" "output"))
          (references (kagi--gethash parsed-response "data" "references")))
-    (string-trim
-     (format "%s\n\n%s"
-             (kagi--format-output output)
-             (kagi--format-references references)))))
-
-(define-obsolete-function-alias 'kagi-fastgpt 'kagi-fastgpt-prompt "0.4")
+    (if output
+        (string-trim (format "%s\n\n%s"
+                             (kagi--format-output output)
+                             (kagi--format-references references)))
+      (if-let ((firsterror (aref (kagi--gethash parsed-response "error") 0)))
+          (error (format "%s (%s)"
+                         (gethash "msg" firsterror)
+                         (gethash "code" firsterror)))
+        (error "An error occurred while querying FastGPT")))))
 
 (defun kagi--fastgpt-display-result (result)
   "Display the RESULT of a FastGPT prompt in a new buffer."
@@ -617,7 +621,7 @@ to `kagi-summarizer-default-language'."
            kagi-summarizer-default-summary-format)
           (t 'summary))))
 
-(defun kagi-summarize (text-or-url &optional language engine format)
+(defun kagi-summarize (text-or-url &optional language engine format no-cache)
   "Return the summary of the given TEXT-OR-URL.
 
 LANGUAGE is a supported two letter abbreviation of the language,
@@ -628,13 +632,19 @@ ENGINE is the name of a supported summarizer engine, as
 defined in `kagi--summarizer-engines'.
 
 FORMAT is the summary format, where `summary' returns a paragraph
-of text and `takeaway' returns a bullet list."
+of text and `takeaway' returns a bullet list.
+
+When NO-CACHE is t, inputs are not retained inside Kagi's
+infrastructure. When nil, the default value for
+`kagi-summarizer-cache' is used. Set to t for confidential
+content."
   (let ((kagi-summarizer-default-language
          (kagi--summarizer-determine-language language))
         (kagi-summarizer-engine
          (kagi--summarizer-engine engine))
         (kagi-summarizer-default-summary-format
-         (kagi--summarizer-format format)))
+         (kagi--summarizer-format format))
+        (kagi-summarizer-cache (if no-cache nil kagi-summarizer-cache)))
     (if-let* ((response (if (kagi--url-p text-or-url)
                             (kagi--call-url-summarizer text-or-url)
                           (kagi--call-text-summarizer text-or-url)))
@@ -647,13 +657,17 @@ of text and `takeaway' returns a bullet list."
                          (gethash "code" firsterror)))
         (error "An error occurred while requesting a summary")))))
 
-(defun kagi--get-summarizer-parameters (&optional prompt-insert-p)
+(defun kagi--get-summarizer-parameters (&optional prompts)
   "Return a list of interactively obtained summarizer parameters.
 
-Not all commands need to insert a summary, so only prompt for
-this when PROMPT-INSERT-P is non-nil."
+Some parameters need to be called interactively, however, for
+some clients that doesn't make sense. E.g. we don't want to ask
+to insert when the region is highlighted. Therefore, PROMPTS is a
+list of items that can be prompted interactively. It is
+a (possibly empty) list with possible elements \\='prompt-for-insert
+or \\='prompt-for-no-cache."
   (append
-   (when prompt-insert-p
+   (when (seq-contains-p prompts 'prompt-for-insert)
      (list
       (and (equal current-prefix-arg '(4))
            (not buffer-read-only)
@@ -686,10 +700,14 @@ this when PROMPT-INSERT-P is non-nil."
          summary-formats
          kagi-summarizer-default-summary-format
          nil
-         #'string=))))))
+         #'string=))))
+   (list
+    (and (seq-contains-p prompts 'prompt-for-no-cache)
+         (equal current-prefix-arg '(4))
+         (y-or-n-p "Cache the result?")))))
 
 ;;;###autoload
-(defun kagi-summarize-buffer (buffer &optional insert language engine format interactive-p)
+(defun kagi-summarize-buffer (buffer &optional insert language engine format no-cache interactive-p)
   "Summarize the BUFFER's content and show it in a new window.
 
 By default, the summary is shown in a new buffer.
@@ -708,6 +726,11 @@ defined in `kagi--summarizer-engines'.
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list.
 
+When NO-CACHE is t, inputs are not retained inside Kagi's
+infrastructure. When nil, the default value for
+`kagi-summarizer-cache' is used. Set to t for confidential
+content.
+
 With a single universal prefix argument (`C-u'), the user is
 prompted whether the summary has to be inserted at point, which
 target LANGUAGE to use, which summarizer ENGINE to use and which
@@ -716,10 +739,11 @@ summary FORMAT to use.
 INTERACTIVE-P is t when called interactively."
   (interactive (append
                 (list (read-buffer (format-prompt "Buffer" "") nil t))
-                (kagi--get-summarizer-parameters t)
+                (kagi--get-summarizer-parameters '(prompt-for-insert
+                                                   prompt-for-no-cache))
                 (list t)))
   (let ((summary (with-current-buffer buffer
-                   (kagi-summarize (buffer-string) language engine format)))
+                   (kagi-summarize (buffer-string) language engine format no-cache)))
         (summary-buffer-name (with-current-buffer buffer
                                (kagi--summary-buffer-name (buffer-name)))))
     (cond ((and insert (not buffer-read-only)) (kagi--insert-summary summary))
@@ -727,7 +751,7 @@ INTERACTIVE-P is t when called interactively."
           (t summary))))
 
 ;;;###autoload
-(defun kagi-summarize-region (begin end &optional language engine format)
+(defun kagi-summarize-region (begin end &optional language engine format no-cache)
   "Summarize the region's content marked by BEGIN and END positions.
 
 The summary is always shown in a new buffer.
@@ -742,17 +766,23 @@ defined in `kagi--summarizer-engines'.
 FORMAT is the summary format, where `summary' returns a paragraph
 of text and `takeaway' returns a bullet list.
 
+When NO-CACHE is t, inputs are not retained inside Kagi's
+infrastructure. When nil, the default value for
+`kagi-summarizer-cache' is used. Set to t for confidential
+content.
+
 With a single universal prefix argument (`C-u'), the user is
 prompted for which target LANGUAGE to use, which summarizer
 ENGINE to use and which summary FORMAT to use."
   (interactive (append
                 (list (region-beginning) (region-end))
-                (kagi--get-summarizer-parameters)))
+                (kagi--get-summarizer-parameters '(prompt-for-no-cache))))
   (kagi--display-summary
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
                    engine
-                   format)
+                   format
+                   no-cache)
    (kagi--summary-buffer-name (buffer-name))))
 
 ;;;###autoload
@@ -793,7 +823,7 @@ types are supported:
   (interactive
    (cons
     (read-string (format-prompt "URL" ""))
-    (kagi--get-summarizer-parameters t)))
+    (kagi--get-summarizer-parameters '(prompt-for-insert))))
   (let ((summary (kagi-summarize url language engine format)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
