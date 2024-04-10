@@ -30,6 +30,8 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 
 - =kagi-translate= :: Translates strings or complete buffers to another language (including programming languages).
 - =kagi-proofread= :: Proofread a string or buffer.
+- =kagi-fastgpt-prompt-definition= :: Returns the definition of a word.
+- =kagi-fastgpt-prompt-synonym= :: Returns a synonym for a word.
 
 ** Universal Summarizer
 
@@ -126,9 +128,27 @@ The token can be supplied directly as a string, but you could write a lambda to 
 
 The code to generate the table of configuration items was inspired by an idea of [[https://xenodium.com/generating-elisp-org-docs/][Álvaro Ramírez]] (a.k.a. xenodium).
 
+** Defining your own prompts
+
+kagi.el comes with a macro to define your own prompts easily: =define-kagi-fastgpt-prompt=. When the prompt contains the placeholder =%s=, it will be replaced with the region or an interactively used word.
+
+An example usage of this macro comes by default with this package:
+
+#+begin_src elisp
+  (define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
+                              "Define the following word: %s"
+                              "Definition")
+#+end_src
+
+The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user visible name. It will be shown when calling =kagi-fastgpt-prompt= interactively.
+
+The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
+
 ** Embark integration
 
-The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]]. Use it to easily summarize, translate or proofread a buffer, region or a URL. In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. For example, press /K s/ to invoke the summarize functionality.
+The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]]. Use it to easily summarize, translate or proofread a buffer, region or a URL. It can also be used to call your custom prompts with =define-kagi-fastgpt-prompt=.
+
+In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. For example, press /K s/ to invoke the summarize functionality.
 
 #+begin_src elisp
   (defmacro embark-kagi-map (name &rest keys)
@@ -145,6 +165,7 @@ The kagi.el package can be integrated with [[https://github.com/oantolin/embark]
   (keymap-set embark-buffer-map "K" embark-kagi-buffer-map)
 
   (embark-kagi-map embark-kagi-region-map
+                   "d" #'kagi-fastgpt-prompt-definition
                    "p" #'kagi-proofread
                    "s" #'kagi-summarize-region
                    "t" #'kagi-translate)
@@ -155,6 +176,7 @@ The kagi.el package can be integrated with [[https://github.com/oantolin/embark]
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
+** TODO Hydra
 ** Key bindings
 
 Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. Enter the =help= command in the shell to get more info, or run =describe-keymap= on =fastgpt-shell-mode-map=.
