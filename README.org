@@ -31,7 +31,6 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 - =kagi-translate= :: Translates strings or complete buffers to another language (including programming languages).
 - =kagi-proofread= :: Proofread a string or buffer.
 - =kagi-fastgpt-prompt-definition= :: Returns the definition of a word.
-- =kagi-fastgpt-prompt-synonym= :: Returns a synonym for a word.
 
 ** Universal Summarizer
 
@@ -217,9 +216,8 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 - The =define-kagi-fastgpt-prompt= macro allows you to define your own prompts, that may contain a placeholder to fill in relevant text.
 
-- The macro is used to define two new commands:
+- The macro is used to (re)define commands:
   - =kagi-fastgpt-prompt-definition=: Define the a word.
-  - =kagi-fastgpt-prompt-synonym=: Find a synonym of a word.
   - =kagi-proofread= is now defined with the macro.
 
 - =kagi-summarize= has a =no-cache= parameter to opt out from caching at Kagi's side.

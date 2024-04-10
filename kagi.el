@@ -496,9 +496,6 @@ string (suitable for invocations from Emacs Lisp)."
 (define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
                             "Define the following word: %s"
                             "Definition")
-(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-synonym
-                            "Find synonyms for the following word: %s"
-                            "Synonym")
 
 (defun kagi--read-language (prompt)
   "Read a language from the minibuffer interactively.
