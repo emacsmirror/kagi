@@ -176,7 +176,6 @@ In order to be consistent with all keymaps, and to avoid clashes, the functional
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
 
-** TODO Hydra
 ** Key bindings
 
 Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. Enter the =help= command in the shell to get more info, or run =describe-keymap= on =fastgpt-shell-mode-map=.
