@@ -73,6 +73,41 @@ https://kagi.com/settings?p=api"
   :type '(choice string function)
   :group 'kagi)
 
+(defvar kagi--fastgpt-prompts '()
+  "List of prompts that were defined with `define-kagi-fastgpt-prompt'.")
+
+(defmacro define-kagi-fastgpt-prompt (symbol-name prompt &optional name)
+  "Define a command SYMBOL-NAME that executes the given PROMPT.
+
+PROMPT can be a string or a function returning a string. The
+function may take one argument: whether the command was called
+interactively or not. This can be used to alter the prompt based
+on how the command was called. E.g. a non-interactive version
+could contain an instruction to say either Yes or No. See
+`kagi-proofread' for an example.
+
+When PROMPT contains %s, it will be replaced with the region (if
+active), the (narrowed) buffer content of the selected buffer or
+a manually entered prompt.
+
+The NAME is also shown as an option when `kagi-fastgpt-prompt' is
+called interactively, to select the corresponding prompt. When no
+NAME is given, the SYMBOL-NAME is shown instead."
+  `(progn
+     (push (cons (or ,name (symbol-name ',symbol-name)) ,prompt) kagi--fastgpt-prompts)
+     (defun ,symbol-name (text &optional interactive-p)
+       (interactive (list (kagi--get-text-for-prompt) t))
+       (let* ((prompt-template (if (functionp ,prompt)
+                                   (funcall ,prompt interactive-p)
+                                 ,prompt))
+              (expanded-prompt (kagi--fastgpt-expand-prompt-placeholders
+                                prompt-template
+                                (lambda () text))))
+         (kagi-fastgpt-prompt
+          expanded-prompt
+          nil
+          interactive-p)))))
+
 (defvar kagi--summarizer-engines
   '(("agnes" . "Friendly, descriptive, fast summary.")
     ("cecil" . "Formal, technical, analytical summary.")
@@ -386,45 +421,6 @@ retrieving a result from Lisp code."
   (interactive)
   (shell-maker-start kagi-fastgpt--config))
 
-;;;###autoload
-(defun kagi-fastgpt-prompt (prompt &optional insert interactive-p)
-  "Feed the given PROMPT to FastGPT.
-
-If INSERT is non-nil, the response is inserted at point (if the
-buffer is writable).
-
-If INTERACTIVE-P is non-nil, the result is presented either in
-the minibuffer for single line outputs, or shown in a separate
-buffer.
-
-If INTERACTIVE-P is nil, the result is returned as a
-string (suitable for invocations from Emacs Lisp)."
-  (interactive (list (read-string "fastgpt> ")
-                     current-prefix-arg
-                     t))
-  (let* ((result (kagi--fastgpt prompt))
-         (result-lines (length (string-lines result))))
-    (cond ((and insert (not buffer-read-only))
-           (save-excursion
-             (insert result)))
-          ((and interactive-p (eql result-lines 1))
-           (message result))
-          ((and interactive-p (> result-lines 1))
-           (kagi--fastgpt-display-result result))
-          ((not interactive-p) result))))
-
-(defun kagi--read-language (prompt)
-  "Read a language from the minibuffer interactively.
-
-PROMPT is passed to the corresponding parameters of
-`completing-read', refer to its documentation for more info."
-  (completing-read prompt kagi--languages
-                   nil
-                   nil
-                   nil
-                   kagi--language-history
-                   "English"))
-
 (defun kagi--get-text-for-prompt ()
   "Return the text to insert in a prompt.
 
@@ -444,6 +440,81 @@ the text manually."
                (buffer-string)))
             ((< 0 (length buffer-or-text)) buffer-or-text)
             (t (error "No buffer or text entered"))))))
+
+(defun kagi--fastgpt-expand-prompt-placeholders (prompt text-function)
+  "Expand all occurrences of %s in PROMPT with the result of TEXT-FUNCTION.
+
+It gets replaced with the region text, (narrowed) buffer text or
+user input."
+  (let ((user-text))
+    (replace-regexp-in-string (rx (seq "%" anychar))
+                              (lambda (match)
+                                (pcase match
+                                  ("%%" "%")
+                                  ("%s" (or user-text (setq user-text (funcall text-function))))
+                                  (_ match)))
+                              prompt t t)))
+
+(defun kagi--fastgpt-construct-prompt ()
+  "Construct a prompt, either a predefined one or entered by the user.
+
+When the selected prompt contains %s, then the value is
+interactively obtained from the user (the region, buffer content
+or text input)."
+  (let* ((prompt-name (completing-read "fastgpt> " kagi--fastgpt-prompts))
+         (prompt-cdr (alist-get prompt-name kagi--fastgpt-prompts prompt-name nil #'string=))
+         (prompt-template (if (functionp prompt-cdr) (funcall prompt-cdr) prompt-cdr)))
+    (kagi--fastgpt-expand-prompt-placeholders prompt-template (lambda () (kagi--get-text-for-prompt)))))
+
+;;;###autoload
+(defun kagi-fastgpt-prompt (prompt &optional insert interactive-p)
+  "Feed the given PROMPT to FastGPT.
+
+When PROMPT contains %s, it will be replaced with the region (if
+active), the (narrowed) buffer content of the selected buffer or
+a manually entered prompt. %s remains unprocessed when
+`kagi-fastgpt-prompt' is called non-interactively (when
+INTERACTIVE-P is nil). %% becomes % and any other placeholder is
+left as-is.
+
+If INSERT is non-nil, the response is inserted at point (if the
+buffer is writable).
+
+If INTERACTIVE-P is non-nil, the result is presented either in
+the minibuffer for single line outputs, or shown in a separate
+buffer.
+
+If INTERACTIVE-P is nil, the result is returned as a
+string (suitable for invocations from Emacs Lisp)."
+  (interactive (list (kagi--fastgpt-construct-prompt)
+                     current-prefix-arg
+                     t))
+  (let* ((result (kagi--fastgpt prompt))
+         (result-lines (length (string-lines result))))
+    (cond ((and insert (not buffer-read-only))
+           (save-excursion
+             (insert result)))
+          ((and interactive-p (eql result-lines 1))
+           (message result))
+          ((and interactive-p (> result-lines 1))
+           (kagi--fastgpt-display-result result))
+          ((not interactive-p) result))))
+
+(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
+                            "Define the following word: %s"
+                            "Definition")
+
+(defun kagi--read-language (prompt)
+  "Read a language from the minibuffer interactively.
+
+PROMPT is passed to the corresponding parameters of
+`completing-read', refer to its documentation for more info."
+  (completing-read prompt kagi--languages
+                   nil
+                   nil
+                   nil
+                   kagi--language-history
+                   "English"))
 
 ;;;###autoload
 (defun kagi-translate (text target-language &optional source-language interactive-p)
@@ -475,26 +546,13 @@ result is short, otherwise it is displayed in a new buffer."
                         text)))
     (kagi-fastgpt-prompt prompt nil interactive-p)))
 
-;;;###autoload
-(defun kagi-proofread (text &optional interactive-p)
-  "Proofread the given TEXT using FastGPT.
+(define-kagi-fastgpt-prompt kagi-proofread
+                            (lambda (interactive-p)
+                              (format "Proofread the following text. %s
 
-The TEXT can be either from the region, a (narrowed) buffer or
-entered manually.
 
-When `kagi-proofread' is called non-interactively (INTERACTIVE-P is
-nil), the function should return the string 'OK' when there are
-no issues."
-  (interactive
-   (list (kagi--get-text-for-prompt) t))
-  (let ((prompt (format "Proofread the following text. %s
-
-%s"
-                        (if interactive-p
-                            ""
-                          "Say OK if there are no issues.")
-                        text)))
-    (kagi-fastgpt-prompt prompt nil interactive-p)))
+%%s" (if interactive-p "" "Say OK if there are no issues.")))
+                            "Proofread")
 
 ;;; Summarizer
 
