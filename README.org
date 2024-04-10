@@ -216,6 +216,13 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 *** New
 
+- The =define-kagi-fastgpt-prompt= macro allows you to define your own prompts, that may contain a placeholder to fill in relevant text.
+
+- The macro is used to define two new commands:
+  - =kagi-fastgpt-prompt-definition=: Define the a word.
+  - =kagi-fastgpt-prompt-synonym=: Find a synonym of a word.
+  - =kagi-proofread= is now defined with the macro.
+
 - =kagi-summarize= has a =no-cache= parameter to opt out from caching at Kagi's side.
 
 - =kagi-summarize-buffer= and =kagi-summarize-region= also have a =no-cache= parameter which can be toggled interactively when called with the universal prefix.
