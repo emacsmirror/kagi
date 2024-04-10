@@ -449,7 +449,8 @@ the text manually."
 (defun kagi-translate (text target-language &optional source-language interactive-p)
   "Translate the TEXT to TARGET-LANGUAGE using FastGPT.
 
-The TEXT can be either from the region, a buffer or entered manually.
+The TEXT can be either from the region, a (narrowed) buffer or
+entered manually.
 
 With a single universal prefix, also prompt for the SOURCE-LANGUAGE.
 
@@ -478,7 +479,8 @@ result is short, otherwise it is displayed in a new buffer."
 (defun kagi-proofread (text &optional interactive-p)
   "Proofread the given TEXT using FastGPT.
 
-The TEXT can be either from the region, a buffer or entered manually.
+The TEXT can be either from the region, a (narrowed) buffer or
+entered manually.
 
 When `kagi-proofread' is called non-interactively (INTERACTIVE-P is
 nil), the function should return the string 'OK' when there are
