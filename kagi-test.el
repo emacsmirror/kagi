@@ -52,6 +52,13 @@ TEXT is the output text, optionally with a list of REFERENCES."
                                    (when references
                                      (list (cons "references" references))))))))
 
+(defun kagi-test--error-output ()
+  "Construct a fictitious erroneous result from the Kagi API."
+  (json-encode
+   '((data . ((output . nil)))
+     (error . (((code . 42)
+                (msg . "Too bad")))))))
+
 (buttercup-define-matcher-for-binary-function
     :to-be-equal-including-properties equal-including-properties
   :expect-match-phrase "Expected `%A' to be equal (incl. properties) to %b, but `%A' was %a."
@@ -75,6 +82,9 @@ The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
   :var ((dummy-output "text"))
   (before-each
     (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output)))
+  (it "throws an error for invalid tokens"
+    (setq kagi-api-token 42)
+    (expect (kagi--curl-flags "foo") :to-throw))
   (describe "FastGPT"
     (describe "kagi-fastgpt-prompt"
       (before-each
@@ -151,7 +161,14 @@ https://www.example.com"
         (expect #'kagi--fastgpt-display-result :to-have-been-called))
       (it "makes exactly one API call"
         (kagi-fastgpt-prompt "foo")
-        (expect #'kagi--call-api :to-have-been-called-times 1)))
+        (expect #'kagi--call-api :to-have-been-called-times 1))
+      (it "handles empty output and returned errors from the API gracefully"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--error-output))
+        (spy-on #'kagi--fastgpt :and-call-through)
+        (expect (kagi-fastgpt-prompt "foo") :to-throw)
+        (expect (spy-context-thrown-signal
+                 (spy-calls-most-recent #'kagi--fastgpt))
+                :to-equal '(error "Too bad (42)"))))
     (describe "kagi-translate"
       (before-each
         (spy-on #'kagi-fastgpt-prompt))
@@ -342,7 +359,14 @@ https://www.example.com"
       (it "caches by default for an invalid configuration value"
         (setq kagi-summarizer-cache 'invalid)
         (kagi-summarize just-enough-text-input)
-        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal t)))
+        (kagi-test--expect-object #'kagi--call-summarizer "cache" :to-equal t))
+      (it "handles empty output and returned errors from the API gracefully"
+        (spy-on #'kagi--call-api :and-return-value (kagi-test--error-output))
+        (spy-on #'kagi-summarize :and-call-through)
+        (expect (kagi-summarize just-enough-text-input) :to-throw)
+        (expect (spy-context-thrown-signal
+                 (spy-calls-most-recent #'kagi-summarize))
+                :to-equal '(error "Too bad (42)"))))
     (describe "kagi-summarize-buffer"
       (before-each
         (spy-on #'read-buffer)
