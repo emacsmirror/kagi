@@ -45,7 +45,8 @@
 (require 'org)
 
 (defvar org-babel-default-header-args:kagi-fastgpt
-  '((:results . "output"))
+  '((:results . "output")
+    (:cache   . "yes"))
   "Default values for the kagi-fastgpt header arguments.")
 
 (defun org-babel-execute:kagi-fastgpt (prompt _params)
