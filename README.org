@@ -50,6 +50,8 @@ Then create a source block with 'language' =kagi-fastgpt=:
 
 #+end_src
 
+Then, press =C-c C-c= (=org-babel-execute-src-block=) to obtain the result below the prompt.
+
 ** Universal Summarizer
 
 - =kagi-summarize-buffer= :: Summarizes the content of a buffer.
