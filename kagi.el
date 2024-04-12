@@ -455,13 +455,20 @@ user input."
                                   (_ match)))
                               prompt t t)))
 
+(defvar kagi--fastgpt-prompt-history nil
+  "History for `kagi-fastgpt-prompt'.")
+
 (defun kagi--fastgpt-construct-prompt ()
   "Construct a prompt, either a predefined one or entered by the user.
 
 When the selected prompt contains %s, then the value is
 interactively obtained from the user (the region, buffer content
 or text input)."
-  (let* ((prompt-name (completing-read "fastgpt> " kagi--fastgpt-prompts))
+  (let* ((prompt-name (completing-read
+                       "fastgpt> "
+                       kagi--fastgpt-prompts
+                       nil nil nil
+                       'kagi--fastgpt-prompt-history))
          (prompt-cdr (alist-get prompt-name kagi--fastgpt-prompts prompt-name nil #'string=))
          (prompt-template (if (functionp prompt-cdr) (funcall prompt-cdr) prompt-cdr)))
     (kagi--fastgpt-expand-prompt-placeholders prompt-template (lambda () (kagi--get-text-for-prompt)))))
