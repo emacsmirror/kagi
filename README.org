@@ -32,6 +32,24 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 - =kagi-proofread= :: Proofread a string or buffer.
 - =kagi-fastgpt-prompt-definition= :: Returns the definition of a word.
 
+*** Org Babel support
+
+=kagi-fastgpt-prompt= can also be used from Org mode with source blocks. Make sure to initialize the package:
+
+#+begin_src elisp
+  (require 'ob-kagi-fastgpt)
+  (ob-kagi-fastgpt-setup)
+#+end_src
+
+Then create a source block with 'language' =kagi-fastgpt=:
+
+#+begin_src org
+  ,#+begin_src kagi-fastgpt
+    Can Kagi FastGPT be used in Org mode?
+  ,#+end_src
+
+#+end_src
+
 ** Universal Summarizer
 
 - =kagi-summarize-buffer= :: Summarizes the content of a buffer.
@@ -237,6 +255,8 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 - The macro is used to (re)define commands:
   - =kagi-fastgpt-prompt-definition=: Define the a word.
   - =kagi-proofread= is now defined with the macro.
+
+- Org Babel support was added.
 
 - =kagi-summarize= has a =no-cache= parameter to opt out from caching at Kagi's side.
 
