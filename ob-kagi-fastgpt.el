@@ -46,6 +46,7 @@
 
 (defvar org-babel-default-header-args:kagi-fastgpt
   '((:results . "output")
+    (:exports . "both")
     (:cache   . "yes"))
   "Default values for the kagi-fastgpt header arguments.")
 
