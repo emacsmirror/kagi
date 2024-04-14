@@ -54,6 +54,7 @@
   "Execute a PROMPT in an Org Babel block with Kagi FastGPT."
   (kagi-fastgpt-prompt prompt))
 
+;;;###autoload
 (defun ob-kagi-fastgpt-setup ()
   "Set up support for Kagi FastGPT in Org Babel."
   (org-babel-do-load-languages 'org-babel-load-languages
