@@ -32,26 +32,6 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 - =kagi-proofread= :: Proofread a string or buffer.
 - =kagi-fastgpt-prompt-definition= :: Returns the definition of a word.
 
-*** Org Babel support
-
-=kagi-fastgpt-prompt= can also be used from Org mode with source blocks. Make sure to initialize the package:
-
-#+begin_src elisp
-  (require 'ob-kagi-fastgpt)
-  (ob-kagi-fastgpt-setup)
-#+end_src
-
-Then create a source block with 'language' =kagi-fastgpt=:
-
-#+begin_src org
-  ,#+begin_src kagi-fastgpt
-    Can Kagi FastGPT be used in Org mode?
-  ,#+end_src
-
-#+end_src
-
-Then, press =C-c C-c= (=org-babel-execute-src-block=) to obtain the result below the prompt.
-
 ** Universal Summarizer
 
 - =kagi-summarize-buffer= :: Summarizes the content of a buffer.
@@ -180,6 +160,38 @@ could contain an instruction to say either /Yes/ or /No/. See
 #+end_src
 
 Note the =%%s= notation, =format= turns it into =%s= which becomes the prompt placeholder.
+
+** Org Babel support
+
+=kagi-fastgpt-prompt= can also be used from Org mode with source blocks. Make sure to initialize the package.
+
+With =use-package=:
+
+#+begin_src elisp
+  (use-package ob-kagi-fastgpt
+    :ensure nil  ; provided by the kagi package
+    :after org
+    :config
+    (ob-kagi-fastgpt-setup))
+#+end_src
+
+Or, without =use-package=:
+
+#+begin_src elisp
+  (require 'ob-kagi-fastgpt)
+  (ob-kagi-fastgpt-setup)
+#+end_src
+
+Then create a source block with 'language' =kagi-fastgpt=:
+
+#+begin_src org
+  ,#+begin_src kagi-fastgpt
+    Can Kagi FastGPT be used in Org mode?
+  ,#+end_src
+
+#+end_src
+
+Then, press =C-c C-c= (=org-babel-execute-src-block=) to obtain the result below the prompt.
 
 ** Embark integration
 
