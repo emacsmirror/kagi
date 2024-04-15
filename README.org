@@ -163,7 +163,7 @@ Note the =%%s= notation, =format= turns it into =%s= which becomes the prompt pl
 
 ** Org Babel support
 
-=kagi-fastgpt-prompt= can also be used from Org mode with source blocks. Make sure to initialize the package.
+=kagi-fastgpt-prompt= can also be used from Org mode with source blocks. Make sure to initialize the package as described below.
 
 With =use-package=:
 
@@ -191,7 +191,7 @@ Then create a source block with 'language' =kagi-fastgpt=:
 
 #+end_src
 
-Then, press =C-c C-c= (=org-babel-execute-src-block=) to obtain the result below the prompt.
+Press =C-c C-c= (=org-babel-execute-src-block=) inside this block to obtain the result below the prompt. By default, the responses are cached in your document; the same prompt text won't trigger a second API request. Use the header argument =:cache no= to refresh the response for each block execution.
 
 ** Embark integration
 
