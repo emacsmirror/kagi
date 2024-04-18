@@ -362,3 +362,9 @@ Initial release.
 - [[https://help.kagi.com/kagi/api/fastgpt.html][Kagi FastGPT API]]
 - [[https://help.kagi.com/kagi/api/summarizer.html][Kagi Universal Summarizer API]]
 - [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]], which also provides shell-maker required by the FastGPT shell.
+
+* Meta :noexport:
+
+Local variables:
+eval: (add-hook 'after-save-hook #'org-texinfo-export-to-info 0 t)
+End:
