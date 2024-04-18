@@ -1,0 +1,481 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename kagi.info
+@settitle kagi.el README
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@finalout
+@titlepage
+@title kagi.el README
+@end titlepage
+
+@ifnottex
+@node Top
+@top kagi.el README
+@end ifnottex
+
+@menu
+* Introduction::
+* Commands and functions::
+* Installation and configuration::
+* Development::
+* Changelog::
+* References::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+Commands and functions
+
+* FastGPT::
+* Universal Summarizer::
+
+Installation and configuration
+
+* Kagi API setup::
+* Configuration settings::
+* Defining your own prompts::
+* Org Babel support::
+* Embark integration::
+* FastGPT shell key bindings::
+
+Changelog
+
+* 0.5pre: 05pre. 
+* 0.4: 04. 
+
+0.5pre
+
+* Breaking changes::
+* New::
+* Fixes::
+
+0.4
+
+* Breaking changes: Breaking changes (1). 
+* New: New (1). 
+* Fixes: Fixes (1). 
+
+@end detailmenu
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+This Emacs package provides the following functionalities from the @uref{https://www.kagi.com, Kagi search engine}:
+
+@table @asis
+@item FastGPT
+Kagi's LLM offering, as a shell inspired by @uref{https://github.com/xenodium/chatgpt-shell, xenodium's chatgpt-shell}.
+@item Universal Summarizer
+Summarizes texts, webpages, videos and more.
+@end table
+
+Both functions are accessed through Kagi's @uref{https://help.kagi.com/kagi/api/overview.html, APIs}. Before a call can be made, some setup should be done on the Kagi website (see below).
+
+@image{img/fastgpt,,,,png}
+
+@node Commands and functions
+@chapter Commands and functions
+
+@menu
+* FastGPT::
+* Universal Summarizer::
+@end menu
+
+@node FastGPT
+@section FastGPT
+
+@table @asis
+@item @samp{kagi-fastgpt-shell}
+Opens a shell buffer in a new window where prompts can be typed. This Kagi FastGPT typically returns output based on actual search results. When point is on one of the listed URLs, press @samp{C-c RET} to open it.
+@item @samp{kagi-fastgpt-prompt}
+Enter a prompt in the minibuffer and show the result in a separate buffer. With a universal prefix (@samp{C-u}), the result is inserted at point. This function can also be used from Lisp code.
+@end table
+
+kagi.el has some functions that use FastGPT to perform certain operations on text:
+
+@table @asis
+@item @samp{kagi-translate}
+Translates strings or complete buffers to another language (including programming languages).
+@item @samp{kagi-proofread}
+Proofread a string or buffer.
+@item @samp{kagi-fastgpt-prompt-definition}
+Returns the definition of a word.
+@end table
+
+@node Universal Summarizer
+@section Universal Summarizer
+
+@table @asis
+@item @samp{kagi-summarize-buffer}
+Summarizes the content of a buffer.
+@item @samp{kagi-summarize-region}
+Similarly, the text inside the region is summarized.
+@item @samp{kagi-summarize-url}
+Prompts for a URL of which a summary is composed and displayed.
+@item @samp{kagi-summarize}
+Function to retrieve a summary from a text or URL, to be used from Lisp code.
+@end table
+
+The summarize commands accept a single universal prefix, which allows you to:
+@itemize
+@item
+insert the summary at point;
+@item
+choose a (different) target language;
+@item
+choose which summary engine to use;
+@item
+choose which summary format to use (prose or bullet list);
+@item
+opt-out from caching at Kagi for confidential content.
+@end itemize
+
+Note that texts submitted to Kagi are subject to their @uref{https://kagi.com/privacy#Summarizer, Privacy Policy}.
+
+@node Installation and configuration
+@chapter Installation and configuration
+
+kagi.el is available on @uref{https://melpa.org/#/kagi, MELPA} and @uref{https://stable.melpa.org/#/kagi, MELPA Stable}.
+
+To install from Git, clone with:
+
+@example
+git clone https://codeberg.org/bram85/kagi.el.git /path/to/kagi.el
+@end example
+
+
+Note that kagi.el has a dependency on the @uref{https://melpa.org/#/shell-maker, shell-maker package}, which is available on MELPA@.
+
+You may want to load and configure the package with @code{use-package}, for example put the following in your Emacs init file:
+
+@lisp
+(use-package kagi
+  :ensure t
+  :custom
+  (kagi-api-token "ABCDEF")
+  ;; or use a function, e.g. with the password-store package:
+  (kagi-api-token (lambda () (password-store-get "Kagi/API")))
+
+  ;; Universal Summarizer settings
+  (kagi-summarizer-engine "cecil")
+  (kagi-summarizer-default-language "EN")
+  (kagi-summarizer-cache t)
+  :custom-face
+  ;; kagi-code defaults to fixed-pitch, but can be overridden as
+  ;; follows:
+  (kagi-code ((t (:inherit org-verbatim))))
+
+  ;; likewise for kagi-bold:
+  (kagi-bold ((t (:inherit modus-themes-bold)))))
+@end lisp
+
+The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of @uref{https://passwordstore.org/, pass(1)} and the @emph{password-store} package that comes with it).
+
+@menu
+* Kagi API setup::
+* Configuration settings::
+* Defining your own prompts::
+* Org Babel support::
+* Embark integration::
+* FastGPT shell key bindings::
+@end menu
+
+@node Kagi API setup
+@section Kagi API setup
+
+@enumerate
+@item
+Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
+@item
+In @uref{https://kagi.com/settings?p=billing_api, your account settings}, put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the @uref{https://help.kagi.com/kagi/api/fastgpt.html#pricing, FastGPT API} and the @uref{https://help.kagi.com/kagi/api/summarizer.html#pricing, Summarizer API} for for the actual costs.
+@item
+In @uref{https://kagi.com/settings?p=api, the API portal}, create an API token. Put the result in @code{kagi-api-token} (or write a function to access it securely).
+@end enumerate
+
+@node Configuration settings
+@section Configuration settings
+
+@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@headitem Custom variable
+@tab Description
+@item kagi-api-token
+@tab The Kagi API token.
+@item kagi-fastgpt-api-url
+@tab The Kagi FastGPT API entry point.
+@item kagi-summarizer-api-url
+@tab The Kagi Summarizer API entry point.
+@item kagi-summarizer-cache
+@tab Determines whether the Summarizer should cache results.
+@item kagi-summarizer-default-language
+@tab Default target language of the summary.
+@item kagi-summarizer-default-summary-format
+@tab The summary format that should be returned.
+@item kagi-summarizer-engine
+@tab Which summary engine to use.
+@end multitable
+
+@node Defining your own prompts
+@section Defining your own prompts
+
+kagi.el comes with a macro to define your own prompts easily: @samp{define-kagi-fastgpt-prompt}. When the prompt contains the placeholder @samp{%s}, it will be replaced with the region or an interactively used word.
+
+An example usage of this macro comes by default with this package:
+
+@lisp
+(define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
+                            "Define the following word: %s"
+                            "Definition")
+@end lisp
+
+The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user visible name. It will be shown when calling @samp{kagi-fastgpt-prompt} interactively.
+
+The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could bind the prompt command to a key, use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
+
+The prompt string may also be a function that returns the prompt
+string. The function may take one argument: whether the command was
+called interactively or not. This can be used to alter the prompt
+based on how the command was called. E.g. a non-interactive version
+could contain an instruction to say either @emph{Yes} or @emph{No}. See
+@samp{kagi-proofread} for an example:
+
+@lisp
+(define-kagi-fastgpt-prompt kagi-proofread
+                            (lambda (interactive-p)
+                              (format "Proofread the following text. %s
+
+%%s" (if interactive-p "" "Say OK if there are no issues.")))
+                            "Proofread")
+@end lisp
+
+Note the @samp{%%s} notation, @samp{format} turns it into @samp{%s} which becomes the prompt placeholder.
+
+@node Org Babel support
+@section Org Babel support
+
+@samp{kagi-fastgpt-prompt} can also be used from Org mode with source blocks. Make sure to initialize the package as described below.
+
+With @samp{use-package}:
+
+@lisp
+(use-package ob-kagi-fastgpt
+  :ensure nil  ; provided by the kagi package
+  :after org
+  :config
+  (ob-kagi-fastgpt-setup))
+@end lisp
+
+Or, without @samp{use-package}:
+
+@lisp
+(require 'ob-kagi-fastgpt)
+(ob-kagi-fastgpt-setup)
+@end lisp
+
+Then create a source block with 'language' @samp{kagi-fastgpt}:
+
+@example
+#+begin_src kagi-fastgpt
+  Can Kagi FastGPT be used in Org mode?
+#+end_src
+
+@end example
+
+Press @samp{C-c C-c} (@samp{org-babel-execute-src-block}) inside this block to obtain the result below the prompt. By default, the responses are cached in your document; the same prompt text won't trigger a second API request. Use the header argument @samp{:cache no} to refresh the response for each block execution.
+
+@node Embark integration
+@section Embark integration
+
+The kagi.el package can be integrated with @uref{https://github.com/oantolin/embark, Embark}. Use it to easily summarize, translate or proofread a buffer, region or a URL@. It can also be used to call your custom prompts with @samp{define-kagi-fastgpt-prompt}.
+
+In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the @emph{K} prefix key. For example, press @emph{K s} to invoke the summarize functionality.
+
+@lisp
+(defmacro embark-kagi-map (name &rest keys)
+  "Macro for defining a keymap for accessing Kagi functionality through Embark."
+  `(defvar-keymap ,name
+     :doc "Keymap for accessing Kagi functionality with Embark."
+     :parent nil
+     ,@@keys))
+
+(embark-kagi-map embark-kagi-buffer-map
+                 "p" #'kagi-proofread
+                 "s" #'kagi-summarize-buffer
+                 "t" #'kagi-translate)
+(keymap-set embark-buffer-map "K" embark-kagi-buffer-map)
+
+(embark-kagi-map embark-kagi-region-map
+                 "d" #'kagi-fastgpt-prompt-definition
+                 "p" #'kagi-proofread
+                 "s" #'kagi-summarize-region
+                 "t" #'kagi-translate)
+(keymap-set embark-region-map "K" embark-kagi-region-map)
+
+(embark-kagi-map embark-kagi-url-map
+                 "s" #'kagi-summarize-url)
+(keymap-set embark-url-map "K" embark-kagi-url-map)
+@end lisp
+
+@node FastGPT shell key bindings
+@section FastGPT shell key bindings
+
+Since the FastGPT shell inherits from @samp{comint-mode} indirectly, many key bindings are also inherited. Enter the @samp{help} command in the shell to get more info, or run @samp{describe-keymap} on @samp{fastgpt-shell-mode-map}.
+
+One of those bindings is @samp{C-c C-o}, which flushes the last output. However, this binding is used in @samp{org-mode} to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type @samp{C-c C-o} to browse the URL, only to have the output erased (which you can undo, actually).
+
+If you recognize this confusion, you may want to add the following line to your configuration file to shadow the @samp{comint-mode} binding with something more appropriate:
+
+@lisp
+(add-hook 'fastgpt-shell-mode-hook
+          (lambda ()
+            (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)))
+@end lisp
+
+Because the @samp{fastgpt-shell-mode-map} only becomes available when @samp{kagi-fastgpt-shell} has been invoked, the keybinding is done in a mode hook.
+
+@node Development
+@chapter Development
+
+kagi.el comes with some unit tests, written with @uref{https://github.com/jorgenschaefer/emacs-buttercup/, buttercup} and can be executed in a controlled @uref{https://github.com/cask/cask/, Cask} environment:
+
+@enumerate
+@item
+@samp{git clone https://github.com/cask/cask/}
+@item
+@samp{make -C cask install}
+@item
+Run @samp{cask} in the kagi.el directory to setup the environment.
+@item
+Run the tests with @samp{cask exec buttercup -L .}
+@end enumerate
+
+There's also a @uref{https://github.com/casey/just, justfile} which allows you to execute @samp{just test} to compile the Emacs Lisp source and run the unit tests afterwards in one go.
+
+Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be unit tests.
+
+@node Changelog
+@chapter Changelog
+
+@menu
+* 0.5pre: 05pre. 
+* 0.4: 04. 
+@end menu
+
+@node 05pre
+@section 0.5pre
+
+@menu
+* Breaking changes::
+* New::
+* Fixes::
+@end menu
+
+@node Breaking changes
+@subsection Breaking changes
+
+@itemize
+@item
+Removed function @samp{kagi-fastgpt} as announced in the 0.4 changelog.
+@end itemize
+
+@node New
+@subsection New
+
+@itemize
+@item
+The @samp{define-kagi-fastgpt-prompt} macro allows you to define your own prompts, that may contain a placeholder to fill in relevant text.
+
+@item
+The macro is used to (re)define commands:
+@itemize
+@item
+@samp{kagi-fastgpt-prompt-definition}: Define the a word.
+@item
+@samp{kagi-proofread} is now defined with the macro.
+@end itemize
+
+@item
+Org Babel support was added.
+
+@item
+@samp{kagi-summarize} has a @samp{no-cache} parameter to opt out from caching at Kagi's side.
+
+@item
+@samp{kagi-summarize-buffer} and @samp{kagi-summarize-region} also have a @samp{no-cache} parameter which can be toggled interactively when called with the universal prefix.
+
+@item
+Add support for traditional Chinese as possible summary language.
+@end itemize
+
+@node Fixes
+@subsection Fixes
+
+@itemize
+@item
+Fixed language code for Czech summaries.
+@item
+Handle error responses when calling the FastGPT API@.
+@end itemize
+
+@node 04
+@section 0.4
+
+@menu
+* Breaking changes: Breaking changes (1). 
+* New: New (1). 
+* Fixes: Fixes (1). 
+@end menu
+
+@node Breaking changes (1)
+@subsection Breaking changes
+
+@itemize
+@item
+Obsoleted function @samp{kagi-fastgpt} in favor of @samp{kagi-fastgpt-prompt}. To be removed in a next release.
+@end itemize
+
+@node New (1)
+@subsection New
+
+@itemize
+@item
+Introduce variable @samp{kagi-summarizer-default-summary-format}, to produce a paragraph summary (default) or a take-away in bullet-list format.
+
+@item
+@samp{kagi-proofread} asks FastGPT to proofread the region, a buffer or a text input.
+
+@item
+@samp{kagi-summarize-buffer} returns the summary when called non-interactively.
+
+@item
+Unit tests added.
+@end itemize
+
+@node Fixes (1)
+@subsection Fixes
+
+@itemize
+@item
+Change the prompt for @samp{kagi-translate} to return translations only, without preamble.
+@item
+Added autoload markers where they were missing.
+@item
+Language selection menu for summaries was not formatted properly.
+@end itemize
+
+@node References
+@chapter References
+
+@itemize
+@item
+@uref{https://help.kagi.com/kagi/api/fastgpt.html, Kagi FastGPT API}
+@item
+@uref{https://help.kagi.com/kagi/api/summarizer.html, Kagi Universal Summarizer API}
+@item
+@uref{https://github.com/xenodium/chatgpt-shell, xenodium's chatgpt-shell}, which also provides shell-maker required by the FastGPT shell.
+@end itemize
+
+@bye
