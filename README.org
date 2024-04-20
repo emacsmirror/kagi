@@ -2,6 +2,7 @@
 #+author: Bram Schoenmakers
 #+macro: issue [[https://codeberg.org/bram85/kagi.el/issues/$1][issue #$1]]
 #+macro: pr [[https://codeberg.org/bram85/kagi.el/pulls/$1][PR #$1]]
+#+export_file_name: kagi
 
 #+begin_export html
 <a href="https://melpa.org/#/kagi"><img alt="MELPA" src="https://melpa.org/packages/kagi-badge.svg"/></a>
@@ -299,6 +300,8 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 - Unit tests added.
 
+- The README is also available as info page.
+
 *** Fixes
 
 - Change the prompt for =kagi-translate= to return translations only, without preamble.
@@ -361,3 +364,9 @@ Initial release.
 - [[https://help.kagi.com/kagi/api/fastgpt.html][Kagi FastGPT API]]
 - [[https://help.kagi.com/kagi/api/summarizer.html][Kagi Universal Summarizer API]]
 - [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]], which also provides shell-maker required by the FastGPT shell.
+
+* Meta :noexport:
+
+Local variables:
+eval: (add-hook 'after-save-hook #'org-texinfo-export-to-info 0 t)
+End:
