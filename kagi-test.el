@@ -430,13 +430,19 @@ https://www.example.com"
         (expect #'kagi--display-summary :to-have-been-called)
         (expect #'kagi--insert-summary :not :to-have-been-called))
       (it "inserts the summary when requested, interactively"
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(t nil nil))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value
+                '((insert . t)))
         (call-interactively #'kagi-summarize-buffer)
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called))
       (it "passes arguments to kagi-summary"
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(t lang bram random maybe))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value
+                '((insert . t)
+                  (language . lang)
+                  (engine . bram)
+                  (format . random)
+                  (no-cache . maybe)))
         (call-interactively #'kagi-summarize-buffer)
         (expect #'kagi-summarize :to-have-been-called)
         (expect #'kagi--display-summary :not :to-have-been-called)
@@ -449,7 +455,12 @@ https://www.example.com"
       (before-each
         (spy-on #'region-beginning)
         (spy-on #'region-end)
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(lang bram random maybe))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value
+                '((insert . t)
+                  (language . lang)
+                  (engine . bram)
+                  (format . random)
+                  (no-cache . maybe)))
         (spy-on #'kagi-summarize :and-return-value dummy-output)
         (spy-on #'buffer-name :and-return-value "buffer-name")
         (spy-on #'buffer-substring-no-properties))
@@ -469,7 +480,12 @@ https://www.example.com"
       (before-each
         (spy-on #'kagi-summarize :and-return-value dummy-output)
         (spy-on #'read-string :and-return-value "https://www.example.com")
-        (spy-on #'kagi--get-summarizer-parameters :and-return-value '(nil lang bram random))
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value
+                '((insert . nil)
+                  (language . lang)
+                  (engine . bram)
+                  (format . random)
+                  (no-cache . maybe)))
         (spy-on #'kagi--insert-summary))
       (it "passes arguments to kagi-summary"
         (call-interactively #'kagi-summarize-url)
@@ -508,6 +524,13 @@ https://www.example.com"
         (kagi-test--expect-arg #'kagi--display-summary 1 :to-equal "abc.example.com (summary)"))
       (it "inserts the summary when requested non-interactively"
         (kagi-summarize-url "https://www.example.com" t)
+        (expect #'kagi--display-summary :not :to-have-been-called)
+        (expect #'kagi--insert-summary :to-have-been-called)
+        (kagi-test--expect-arg #'kagi--insert-summary 0 :to-equal dummy-output))
+      (it "inserts a summary when requested interactively"
+        (spy-on #'kagi--get-summarizer-parameters :and-return-value
+                '((insert . t)))
+        (call-interactively #'kagi-summarize-url)
         (expect #'kagi--display-summary :not :to-have-been-called)
         (expect #'kagi--insert-summary :to-have-been-called)
         (kagi-test--expect-arg #'kagi--insert-summary 0 :to-equal dummy-output)))))

@@ -679,45 +679,45 @@ to insert when the region is highlighted. Therefore, PROMPTS is a
 list of items that can be prompted interactively. It is
 a (possibly empty) list with possible elements \\='prompt-for-insert
 or \\='prompt-for-no-cache."
-  (append
-   (when (seq-contains-p prompts 'prompt-for-insert)
-     (list
-      (and (equal current-prefix-arg '(4))
-           (not buffer-read-only)
-           (y-or-n-p "Insert summary at point?"))))
-   (list
-    (when (equal current-prefix-arg '(4))
-      (let ((language-table (mapcar (lambda (lang)
-                                      (cons
-                                       (format "%s" (car lang))
-                                       (cdr lang)))
-                                    kagi--summarizer-languages)))
-        (alist-get
-         (completing-read (format-prompt "Output language" "")
-                          language-table nil t nil kagi--language-history)
-         language-table
-         (or kagi-summarizer-default-language "EN")
-         nil
-         #'string=))))
-   (list
-    (when (equal current-prefix-arg '(4))
-      (completing-read (format-prompt "Engine" "")
-                       kagi--summarizer-engines nil t kagi-summarizer-engine)))
-   (list
-    (when (equal current-prefix-arg '(4))
-      (let ((summary-formats '(("Summary" . summary)
-                               ("Bullet-list" . takeaway))))
-        (alist-get
-         (completing-read (format-prompt "Summary format" "")
-                          summary-formats nil t)
-         summary-formats
-         kagi-summarizer-default-summary-format
-         nil
-         #'string=))))
-   (list
-    (and (seq-contains-p prompts 'prompt-for-no-cache)
-         (equal current-prefix-arg '(4))
-         (y-or-n-p "Cache the result?")))))
+  (list
+   (cons 'insert
+         (and (seq-contains-p prompts 'prompt-for-insert)
+              (equal current-prefix-arg '(4))
+              (not buffer-read-only)
+              (y-or-n-p "Insert summary at point?")))
+   (cons 'language
+         (when (equal current-prefix-arg '(4))
+           (let ((language-table (mapcar (lambda (lang)
+                                           (cons
+                                            (format "%s" (car lang))
+                                            (cdr lang)))
+                                         kagi--summarizer-languages)))
+             (alist-get
+              (completing-read (format-prompt "Output language" "")
+                               language-table nil t nil kagi--language-history)
+              language-table
+              (or kagi-summarizer-default-language "EN")
+              nil
+              #'string=))))
+   (cons 'engine
+         (when (equal current-prefix-arg '(4))
+           (completing-read (format-prompt "Engine" "")
+                            kagi--summarizer-engines nil t kagi-summarizer-engine)))
+   (cons 'format
+         (when (equal current-prefix-arg '(4))
+           (let ((summary-formats '(("Summary" . summary)
+                                    ("Bullet-list" . takeaway))))
+             (alist-get
+              (completing-read (format-prompt "Summary format" "")
+                               summary-formats nil t)
+              summary-formats
+              kagi-summarizer-default-summary-format
+              nil
+              #'string=))))
+   (cons 'no-cache
+         (and (seq-contains-p prompts 'prompt-for-no-cache)
+              (equal current-prefix-arg '(4))
+              (y-or-n-p "Cache the result?")))))
 
 ;;;###autoload
 (defun kagi-summarize-buffer (buffer &optional insert language engine format no-cache interactive-p)
@@ -750,11 +750,20 @@ target LANGUAGE to use, which summarizer ENGINE to use and which
 summary FORMAT to use.
 
 INTERACTIVE-P is t when called interactively."
-  (interactive (append
-                (list (read-buffer (format-prompt "Buffer" "") nil t))
-                (kagi--get-summarizer-parameters '(prompt-for-insert
-                                                   prompt-for-no-cache))
-                (list t)))
+  (interactive (let ((buffer (read-buffer (format-prompt "Buffer" "") nil t))
+                     (parameters (kagi--get-summarizer-parameters
+                                  '(prompt-for-insert
+                                    prompt-for-no-cache))))
+                 (list
+                  buffer
+                  ;; optional parameters
+                  (map-elt parameters 'insert)
+                  (map-elt parameters 'language)
+                  (map-elt parameters 'engine)
+                  (map-elt parameters 'format)
+                  (map-elt parameters 'no-cache)
+                  ;; interactive-p
+                  t)))
   (let ((summary (with-current-buffer buffer
                    (kagi-summarize (buffer-string) language engine format no-cache)))
         (summary-buffer-name (with-current-buffer buffer
@@ -787,9 +796,12 @@ content.
 With a single universal prefix argument (`C-u'), the user is
 prompted for which target LANGUAGE to use, which summarizer
 ENGINE to use and which summary FORMAT to use."
-  (interactive (append
-                (list (region-beginning) (region-end))
-                (kagi--get-summarizer-parameters '(prompt-for-no-cache))))
+  (interactive (let ((parameters (kagi--get-summarizer-parameters '(prompt-for-no-cache))))
+                 (list (region-beginning) (region-end)
+                       (map-elt parameters 'language)
+                       (map-elt parameters 'engine)
+                       (map-elt parameters 'format)
+                       (map-elt parameters 'no-cache))))
   (kagi--display-summary
    (kagi-summarize (buffer-substring-no-properties begin end)
                    language
@@ -834,9 +846,14 @@ types are supported:
 - YouTube URLs
 - Scanned PDFs and images (OCR)"
   (interactive
-   (cons
-    (read-string (format-prompt "URL" ""))
-    (kagi--get-summarizer-parameters '(prompt-for-insert))))
+   (let ((url (read-string (format-prompt "URL" "")))
+         (parameters (kagi--get-summarizer-parameters '(prompt-for-insert))))
+     (list
+      url
+      (map-elt parameters 'insert)
+      (map-elt parameters 'language)
+      (map-elt parameters 'engine)
+      (map-elt parameters 'format))))
   (let ((summary (kagi-summarize url language engine format)))
     (if (and insert (not buffer-read-only))
         (kagi--insert-summary summary)
