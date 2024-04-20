@@ -678,7 +678,10 @@ some clients that doesn't make sense. E.g. we don't want to ask
 to insert when the region is highlighted. Therefore, PROMPTS is a
 list of items that can be prompted interactively. It is
 a (possibly empty) list with possible elements \\='prompt-for-insert
-or \\='prompt-for-no-cache."
+or \\='prompt-for-no-cache.
+
+The function returns an alist with parameter names and values, so
+each caller can cherry-pick what they need."
   (list
    (cons 'insert
          (and (seq-contains-p prompts 'prompt-for-insert)
