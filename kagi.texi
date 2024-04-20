@@ -452,6 +452,9 @@ Introduce variable @samp{kagi-summarizer-default-summary-format}, to produce a p
 
 @item
 Unit tests added.
+
+@item
+The README is also available as info page.
 @end itemize
 
 @node Fixes (1)

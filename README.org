@@ -300,6 +300,8 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 - Unit tests added.
 
+- The README is also available as info page.
+
 *** Fixes
 
 - Change the prompt for =kagi-translate= to return translations only, without preamble.
