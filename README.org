@@ -117,7 +117,6 @@ The token can be supplied directly as a string, but you could write a lambda to 
 |----------------------------------------+---------------------------------------------------------|
 | kagi-api-token                         | The Kagi API token.                                     |
 | kagi-fastgpt-api-url                   | The Kagi FastGPT API entry point.                       |
-| kagi-fastgpt-prompts                   | Prompts to choose for a buffer, text or region.         |
 | kagi-summarizer-api-url                | The Kagi Summarizer API entry point.                    |
 | kagi-summarizer-cache                  | Determines whether the Summarizer should cache results. |
 | kagi-summarizer-default-language       | Default target language of the summary.                 |
