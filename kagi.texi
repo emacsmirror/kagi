@@ -359,6 +359,8 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 @node Changelog
 @chapter Changelog
 
+The full changelog can be found in README.org.
+
 @menu
 * 0.5: 05. 
 * 0.4: 04. 
