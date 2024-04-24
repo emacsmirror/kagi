@@ -15,7 +15,7 @@
 This Emacs package provides the following functionalities from the [[https://www.kagi.com][Kagi search engine]]:
 
 - FastGPT :: Kagi's LLM offering, as a shell inspired by [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]].
-- Universal Summarizer :: Summarizes texts, webpages, videos and more.
+- Universal Summarizer :: Summarizes texts, webpages, videos, and more.
 
 Both functions are accessed through Kagi's [[https://help.kagi.com/kagi/api/overview.html][APIs]]. Before a call can be made, some setup should be done on the Kagi website (see below).
 
@@ -31,7 +31,7 @@ Both functions are accessed through Kagi's [[https://help.kagi.com/kagi/api/over
 kagi.el has some functions that use FastGPT to perform certain operations on text:
 
 - =kagi-translate= :: Translates strings or complete buffers to another language (including programming languages).
-- =kagi-proofread= :: Proofread a string or buffer.
+- =kagi-proofread= :: Proofreads a string or buffer.
 - =kagi-fastgpt-prompt-definition= :: Returns the definition of a word.
 
 ** Universal Summarizer
@@ -88,7 +88,7 @@ The token can be supplied directly as a string, but you could write a lambda to 
 ** Kagi API setup
 
 1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
-2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the [[https://help.kagi.com/kagi/api/fastgpt.html#pricing][FastGPT API]] and the [[https://help.kagi.com/kagi/api/summarizer.html#pricing][Summarizer API]] for for the actual costs.
+2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the [[https://help.kagi.com/kagi/api/fastgpt.html#pricing][FastGPT API]] and the [[https://help.kagi.com/kagi/api/summarizer.html#pricing][Summarizer API]] for the actual costs.
 3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
 
 ** Configuration settings
@@ -140,7 +140,7 @@ An example usage of this macro comes by default with this package:
                               "Definition")
 #+end_src
 
-The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user visible name. It will be shown when calling =kagi-fastgpt-prompt= interactively.
+The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user-visible name. It will be shown when calling =kagi-fastgpt-prompt= interactively.
 
 The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could bind the prompt command to a key, use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
 
@@ -230,7 +230,7 @@ In order to be consistent with all keymaps, and to avoid clashes, the functional
 
 Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. Enter the =help= command in the shell to get more info, or run =describe-keymap= on =fastgpt-shell-mode-map=.
 
-One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased (which you can undo, actually).
+One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs, so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased (which you can undo, actually).
 
 If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
 
@@ -277,7 +277,7 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 - =kagi-summarize-buffer= and =kagi-summarize-region= also have a =no-cache= parameter which can be toggled interactively when called with the universal prefix.
 
-- Add support for traditional Chinese as possible summary language.
+- Add support for traditional Chinese as a possible summary language.
 
 *** Fixes
 
@@ -300,11 +300,11 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 - Unit tests added.
 
-- The README is also available as info page.
+- The README is also available as an info page.
 
 *** Fixes
 
-- Change the prompt for =kagi-translate= to return translations only, without preamble.
+- Change the prompt for =kagi-translate= to return translations only, without a preamble.
 - Added autoload markers where they were missing.
 - Language selection menu for summaries was not formatted properly.
 

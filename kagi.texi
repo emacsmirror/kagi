@@ -70,7 +70,7 @@ This Emacs package provides the following functionalities from the @uref{https:/
 @item FastGPT
 Kagi's LLM offering, as a shell inspired by @uref{https://github.com/xenodium/chatgpt-shell, xenodium's chatgpt-shell}.
 @item Universal Summarizer
-Summarizes texts, webpages, videos and more.
+Summarizes texts, webpages, videos, and more.
 @end table
 
 Both functions are accessed through Kagi's @uref{https://help.kagi.com/kagi/api/overview.html, APIs}. Before a call can be made, some setup should be done on the Kagi website (see below).
@@ -101,7 +101,7 @@ kagi.el has some functions that use FastGPT to perform certain operations on tex
 @item @samp{kagi-translate}
 Translates strings or complete buffers to another language (including programming languages).
 @item @samp{kagi-proofread}
-Proofread a string or buffer.
+Proofreads a string or buffer.
 @item @samp{kagi-fastgpt-prompt-definition}
 Returns the definition of a word.
 @end table
@@ -191,7 +191,7 @@ The token can be supplied directly as a string, but you could write a lambda to 
 @item
 Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
 @item
-In @uref{https://kagi.com/settings?p=billing_api, your account settings}, put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the @uref{https://help.kagi.com/kagi/api/fastgpt.html#pricing, FastGPT API} and the @uref{https://help.kagi.com/kagi/api/summarizer.html#pricing, Summarizer API} for for the actual costs.
+In @uref{https://kagi.com/settings?p=billing_api, your account settings}, put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the @uref{https://help.kagi.com/kagi/api/fastgpt.html#pricing, FastGPT API} and the @uref{https://help.kagi.com/kagi/api/summarizer.html#pricing, Summarizer API} for the actual costs.
 @item
 In @uref{https://kagi.com/settings?p=api, the API portal}, create an API token. Put the result in @code{kagi-api-token} (or write a function to access it securely).
 @end enumerate
@@ -231,7 +231,7 @@ An example usage of this macro comes by default with this package:
                             "Definition")
 @end lisp
 
-The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user visible name. It will be shown when calling @samp{kagi-fastgpt-prompt} interactively.
+The first argument is the name of the command that will be defined. The second argument the prompt that will be sent. The third argument is optional and gives your prompt a user-visible name. It will be shown when calling @samp{kagi-fastgpt-prompt} interactively.
 
 The defined prompt becomes a typical Emacs command that takes one argument to fill the placeholder. You could bind the prompt command to a key, use it to integrate with Embark (see below) or to list all your prompts with a Hydra.
 
@@ -324,7 +324,7 @@ In order to be consistent with all keymaps, and to avoid clashes, the functional
 
 Since the FastGPT shell inherits from @samp{comint-mode} indirectly, many key bindings are also inherited. Enter the @samp{help} command in the shell to get more info, or run @samp{describe-keymap} on @samp{fastgpt-shell-mode-map}.
 
-One of those bindings is @samp{C-c C-o}, which flushes the last output. However, this binding is used in @samp{org-mode} to open a URL an point. Typical FastGPT results include URLs so one may be tempted to type @samp{C-c C-o} to browse the URL, only to have the output erased (which you can undo, actually).
+One of those bindings is @samp{C-c C-o}, which flushes the last output. However, this binding is used in @samp{org-mode} to open a URL an point. Typical FastGPT results include URLs, so one may be tempted to type @samp{C-c C-o} to browse the URL, only to have the output erased (which you can undo, actually).
 
 If you recognize this confusion, you may want to add the following line to your configuration file to shadow the @samp{comint-mode} binding with something more appropriate:
 
@@ -407,7 +407,7 @@ Org Babel support was added.
 @samp{kagi-summarize-buffer} and @samp{kagi-summarize-region} also have a @samp{no-cache} parameter which can be toggled interactively when called with the universal prefix.
 
 @item
-Add support for traditional Chinese as possible summary language.
+Add support for traditional Chinese as a possible summary language.
 @end itemize
 
 @node Fixes
@@ -454,7 +454,7 @@ Introduce variable @samp{kagi-summarizer-default-summary-format}, to produce a p
 Unit tests added.
 
 @item
-The README is also available as info page.
+The README is also available as an info page.
 @end itemize
 
 @node Fixes (1)
@@ -462,7 +462,7 @@ The README is also available as info page.
 
 @itemize
 @item
-Change the prompt for @samp{kagi-translate} to return translations only, without preamble.
+Change the prompt for @samp{kagi-translate} to return translations only, without a preamble.
 @item
 Added autoload markers where they were missing.
 @item
