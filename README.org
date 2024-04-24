@@ -3,6 +3,7 @@
 #+macro: issue [[https://codeberg.org/bram85/kagi.el/issues/$1][issue #$1]]
 #+macro: pr [[https://codeberg.org/bram85/kagi.el/pulls/$1][PR #$1]]
 #+export_file_name: kagi
+#+property: header-args:elisp :results none :exports code
 
 #+begin_export html
 <a href="https://melpa.org/#/kagi"><img alt="MELPA" src="https://melpa.org/packages/kagi-badge.svg"/></a>
