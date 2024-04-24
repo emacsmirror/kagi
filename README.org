@@ -281,6 +281,7 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 *** Fixes
 
+- Changed =kagi-proofread= to get more useful results.
 - Fixed language code for Czech summaries.
 - Handle error responses when calling the FastGPT API.
 

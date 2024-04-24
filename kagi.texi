@@ -415,6 +415,8 @@ Add support for traditional Chinese as a possible summary language.
 
 @itemize
 @item
+Changed @samp{kagi-proofread} to get more useful results.
+@item
 Fixed language code for Czech summaries.
 @item
 Handle error responses when calling the FastGPT API@.

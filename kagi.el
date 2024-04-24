@@ -555,7 +555,7 @@ result is short, otherwise it is displayed in a new buffer."
 
 (define-kagi-fastgpt-prompt kagi-proofread
                             (lambda (interactive-p)
-                              (format "Proofread the following text. %s
+                              (format "Proofread the following text for spelling, grammar and stylistic errors. %s
 
 
 %%s" (if interactive-p "" "Say OK if there are no issues.")))
