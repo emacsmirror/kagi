@@ -257,7 +257,7 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 * Changelog
 
-** 0.5pre
+** 0.5
 
 *** Breaking changes
 

@@ -43,10 +43,10 @@ Installation and configuration
 
 Changelog
 
-* 0.5pre: 05pre. 
+* 0.5: 05. 
 * 0.4: 04. 
 
-0.5pre
+0.5
 
 * Breaking changes::
 * New::
@@ -360,12 +360,12 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 @chapter Changelog
 
 @menu
-* 0.5pre: 05pre. 
+* 0.5: 05. 
 * 0.4: 04. 
 @end menu
 
-@node 05pre
-@section 0.5pre
+@node 05
+@section 0.5
 
 @menu
 * Breaking changes::
