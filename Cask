@@ -4,6 +4,10 @@
 (source melpa-stable)
 (source melpa)
 
+(files
+ "kagi.el"
+ "ob-kagi-fastgpt.el")
+
 (depends-on "shell-maker")
 
 (development
