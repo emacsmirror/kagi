@@ -83,11 +83,13 @@ You may want to load and configure the package with ~use-package~, for example p
     (kagi-bold ((t (:inherit modus-themes-bold)))))
 #+end_src
 
-The token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the /password-store/ package that comes with it).
+The API token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the /password-store/ package that comes with it).
 
 ** Kagi API setup
 
-1. Create a Kagi account if you haven't done so already. An account is free, and comes with 100 trial searches.
+In order to use the Kagi API, follow these steps:
+
+1. Create a Kagi account at [[https://www.kagi.com][kagi.com]] if you haven't done so already. An account is free, and comes with 100 trial searches.
 2. In [[https://kagi.com/settings?p=billing_api][your account settings]], put a balance for the API part (note that this is a separate balance than the subscription). The recommendation is to start with a one-time charge of $5. Check the pricing for the [[https://help.kagi.com/kagi/api/fastgpt.html#pricing][FastGPT API]] and the [[https://help.kagi.com/kagi/api/summarizer.html#pricing][Summarizer API]] for the actual costs.
 3. In [[https://kagi.com/settings?p=api][the API portal]], create an API token. Put the result in ~kagi-api-token~ (or write a function to access it securely).
 
