@@ -377,6 +377,12 @@ Initial release.
 - [[https://help.kagi.com/kagi/api/summarizer.html][Kagi Universal Summarizer API]]
 - [[https://github.com/xenodium/chatgpt-shell][xenodium's chatgpt-shell]], which also provides shell-maker required by the FastGPT shell.
 
+* Contact
+
+- Issue reports: [[https://codeberg.org/bram85/kagi.el/issues][Codeberg]]
+- Mastodon: [[https://emacs.ch/@bram85][@bram85@emacs.ch]]
+- Mail: see =git log=.
+
 * Meta :noexport:
 
 Local variables:
