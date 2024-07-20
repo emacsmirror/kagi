@@ -400,6 +400,26 @@ retrieving a result from Lisp code."
       (text-mode)
       (display-buffer buffer-name))))
 
+(defun kagi--fastgpt-welcome-message (_config)
+  "Return a string to be shown at the start of a new FastGPT shell.
+
+This can be overridden by setting a different function in
+`kagi-fastgpt-welcome-function'."
+  (format "Welcome to Kagi FastGPT.
+
+- Enter `help' for more info.
+- Press `C-c RET' to open a URL.
+
+"))
+
+(defcustom kagi-fastgpt-welcome-function #'kagi--fastgpt-welcome-message
+  "A function returning a welcome string.
+
+The function takes one argument: a shell-maker configuration
+object (created with `make-shell-maker-config')."
+  :type 'function
+  :group 'kagi)
+
 (defvar kagi-fastgpt--config
   (make-shell-maker-config
    :name "FastGPT"
@@ -419,7 +439,9 @@ retrieving a result from Lisp code."
 (defun kagi-fastgpt-shell ()
   "Start an FastGPT shell."
   (interactive)
-  (shell-maker-start kagi-fastgpt--config))
+  (shell-maker-start kagi-fastgpt--config
+                     nil
+                     kagi-fastgpt-welcome-function))
 
 (defun kagi--get-text-for-prompt ()
   "Return the text to insert in a prompt.

@@ -120,6 +120,7 @@ In order to use the Kagi API, follow these steps:
 |----------------------------------------+---------------------------------------------------------|
 | kagi-api-token                         | The Kagi API token.                                     |
 | kagi-fastgpt-api-url                   | The Kagi FastGPT API entry point.                       |
+| kagi-fastgpt-welcome-function          | A function returning a welcome string.                  |
 | kagi-summarizer-api-url                | The Kagi Summarizer API entry point.                    |
 | kagi-summarizer-cache                  | Determines whether the Summarizer should cache results. |
 | kagi-summarizer-default-language       | Default target language of the summary.                 |
@@ -261,6 +262,12 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 The full changelog can be found in README.org.
 
+** 0.6pre
+
+*** New
+
+- Show a welcome message when starting the FastGPT shell (=kagi-fastgpt-shell=). This can be customized with =kagi-fastgpt-welcome-function=, a variable with a function that returns a welcome string.
+
 ** 0.5
 
 *** Breaking changes
@@ -289,7 +296,7 @@ The full changelog can be found in README.org.
 - Fixed language code for Czech summaries.
 - Handle error responses when calling the FastGPT API.
 
-** 0.4
+** 0.4 :noexport:
 
 *** Breaking changes
 
