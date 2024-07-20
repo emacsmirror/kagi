@@ -64,4 +64,4 @@
 
 (provide 'ob-kagi-fastgpt)
 
-;;; ob-kagi-fastgpt.el ends here)
+;;; ob-kagi-fastgpt.el ends here
