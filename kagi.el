@@ -301,14 +301,6 @@ The OBJECT will be JSON encoded and sent as HTTP POST data."
           (buffer-string)
         (error "Call to Kagi API returned with status %s" return)))))
 
-(defun kagi--call-fastgpt (prompt)
-  "Submit the given PROMPT to the FastGPT API.
-
-Returns the JSON response as a string. See
-https://help.kagi.com/kagi/api/fastgpt.html for the
-interpretation."
-  (kagi--call-api (list (cons 'query prompt)) kagi-fastgpt-api-url))
-
 (defun kagi--call-summarizer (obj)
   "Submit a request to the Summarizer API.
 
@@ -374,10 +366,10 @@ list of conses."
 (defun kagi--fastgpt (prompt)
   "Submit a PROMPT to FastGPT and return a formatted response string.
 
-This is used by `kagi-fastgpt-shell' and `kagi-fastgpt-prompt' to
-obtain a result from FastGPT. Use the latter function for
-retrieving a result from Lisp code."
-  (let* ((response (kagi--call-fastgpt prompt))
+This is used by `kagi-fastgpt-prompt' to obtain a result from
+FastGPT. Use that function instead for retrieving a result from
+Lisp code."
+  (let* ((response (kagi--call-api (list (cons 'query prompt)) kagi-fastgpt-api-url))
          (parsed-response (json-parse-string response))
          (output (kagi--gethash parsed-response "data" "output"))
          (references (kagi--gethash parsed-response "data" "references")))
@@ -431,7 +423,7 @@ object (created with `make-shell-maker-config')."
    :execute-command
    (lambda (command _history callback error-callback)
      (condition-case err
-         (funcall callback (kagi--fastgpt command) nil)
+         (funcall callback (kagi-fastgpt-prompt command) nil)
        (json-parse-error (funcall error-callback
                                   (format "Could not parse the server response %s" (cdr err))))
        (error (funcall error-callback (format "An error occurred during the request %s" (cdr err)))))))
