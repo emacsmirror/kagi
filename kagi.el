@@ -394,6 +394,7 @@ Lisp code."
       (if (featurep 'markdown-mode)
           (markdown-mode)
         (text-mode))
+      (read-only-mode)
       (display-buffer buffer-name))))
 
 (defun kagi--fastgpt-welcome-message (_config)
