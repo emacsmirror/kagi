@@ -259,7 +259,7 @@ FastGPT with the following prompt:
   (propertize (format "[%d]" i) 'font-lock-face 'kagi-bold))
 
 (defun kagi--format-references (references)
-  "Format the REFRENCES as a string.
+  "Format the REFERENCES as a string.
 
 The REFERENCES is a part of the JSON response, see
 https://help.kagi.com/kagi/api/fastgpt.html for more information."
