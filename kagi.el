@@ -365,8 +365,6 @@ Lisp code."
                          (gethash "code" firsterror)))
         (error "An error occurred while querying FastGPT")))))
 
-(declare-function markdown-mode nil)
-
 (defun kagi--fastgpt-display-result (result)
   "Display the RESULT of a FastGPT prompt in a new buffer."
   (let ((buffer-name (generate-new-buffer-name "*fastgpt-result*")))
