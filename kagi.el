@@ -244,6 +244,19 @@ https://help.kagi.com/kagi/api/fastgpt.html for more information."
                     references)
    "\n\n"))
 
+(defun kagi--apply-markdown-font-lock (s)
+  "Apply Markdown formatting with markdown-mode on string S."
+  ;; Inspired by this answer at Emacs StackExchange:
+  ;; https://emacs.stackexchange.com/a/5408
+  (with-temp-buffer
+    (insert s)
+    (delay-mode-hooks (markdown-mode))
+    (font-lock-default-function #'markdown-mode)
+    (font-lock-default-fontify-region (point-min)
+                                      (point-max)
+                                      nil)
+    (buffer-string)))
+
 (defun kagi--curl-flags ()
   "Collect flags for a `curl' command to call the Kagi API."
   (let ((token (cond ((functionp kagi-api-token) (funcall kagi-api-token))
@@ -491,7 +504,8 @@ string (suitable for invocations from Emacs Lisp)."
            (message result))
           ((and interactive-p (> result-lines 1))
            (kagi--fastgpt-display-result result))
-          ((not interactive-p) result))))
+          ((not interactive-p)
+           (kagi--apply-markdown-font-lock result)))))
 
 (define-kagi-fastgpt-prompt kagi-fastgpt-prompt-definition
                             "Define the following word: %s"
