@@ -8,6 +8,7 @@
  "kagi.el"
  "ob-kagi-fastgpt.el")
 
+(depends-on "markdown-mode")
 (depends-on "shell-maker")
 
 (development
