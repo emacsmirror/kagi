@@ -374,7 +374,7 @@ Lisp code."
       (save-excursion
         (insert result))
       (markdown-mode)
-      (read-only-mode)
+      (view-mode)
       (display-buffer buffer-name))))
 
 (defun kagi--fastgpt-welcome-message (_config)
