@@ -465,7 +465,9 @@ user input."
                               (lambda (match)
                                 (pcase match
                                   ("%%" "%")
-                                  ("%s" (or user-text (setq user-text (funcall text-function))))
+                                  ("%s" (or user-text
+                                            (setq user-text (save-match-data
+                                                              (funcall text-function)))))
                                   (_ match)))
                               prompt t t)))
 
