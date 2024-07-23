@@ -85,7 +85,9 @@ The EXPECT-ARGS correspond to the arguments passed to the `expect' macro."
       :var ((kagi--fastgpt-prompts))
       (before-each
         (spy-on #'message)
-        (spy-on #'kagi--fastgpt-display-result))
+        (spy-on #'kagi--fastgpt-display-result)
+        (spy-on #'font-lock-default-function)
+        (spy-on #'font-lock-default-fontify-region))
       (it "formats references properly"
         (spy-on #'kagi--call-api
                 :and-return-value
@@ -116,19 +118,21 @@ https://www.example.com"))
       (it "does not insert the output by default"
         (spy-on #'insert)
         (kagi-fastgpt-prompt "foo")
-        ;; one insert call is to fill the temporary buffer for POST
-        ;; data
+        ;; one insert call for the temporary buffer for formatting
         (expect #'insert :to-have-been-called-times 1))
-      (it "shows short output in the echo area when called interactively"
+      (it "shows short output without formatting in the echo area when called interactively"
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output dummy-output))
         (kagi-fastgpt-prompt "foo" nil t)
         (expect #'message :to-have-been-called-with dummy-output)
-        (expect #'kagi--fastgpt-display-result :not :to-have-been-called))
-      (it "shows longer output in a separate buffer when called interactively"
+        (expect #'kagi--fastgpt-display-result :not :to-have-been-called)
+        (expect #'font-lock-default-fontify-region :not :to-have-been-called))
+      (it "shows longer output with formatting in a separate buffer when called interactively"
         (spy-on #'kagi--call-api :and-return-value (kagi-test--dummy-output (format "%s\n%s" dummy-output dummy-output)))
         (kagi-fastgpt-prompt "foo" nil t)
         (expect #'message :not :to-have-been-called)
-        (expect #'kagi--fastgpt-display-result :to-have-been-called))
+        (expect #'kagi--fastgpt-display-result :to-have-been-called)
+        (kagi-test--expect-arg #'font-lock-default-function 0 :to-equal #'markdown-mode)
+        (expect #'font-lock-default-fontify-region :to-have-been-called))
       (it "makes exactly one API call"
         (kagi-fastgpt-prompt "foo")
         (expect #'kagi--call-api :to-have-been-called-times 1))
@@ -169,7 +173,13 @@ https://www.example.com"))
         (spy-on #'kagi--fastgpt)
         (spy-on #'completing-read :and-return-value "function")
         (call-interactively #'kagi-fastgpt-prompt)
-        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "result")))
+        (kagi-test--expect-arg #'kagi--fastgpt 0 :to-equal "result"))
+      (it "lets markdown-mode format the output when called non-interactively"
+        (kagi-fastgpt-prompt "foo")
+        (kagi-test--expect-arg #'font-lock-default-function 0 :to-equal #'markdown-mode))
+      (it "inserts the output without formatting when inserting the output"
+        (kagi-fastgpt-prompt "foo" t)
+        (expect #'font-lock-default-fontify-region :not :to-have-been-called)))
     (it "handles empty output and returned errors from the API gracefully"
       (spy-on #'kagi--call-api :and-return-value (kagi-test--error-output))
       (spy-on #'kagi--fastgpt :and-call-through)
