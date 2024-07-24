@@ -58,7 +58,9 @@ To install from Git, clone with:
 
 : git clone https://codeberg.org/bram85/kagi.el.git /path/to/kagi.el
 
-Note that kagi.el has a dependency on the [[https://melpa.org/#/shell-maker][shell-maker package]], which is available on MELPA.
+kagi.el has two dependencies (both available on MELPA):
+- [[https://melpa.org/#/markdown-mode][markdown-mode]] to apply formatting of the Markdown responses in FastGPT;
+- [[https://melpa.org/#/shell-maker][shell-maker]] to provide a shell interface for FastGPT.
 
 You may want to load and configure the package with ~use-package~, for example put the following in your Emacs init file:
 
@@ -73,14 +75,7 @@ You may want to load and configure the package with ~use-package~, for example p
     ;; Universal Summarizer settings
     (kagi-summarizer-engine "cecil")
     (kagi-summarizer-default-language "EN")
-    (kagi-summarizer-cache t)
-    :custom-face
-    ;; kagi-code defaults to fixed-pitch, but can be overridden as
-    ;; follows:
-    (kagi-code ((t (:inherit org-verbatim))))
-
-    ;; likewise for kagi-bold:
-    (kagi-bold ((t (:inherit modus-themes-bold)))))
+    (kagi-summarizer-cache t))
 #+end_src
 
 The API token can be supplied directly as a string, but you could write a lambda to retrieve the token from a more secure location (e.g. with the combination of [[https://passwordstore.org/][pass(1)]] and the /password-store/ package that comes with it).
@@ -260,12 +255,21 @@ Needless to say, the tests won't make actual API calls. Otherwise it wouldn't be
 
 * Changelog
 
+#+begin_comment
+If you read this from an HTML/info export of this README:
+#+end_comment
+
 The full changelog can be found in README.org.
 
 ** 0.6pre
 
+*** Breaking changes
+
+- Obsoleted faces =kagi-bold=, =kagi-italic= and =kagi-code= in favor of formatting by markdown-mode.
+
 *** New
 
+- Full support for markdown syntax returned by FastGPT, by using the [[https://github.com/jrblevin/markdown-mode][markdown-mode]] package.
 - Show a welcome message when starting the FastGPT shell (=kagi-fastgpt-shell=). This can be customized with =kagi-fastgpt-welcome-function=, a variable with a function that returns a welcome string.
 
 *** Misc
