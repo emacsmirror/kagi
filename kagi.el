@@ -229,7 +229,7 @@ returns a bullet list."
       value)))
 
 (defun kagi--format-references (references)
-  "Format the REFRENCES as a string.
+  "Format the REFERENCES as a string.
 
 The REFERENCES is a part of the JSON response, see
 https://help.kagi.com/kagi/api/fastgpt.html for more information."
@@ -465,7 +465,9 @@ user input."
                               (lambda (match)
                                 (pcase match
                                   ("%%" "%")
-                                  ("%s" (or user-text (setq user-text (funcall text-function))))
+                                  ("%s" (or user-text
+                                            (setq user-text (save-match-data
+                                                              (funcall text-function)))))
                                   (_ match)))
                               prompt t t)))
 

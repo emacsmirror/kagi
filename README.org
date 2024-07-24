@@ -272,6 +272,10 @@ The full changelog can be found in README.org.
 - Full support for markdown syntax returned by FastGPT, by using the [[https://github.com/jrblevin/markdown-mode][markdown-mode]] package.
 - Show a welcome message when starting the FastGPT shell (=kagi-fastgpt-shell=). This can be customized with =kagi-fastgpt-welcome-function=, a variable with a function that returns a welcome string.
 
+*** Fixes
+
+- Prompts defined with =define-kagi-fastgpt-prompt= wouldn't always work when expanding =%s= placeholders (possibly resulting in =Lisp error: (args-out-of-range 0 7)=).
+
 *** Misc
 
 - Minor refactoring in the code calling the FastGPT API.
