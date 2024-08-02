@@ -261,7 +261,7 @@ If you read this from an HTML/info export of this README:
 
 The full changelog can be found in README.org.
 
-** 0.6pre
+** 0.6
 
 *** Breaking changes
 

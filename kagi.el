@@ -5,7 +5,7 @@
 ;; Author: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Maintainer: Bram Schoenmakers <me@bramschoenmakers.nl>
 ;; Created: 16 Dec 2023
-;; Package-Version: 0.5
+;; Package-Version: 0.6
 ;; Package-Requires: ((emacs "29.1") (markdown-mode "2.6") (shell-maker "0.46.1"))
 ;; Keywords: terminals wp
 ;; URL: https://codeberg.org/bram85/kagi.el
