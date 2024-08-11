@@ -160,9 +160,29 @@ could contain an instruction to say either /Yes/ or /No/. See
 
 Note the =%%s= notation, =format= turns it into =%s= which becomes the prompt placeholder.
 
-** Org Babel support
+** FastGPT shell key bindings
 
-=kagi-fastgpt-prompt= can also be used from Org mode with source blocks. Make sure to initialize the package as described below.
+Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. Enter the =help= command in the shell to get more info, or run =describe-keymap= on =fastgpt-shell-mode-map=.
+
+One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs, so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased (which you can undo, actually).
+
+If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
+
+#+begin_src elisp
+  (add-hook 'fastgpt-shell-mode-hook
+            (lambda ()
+              (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)))
+#+end_src
+
+Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-shell= has been invoked, the keybinding is done in a mode hook.
+
+* Integrations
+
+kagi.el can be used from other packages.
+
+** Org Babel
+
+=kagi-fastgpt-prompt= can be used from Org mode with source blocks. Make sure to initialize the package as described below.
 
 With =use-package=:
 
@@ -192,11 +212,11 @@ Then create a source block with 'language' =kagi-fastgpt=:
 
 Press =C-c C-c= (=org-babel-execute-src-block=) inside this block to obtain the result below the prompt. By default, the responses are cached in your document; the same prompt text won't trigger a second API request. Use the header argument =:cache no= to refresh the response for each block execution.
 
-** Embark integration
+** Embark
 
 The kagi.el package can be integrated with [[https://github.com/oantolin/embark][Embark]]. Use it to easily summarize, translate or proofread a buffer, region or a URL. It can also be used to call your custom prompts with =define-kagi-fastgpt-prompt=.
 
-In order to be consistent with all keymaps, and to avoid clashes, the functionality is behind the /K/ prefix key. For example, press /K s/ to invoke the summarize functionality.
+In order to be consistent with all keymaps, and to avoid key clashes, the functionality is behind the /K/ prefix key. For example, press /K s/ to invoke the summarize functionality.
 
 #+begin_src elisp
   (defmacro embark-kagi-map (name &rest keys)
@@ -223,22 +243,6 @@ In order to be consistent with all keymaps, and to avoid clashes, the functional
                    "s" #'kagi-summarize-url)
   (keymap-set embark-url-map "K" embark-kagi-url-map)
 #+end_src
-
-** FastGPT shell key bindings
-
-Since the FastGPT shell inherits from =comint-mode= indirectly, many key bindings are also inherited. Enter the =help= command in the shell to get more info, or run =describe-keymap= on =fastgpt-shell-mode-map=.
-
-One of those bindings is =C-c C-o=, which flushes the last output. However, this binding is used in =org-mode= to open a URL an point. Typical FastGPT results include URLs, so one may be tempted to type =C-c C-o= to browse the URL, only to have the output erased (which you can undo, actually).
-
-If you recognize this confusion, you may want to add the following line to your configuration file to shadow the =comint-mode= binding with something more appropriate:
-
-#+begin_src elisp
-  (add-hook 'fastgpt-shell-mode-hook
-            (lambda ()
-              (keymap-set fastgpt-shell-mode-map "C-c C-o" #'browse-url-at-point)))
-#+end_src
-
-Because the =fastgpt-shell-mode-map= only becomes available when =kagi-fastgpt-shell= has been invoked, the keybinding is done in a mode hook.
 
 * Development
 
