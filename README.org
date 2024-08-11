@@ -261,6 +261,12 @@ If you read this from an HTML/info export of this README:
 
 The full changelog can be found in README.org.
 
+** 0.7pre
+
+*** Fixes
+
+- Don't respond to an empty prompt.
+
 ** 0.6
 
 *** Breaking changes
@@ -280,7 +286,7 @@ The full changelog can be found in README.org.
 
 - Minor refactoring in the code calling the FastGPT API.
 
-** 0.5
+** 0.5 :noexport:
 
 *** Breaking changes
 
