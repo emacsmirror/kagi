@@ -242,6 +242,17 @@ In order to be consistent with all keymaps, and to avoid key clashes, the functi
   (embark-kagi-map embark-kagi-url-map
                    "s" #'kagi-summarize-url)
   (keymap-set embark-url-map "K" embark-kagi-url-map)
+
+  (embark-kagi-map embark-kagi-symbol-map
+                   "d" #'kagi-fastgpt-prompt-definition
+                   "t" #'kagi-translate)
+  (keymap-set embark-symbol-map "K" embark-kagi-symbol-map)
+  (keymap-set embark-identifier-map "K" embark-kagi-symbol-map)
+
+  (embark-kagi-map embark-kagi-paragraph-map
+                   "p" #'kagi-proofread
+                   "t" #'kagi-translate)
+  (keymap-set embark-paragraph-map "K" embark-kagi-paragraph-map)
 #+end_src
 
 * Development
