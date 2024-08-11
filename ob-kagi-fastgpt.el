@@ -60,7 +60,7 @@
   (org-babel-do-load-languages 'org-babel-load-languages
                                (append org-babel-load-languages
                                        '((kagi-fastgpt . t))))
-  (add-to-list 'org-src-lang-modes '("kagi-fastgpt" . text)))
+  (push '("kagi-fastgpt" . text) org-src-lang-modes))
 
 (provide 'ob-kagi-fastgpt)
 
